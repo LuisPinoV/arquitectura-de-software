@@ -1,0 +1,19 @@
+.general-search-container
+{
+    padding: 0 6vw;
+}
+
+
+.options-col, .search-cards-col
+{
+    padding: 1%;
+    display: flex;
+    justify-content: center;
+}
+
+.dropdown-filters-general
+{
+    display: flex;
+    justify-content: center;
+}
+    

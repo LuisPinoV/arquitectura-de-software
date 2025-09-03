@@ -1,0 +1,20 @@
+.dropdown-filters
+{
+    width: 17vw;
+}
+
+@media (min-width:768px) and (max-width: 1200px)
+{
+    .dropdown-filters
+    {
+        width: 30vw;
+    }
+}
+
+@media (max-width:767.9px)
+{
+    .dropdown-filters
+    {
+        width: 70vw;
+    }
+}

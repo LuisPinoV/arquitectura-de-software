@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend de Martin</title>
+    <style>
+        .button-porHacer {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="http://localhost:4000/home"><button>Nuevo index.html</button></a>
+    <h2>APIs pal Tomah</h2>
+    <a href="http://localhost:4000/tomah/agendamiento-especialidad/medicinaGeneral"><button>Box por Especialidad</button></a>
+    <a href="http://localhost:4000/tomah/agendamiento-fecha/2025-08-17/2025-08-25"><button>Box por Fecha</button></a>
+    <a href="http://localhost:4000/tomah/agendamiento-especialidadfechas/medicinaGeneral/2025-08-17/2025-08-25"><button>Box por Especialidad y Fecha</button></a>
+    <a href="http://localhost:4000/tomah/query1/2025-08-17/2025-08-25"><button>Query 1</button></a>
+    <a href="http://localhost:4000/tomah/query2/2025-08-21/12:10:00"><button>Query 2</button></a>
+    <a href="http://localhost:4000/tomah/query3/medicinaGeneral/2025-08-22"><button>Query 3</button></a>
+    <a href="http://localhost:4000/tomah/query4/2025-08-18/12:32:00"><button>Query 4</button></a>
+    <a href="http://localhost:4000/horasDisponibles/1/2025-08-19"><button>Disponibilidad</button></a>
+
+    <h2>Pasarón cositas, vamos de nuevo a cookear APIs</h2>
+    <a href="http://localhost:4000/agendamientosFecha/2025-08-16"><button>Agendamientos Fecha</button></a>
+    <a href="http://localhost:4000/agendamientosPorConfirmar/"><button>Agendamientos Por Confirmar</button></a>
+    <a href="http://localhost:4000/boxesLibres/2025-08-16/12:30:00"><button>Boxes Libres</button></a>
+    <a href="http://localhost:4000/cambioAgendamiento/2025-08-15/2025-08-16"><button>Cambio (ocupancia) Agendamiento</button></a>
+    <a href="http://localhost:4000/agendamientoTotalHoyBox/2/2025-08-17"><button>Agendamientos Totales Hoy</button></a>
+    <a href="http://localhost:4000/agendamientosPendientesBox/3/2025-08-19"><button>Agendamientos Pendientes</button></a>
+    <a href="http://localhost:4000/proximoAgendamiento/3/2025-08-17/13:00:00"><button>Proximo Agendamiento</button></a>
+    <a href="http://localhost:4000/cantidadAgendamientosRango/2025-07-01/2025-08-27"><button>Cantidad Agendamientos entre fechas</button></a>
+    <a href="http://localhost:4000/funcionarioFull/"><button>Get Funcionarios completo</button></a>
+
+    <h2>Pasaron cositas, aca estan las APIs para control de usuarios</h2>
+    <a href="http://localhost:4000/usuarios/post"><button>Post Usuario</button></a>
+    <a href="http://localhost:4000/usuarios/get/martin"><button>Get Usuario</button></a>
+    <a href="http://localhost:4000/usuarios/get/martin/123456"><button>Verificador Usuario-Contraseña</button></a>
+    <div>
+        <h4 style="color: blue;">El get usuario esta pensado para implementarse SOLO en el login</h4>
+        <h4 style="color: blue;">Usuario predeterminado : martin</h4>
+        <h4 style="color: red;">IMPORTANTE!! A la hora de hacer un post el atributo informacion adicional recibe JSON,
+            las "keys" y strings pasarselas en el siguiente formato</h4>
+        <h4 style="color: red;">"Hola":"Mundo"</h4>
+        <h4 style="color: red;">Si no se hace caso a estas instrucciones la informacion adicional se va a ignorar</h4>
+    </div>
+    <div>
+        <h2>Ultimas APIs</h2>
+        <a href="http://localhost:4000/pacientesNoAtendidos/2025-08-17"><button>Pacientes no atendidos</button></a>
+        <a href="http://localhost:4000/pacientesAtendidos/2025-08-17"><button>Pacientes atendidos</button></a>
+        <a href="http://localhost:4000/diferenciaOcupanciaEntreMeses/2025-07-15/2025-08"><button>Diferencia ocupancia entre meses</button></a>
+        <a href="http://localhost:4000/pacientesAtendidosConAtraso/:fecha"><button class="button-porHacer">Pacientes atendidos con atraso</button></a>
+        <a href="http://localhost:4000/promedioDeAtencion/:fecha"><button class="button-porHacer">Promedio de atención</button></a>
+        <a href="http://localhost:4000/infoMedicoPlus:/idmedico/:fecha/:hora"><button class="button-porHacer">Infor medico plus ultra</button></a>
+    </div>
+    <p>
+        El formato para la API "Diferencia de ocupancia entre meses" es que se pide el año y mes, por lo que se puede entregar cualquier fecha 
+        dentro del año y mes o solo dar el año y mes, formatos permitidos:
+        <ul style="color: green;">
+            <li>"YYYY-MM"</li>
+            <li>"YYYY-MM-DD"</li>
+        </ul>
+    </p>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+.filterer-item-flex
+{
+    display:flex;
+    margin: 30px 0;
+}
+
+.filterer-item-no-flex
+{
+    margin: 30px 0;
+}
+
+.search-boxes-container
+{
+    padding: 0 6vw;
+}
+
+
+.split-container-col
+{
+    padding: 0 1%;
+}
+
+.dropdown-filters-general
+{
+    display: flex;
+    justify-content: center;
+}
+    

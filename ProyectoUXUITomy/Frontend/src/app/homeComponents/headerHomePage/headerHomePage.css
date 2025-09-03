@@ -1,0 +1,38 @@
+.navbar-container
+{
+    display:grid;
+    grid-template-rows: auto;
+    grid-template-columns: 8fr 1fr 1fr;
+    width:100%;
+
+    background-color: #FAFAFA;
+
+    box-shadow: 0px -6px 7px 2px rgba(135, 135, 135, 0.66);
+
+    padding: 7px 5px;
+    z-index: 1;
+}
+
+.navbar-item
+{
+    font-size:100%;
+    display:flex;
+    align-items: center;
+}
+
+.link, #iniciar-sesion
+{
+    justify-content: end;
+}
+
+#iniciar-sesion
+{
+    --primary:var(--color-rose-500);
+    outline-color:color-mix(in oklab,var(--ring)50%,transparent);
+}
+
+.link
+{
+    color:#6e6e6e;
+    font-weight: 550;
+}
