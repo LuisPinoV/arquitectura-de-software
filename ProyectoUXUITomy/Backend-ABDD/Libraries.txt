@@ -1,0 +1,36 @@
+class-validator
+@nestjs/mongoose mongoose
+@nestjs/config
+@nestjs/common
+@nestjs/core
+cassandra-driver
+aws-sdk
+@aws-sdk/client-dynamodb
+@aws-sdk/lib-dynamodb
+@aws-sdk/credential-providers
+class-transformer
+uuid
+@types/cassandra-driver
+
+AS A NPM FUNCTION: npm i class-validator @nestjs/mongoose mongoose @nestjs/config @nestjs/common @nestjs/core cassandra-driver aws-sdk @aws-sdk/client-dynamodb @aws-sdk/lib-dynamodb @aws-sdk/credential-providers class-transformer uuid @types/cassandra-driver
+
+------------------------------------------------------------------ FROM PACKAGE.JSON -----------------------
+
+ "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.844.0",
+    "@aws-sdk/credential-providers": "^3.844.0",
+    "@aws-sdk/lib-dynamodb": "^3.844.0",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/mongoose": "^11.0.3",
+    "@nestjs/platform-express": "^11.0.1",
+    "aws-sdk": "^2.1692.0",
+    "cassandra-driver": "^4.8.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "mongoose": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "uuid": "^11.1.0"
+  },

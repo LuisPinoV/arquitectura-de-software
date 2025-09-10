@@ -1,0 +1,1 @@
+Se deja .env de ejemplo, ingresar datos propios con lo necesario para que funcione, luego dejar .env dentro de la raíz del backend

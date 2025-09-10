@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
 
   const apiUrl = process.env.BACKEND_ADDRESS;
+  console.log(apiUrl);
 
   const res = await fetch(
     `${apiUrl}/box`,
