@@ -425,7 +425,7 @@ export class AppService {
   }
 
   // Querys sin nombre de la 1 a la 4
-  async Query1(fecha1:string, fecha2:string): Promise<object> {
+  async OcupacionTotalSegunDiaEntreFechas(fecha1:string, fecha2:string): Promise<object> {
     // Porcentaje de ocupancia total (todos los boxes) diaria entre fechas
     const query = "SELECT idbox FROM box"
     let totalBoxes = 0
@@ -472,7 +472,7 @@ export class AppService {
     return fechasJson
   }
 
-  async Query2(fecha:string, hora:string): Promise<object> {
+  async PorcentajeDeUso(fecha:string, hora:string): Promise<object> {
     // Porcentaje de uso y si el box esta libre o no ahora, retorna todos los boxes
     const query = "SELECT idbox FROM box"
     const boxesJson: Record<string, any> = {}
@@ -528,7 +528,7 @@ export class AppService {
     return boxesJson
   }
 
-  async Query3(especialidad:string, fecha:string): Promise<number> {
+  async PorcentajeDeOcupacionPorEspecialidad(especialidad:string, fecha:string): Promise<number> {
     // Porcentaje de ocupancia de todos los boxes de una especialidad en un dia
     const query = "SELECT idbox FROM box INNER JOIN especialidadbox ON box.idespecialidadbox = especialidadbox.idespecialidadbox WHERE especialidad = $1"
     const values = [especialidad]
@@ -563,7 +563,7 @@ export class AppService {
     return resultado/(930*totalBoxes)
   }
 
-  async Query4(fecha:string, hora:string): Promise<object> {
+  async PorcentajeDeOcupacionPorEspecialidadBoxes(fecha:string, hora:string): Promise<object> {
     // Porcentaje de uso, si el box esta libre o no ahora y su respectiva especialidad, retorna todos los boxes
     const boxesJson: Record<string, any> = {}
     const query = "SELECT b.idbox,especialidad FROM box AS b INNER JOIN especialidadbox AS eb ON b.idespecialidadbox = eb.idespecialidadbox"

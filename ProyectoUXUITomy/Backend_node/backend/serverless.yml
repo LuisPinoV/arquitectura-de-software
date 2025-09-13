@@ -1,0 +1,232 @@
+service: mi-backend-node
+
+provider:
+  name: aws
+  role: arn:aws:iam::992382436111:role/LabRole
+  runtime: nodejs18.x
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sts:AssumeRole
+        - dynamodb:*
+      Resource: 
+        - arn:aws:dynamodb:us-east-1:*:table/Paciente
+
+functions:
+  getEspecialidad:
+    handler: handlers/getEspecialidad.main
+    events:
+      - http:
+          path: especialidades
+          method: get
+          cors: true
+
+  ## Pacientes
+  getPaciente:
+    handler: handlers/pacientes/getPaciente.main
+    events:
+      - http:
+          path: pacientes
+          method: get
+          cors: true
+
+  ## Funcionarios
+  getFuncionario:
+    handler: handlers/funcionarios/getFuncionario.main
+    events:
+      - http:
+          path: funcionarios
+          method: get
+          cors: true
+
+  funcionariosFull:
+    handler: handlers/funcionarios/funcionariosFull.main
+    events:
+      - http:
+          path: funcionarios/full
+          method: get
+          cors: true
+
+  getTipoFuncionario:
+    handler: handlers/funcionarios/getTipoFuncionario.main
+    events:
+      - http:
+          path: tipos-funcionario
+          method: get
+          cors: true
+
+  ## Boxes
+  getBox:
+    handler: handlers/boxes/getBox.main
+    events:
+      - http:
+          path: boxes
+          method: get
+          cors: true
+  disponibilidad:
+    handler: handlers/boxes/disponibilidad.main
+    events:
+      - http:
+          path: boxes/disponibilidad
+          method: get
+          cors: true
+
+
+  usoBox:
+    handler: handlers/boxes/usoBox.main
+    events:
+      - http:
+          path: boxes/uso
+          method: get
+          cors: true
+
+  porcentajeDeUso:
+    handler: handlers/boxes/porcentajeDeUso.main
+    events:
+      - http:
+          path: boxes/porcentaje-uso
+          method: get
+          cors: true
+
+  porcentajeDeOcupacionPorEspecialidadBoxes:
+    handler: handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
+    events:
+      - http:
+          path: boxes/porcentaje-ocupacion-especialidad
+          method: get
+          cors: true
+
+  ## Agendamiento
+  ## General
+  getAgendamiento:
+    handler: handlers/agendamiento/generales/getAgendamiento.main
+    events:
+      - http:
+          path: agendamiento
+          method: get
+          cors: true
+
+  getResultadosConsulta:
+    handler: handlers/agendamiento/generales/getResultadosConsulta.main
+    events:
+      - http:
+          path: agendamiento/resultados
+          method: get
+          cors: true
+
+  ## Por especialidad
+  getAgendamientoEspecialidad:
+    handler: handlers/agendamiento/especialidad/getAgendamientoEspecialidad.main
+    events:
+      - http:
+          path: agendamiento/especialidad
+          method: get
+          cors: true
+
+  getCountAgendamientosPorEspecialidad:
+    handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
+    events:
+      - http:
+          path: agendamiento/especialidad/count
+          method: get
+          cors: true
+
+  getCountAgendamientosPorEspecialidadRangoFechas:
+    handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
+    events:
+      - http:
+          path: agendamiento/especialidad/count-rango
+          method: get
+          cors: true
+
+  porcentajeDeOcupacionPorEspecialidad:
+    handler: handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
+    events:
+      - http:
+          path: agendamiento/especialidad/porcentaje-ocupacion
+          method: get
+          cors: true
+
+  ## Por fecha
+  getAgendamientoFecha:
+    handler: handlers/agendamiento/fechas/getAgendamientoFecha.main
+    events:
+      - http:
+          path: agendamiento/fecha
+          method: get
+          cors: true
+
+  getAgendamientoEspecialidadFecha:
+    handler: handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
+    events:
+      - http:
+          path: agendamiento/fecha-especialidad
+          method: get
+          cors: true
+
+  agendamientosPorFecha:
+    handler: handlers/agendamiento/fechas/agendamientosPorFecha.main
+    events:
+      - http:
+          path: agendamiento/por-fecha
+          method: get
+          cors: true
+
+  agendamientoTotalHoyBox:
+    handler: handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
+    events:
+      - http:
+          path: agendamiento/hoy/box
+          method: get
+          cors: true
+
+  cantidadAgendamientosEntreFechas:
+    handler: handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
+    events:
+      - http:
+          path: agendamiento/cantidad-entre-fechas
+          method: get
+          cors: true
+
+  ## Gestión
+  postAgendamientoPersonalizado:
+    handler: handlers/agendamiento/gestion/postAgendamientoPersonalizado.main
+    events:
+      - http:
+          path: agendamiento/personalizado
+          method: post
+          cors: true
+
+  postAgendamientoSupremus:
+    handler: handlers/agendamiento/gestion/postAgendamientoSupremus.main
+    events:
+      - http:
+          path: agendamiento/supremus
+          method: post
+          cors: true
+
+  eliminarAgendamiento:
+    handler: handlers/agendamiento/gestion/eliminarAgendamiento.main
+    events:
+      - http:
+          path: agendamiento
+          method: delete
+          cors: true
+
+  ## ocupacion
+  ocupacionTotalSegunDiaEntreFechas:
+    handler: handlers/ocupacion/ocupacionTotalSegunDiaEntreFechas.main
+    events:
+      - http:
+          path: ocupacion/ocupacion-total
+          method: get
+          cors: true
+
+  diferenciaOcupanciaMeses:
+    handler: handlers/ocupacion/diferenciaOcupanciaMeses.main
+    events:
+      - http:
+          path: ocupacion/diferencia-ocupacion-meses
+          method: get
+          cors: true

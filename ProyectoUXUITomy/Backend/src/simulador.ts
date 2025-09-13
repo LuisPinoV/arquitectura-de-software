@@ -5,10 +5,10 @@ import {Pool} from 'pg';
 import { console } from 'inspector';
 
 const pool = new Pool({
-  user:'myr',
+  user:'root',
   host:'localhost',
   database:'hospital',
-  password: '1234',
+  password: '123456',
   port: 5432
 })
 
