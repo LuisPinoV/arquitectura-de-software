@@ -63,6 +63,17 @@ const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
     { label: "Agendamiento", href: "/dashboard/agendamiento" },
     { label: "Importar datos" },
   ],
+  "/dashboard/account-settings": [
+    { label: "Dashboard", href: "/dashboard/general" },
+    { label: "Cuenta", href: "/dashboard/general" },
+    { label: "Configuración" },
+  ],
+  "/dashboard/account-settings/themes": [
+    { label: "Dashboard", href: "/dashboard/general" },
+    { label: "Cuenta", href: "/dashboard/general" },
+    { label: "Configuración", href:"/dashboard/account-settings" },
+    { label: "Temas"}
+  ],
 };
 
 export function SiteHeader() {
@@ -70,8 +81,6 @@ export function SiteHeader() {
   const pathname = usePathname();
   const params = useParams();
   const items = breadcrumbMap[pathname] || [];
-
-  console.log(pathname);
 
   if (pathname.startsWith("/dashboard/reportaje/boxes/") && params?.box) {
     items.push(

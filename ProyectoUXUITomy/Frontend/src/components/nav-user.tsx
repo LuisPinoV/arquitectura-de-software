@@ -5,7 +5,7 @@ import {
   Bell,
   ChevronsUpDown,
   LogOut,
-  Brush
+  Settings
 } from "lucide-react"
 
 import {
@@ -36,6 +36,8 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+
+
 
   return (
     <SidebarMenu>
@@ -82,8 +84,10 @@ export function NavUser({
                 Notificaciones
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Brush/>
-                Personalizar
+                <Settings/>
+                <a href="/dashboard/account-settings">
+                  <span>Configuración</span>
+                </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
