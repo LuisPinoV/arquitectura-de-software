@@ -1,4 +1,16 @@
-service: mi-backend-node
+service: arquitectura-serverless
+
+plugins:
+  - serverless-prune-plugin
+  - serverless-scriptable-plugin
+  
+custom:
+  scriptable:
+    hooks:
+      after:deploy:deploy: sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+  prune:
+    automatic: true
+    number: 5
 
 provider:
   name: aws
@@ -12,8 +24,25 @@ provider:
         - dynamodb:*
       Resource: 
         - arn:aws:dynamodb:us-east-1:*:table/Paciente
+        - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
+        - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
 
 functions:
+  ### Simulador de base de datos
+  poblarDynamo:
+    handler: src/simulador.poblarDynamo
+    timeout: 60      
+    memorySize: 1024  
+    environment:
+      TABLE: Agendamiento
+    events:
+      - httpApi:
+          path: /agendamiento
+          method: post
+
+
+  ### APIS
+  ## Especialidades
   getEspecialidad:
     handler: handlers/getEspecialidad.main
     events:
@@ -50,6 +79,7 @@ functions:
 
   getTipoFuncionario:
     handler: handlers/funcionarios/getTipoFuncionario.main
+    name: getTipoFuncionario
     events:
       - http:
           path: tipos-funcionario
@@ -91,6 +121,7 @@ functions:
 
   porcentajeDeOcupacionPorEspecialidadBoxes:
     handler: handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
+    name: porcentajeDeOcupacionPorEspecialidadBoxes
     events:
       - http:
           path: boxes/porcentaje-ocupacion-especialidad
@@ -109,6 +140,7 @@ functions:
 
   getResultadosConsulta:
     handler: handlers/agendamiento/generales/getResultadosConsulta.main
+    name: getResultadosConsulta
     events:
       - http:
           path: agendamiento/resultados
@@ -118,6 +150,7 @@ functions:
   ## Por especialidad
   getAgendamientoEspecialidad:
     handler: handlers/agendamiento/especialidad/getAgendamientoEspecialidad.main
+    name: getAgendamientoEspecialidad
     events:
       - http:
           path: agendamiento/especialidad
@@ -126,6 +159,7 @@ functions:
 
   getCountAgendamientosPorEspecialidad:
     handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
+    name: getCountAgendamientosPorEspecialidad
     events:
       - http:
           path: agendamiento/especialidad/count
@@ -134,6 +168,7 @@ functions:
 
   getCountAgendamientosPorEspecialidadRangoFechas:
     handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
+    name: getCountAgendamientosPorEspecialidadRangoFechas
     events:
       - http:
           path: agendamiento/especialidad/count-rango
@@ -142,6 +177,7 @@ functions:
 
   porcentajeDeOcupacionPorEspecialidad:
     handler: handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
+    name: porcentajeDeOcupacionPorEspecialidad
     events:
       - http:
           path: agendamiento/especialidad/porcentaje-ocupacion
@@ -159,6 +195,7 @@ functions:
 
   getAgendamientoEspecialidadFecha:
     handler: handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
+    name: getAgendamientoEspecialidadFecha
     events:
       - http:
           path: agendamiento/fecha-especialidad
@@ -175,6 +212,7 @@ functions:
 
   agendamientoTotalHoyBox:
     handler: handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
+    name: agendamientoTotalHoyBox
     events:
       - http:
           path: agendamiento/hoy/box
@@ -183,6 +221,7 @@ functions:
 
   cantidadAgendamientosEntreFechas:
     handler: handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
+    name: cantidadAgendamientosEntreFechas
     events:
       - http:
           path: agendamiento/cantidad-entre-fechas
@@ -192,6 +231,7 @@ functions:
   ## Gestión
   postAgendamientoPersonalizado:
     handler: handlers/agendamiento/gestion/postAgendamientoPersonalizado.main
+    name: postAgendamientoPersonalizado
     events:
       - http:
           path: agendamiento/personalizado
@@ -200,6 +240,7 @@ functions:
 
   postAgendamientoSupremus:
     handler: handlers/agendamiento/gestion/postAgendamientoSupremus.main
+    name: postAgendamientoSupremus
     events:
       - http:
           path: agendamiento/supremus
@@ -208,6 +249,7 @@ functions:
 
   eliminarAgendamiento:
     handler: handlers/agendamiento/gestion/eliminarAgendamiento.main
+    name: eliminarAgendamiento
     events:
       - http:
           path: agendamiento
@@ -217,6 +259,7 @@ functions:
   ## ocupacion
   ocupacionTotalSegunDiaEntreFechas:
     handler: handlers/ocupacion/ocupacionTotalSegunDiaEntreFechas.main
+    name: ocupacionTotalSegunDiaEntreFechas
     events:
       - http:
           path: ocupacion/ocupacion-total
@@ -225,8 +268,65 @@ functions:
 
   diferenciaOcupanciaMeses:
     handler: handlers/ocupacion/diferenciaOcupanciaMeses.main
+    name: diferenciaOcupanciaMeses
     events:
       - http:
           path: ocupacion/diferencia-ocupacion-meses
           method: get
           cors: true
+
+
+resources:
+  Resources:
+    AgendamientoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Agendamiento
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: PacienteId
+            AttributeType: S
+          - AttributeName: FechaPaciente
+            AttributeType: S
+          - AttributeName: FuncionarioId
+            AttributeType: S
+          - AttributeName: FechaFuncionario
+            AttributeType: S
+          - AttributeName: BoxId
+            AttributeType: S
+          - AttributeName: FechaBox
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: AgendamientosPorPaciente
+            KeySchema:
+              - AttributeName: PacienteId
+                KeyType: HASH
+              - AttributeName: FechaPaciente
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: AgendamientosPorFuncionario
+            KeySchema:
+              - AttributeName: FuncionarioId
+                KeyType: HASH
+              - AttributeName: FechaFuncionario
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: AgendamientosPorBox
+            KeySchema:
+              - AttributeName: BoxId
+                KeyType: HASH
+              - AttributeName: FechaBox
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
