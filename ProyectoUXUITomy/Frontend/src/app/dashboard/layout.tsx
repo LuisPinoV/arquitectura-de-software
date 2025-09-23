@@ -17,7 +17,7 @@ export default function DashboardLayout({
     >
       <div className="[--header-height:calc(--spacing(14))] dashboard-layout">
         <SidebarProvider className="flex flex-col">
-          <SiteHeader />
+          <SiteHeader/>
           <div className="flex flex-1">
             <AppSidebar id="dashboard-sidebar" />
             <SidebarInset className = "sidebar-inset" style = {{overflowY:"scroll", height:"calc(100vh - 4rem)"}}>

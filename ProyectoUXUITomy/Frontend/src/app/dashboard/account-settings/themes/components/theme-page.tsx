@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/carousel";
 import { Input } from "@/components/ui/input";
 import { Col, Row, theme } from "antd";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Moon, Paintbrush, Plus, Sun } from "lucide-react";
 import { HexColorPicker } from "react-colorful";
@@ -99,10 +99,16 @@ const colors = [
 ];
 
 type ThemesCarouselProps = {
-  onSelect?: (colorData: any) => void;
+  onSelect?: (colorData: any, idx: number) => void;
+  onAdd?: () => void;
+  buttonSelected: boolean[];
 };
 
-export function ExistingThemesCarousel({onSelect}:ThemesCarouselProps) {
+export function ExistingThemesCarousel({
+  onSelect,
+  onAdd,
+  buttonSelected,
+}: ThemesCarouselProps) {
   const existingThemes = [
     {
       name: "Claro",
@@ -116,7 +122,7 @@ export function ExistingThemesCarousel({onSelect}:ThemesCarouselProps) {
     },
   ];
 
-  const onSelectDefaultTheme = (id: string) => {
+  const onSelectDefaultTheme = (id: string, idx: number) => {
     if (id != "light" && id != "dark") {
       return null;
     }
@@ -139,9 +145,22 @@ export function ExistingThemesCarousel({onSelect}:ThemesCarouselProps) {
       themeColors.push(curColor);
     }
 
+    setShowButton(true);
+
     if (onSelect) {
-      onSelect(themeColors);
+      onSelect(themeColors, idx);
     }
+  };
+
+  const onAddButtonPressed = () => {
+    setShowButton(false);
+    if (onAdd) onAdd();
+  };
+
+  const [showSaveButton, setShowButton] = useState(false);
+
+  const onSavedCurrentTheme = () => {
+    setShowButton(false);
   };
 
   return (
@@ -157,19 +176,42 @@ export function ExistingThemesCarousel({onSelect}:ThemesCarouselProps) {
       <CardHeader>
         <CardTitle className="text-left text-lg font-semibold">Temas</CardTitle>
         <CardAction>
-          <Button>Guardar</Button>
+          <AnimatePresence initial={false}>
+            {showSaveButton ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.1,
+                  ease: [0, 0.71, 0.2, 1.01],
+                }}
+              >
+                <Button onClick={onSavedCurrentTheme}>Guardar</Button>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
         </CardAction>
       </CardHeader>
-      <CardContent className="flex justify-center">
+      <CardContent className="flex justify-center -mt-6">
         <Carousel className="w-full -lm-2">
           <CarouselContent className="px-1">
             <CarouselItem className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/8 px-0">
-              <Card className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1">
+              <Card
+                className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1"
+                style={{
+                  borderWidth: "0px",
+                  boxShadow: "0 0 0 0  ",
+                  borderColor: "transparent",
+                }}
+              >
                 <CardContent className="flex aspect-square items-center justify-center p-2">
                   <Button
                     className="w-full h-full flex flex-col text-center"
                     style={{ flex: "1 1 100%" }}
-                    variant="outline"
+                    variant={buttonSelected[0] ? "default" : "outline"}
+                    onClick={onAddButtonPressed}
                   >
                     <Plus style={iconsStyle} />
                     <span className="text-sm sm:text-base">Añadir</span>
@@ -182,13 +224,22 @@ export function ExistingThemesCarousel({onSelect}:ThemesCarouselProps) {
                 key={index}
                 className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/8 px-0"
               >
-                <Card className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1">
+                <Card
+                  className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1"
+                  style={{
+                    borderWidth: "0px",
+                    boxShadow: "0 0 0 0  ",
+                    borderColor: "transparent",
+                  }}
+                >
                   <CardContent className="flex aspect-square items-center justify-center p-2">
                     <Button
                       className="w-full h-full flex flex-col text-center p-2"
-                      variant="outline"
+                      variant={
+                        buttonSelected[1 + index] ? "default" : "outline"
+                      }
                       style={{ flex: "1 1 100%" }}
-                      onClick={() => onSelectDefaultTheme(data.id)}
+                      onClick={() => onSelectDefaultTheme(data.id, 1 + index)}
                     >
                       {data.icon}
                       <span className="text-sm sm:text-base">{data.name}</span>
@@ -219,12 +270,35 @@ export function ThemePage() {
   >([]);
 
   const [profileName, setProfileName] = useState<string>("");
+  const [isAddThemeVisible, setIsAddThemeVisible] = useState(false);
+  const [buttonSelected, setButtonSelected] = useState<boolean[]>([
+    false,
+    false,
+    false,
+  ]);
 
-  const onSelectedProfile = ((theme:string[]) =>
-  {
-    //setCurColors(colors_);
-    //setTempColors(colors_);
-  })
+  const onSelectedProfile = (theme: string[], idxThemeSelected: number) => {
+    const colors_: { name: string; colorHex: string }[] = [];
+
+    for (let i = 0; i < theme.length; i++) {
+      const colorName = colors[i].name;
+      const color = theme[i];
+
+      colors_.push({ name: colorName, colorHex: color });
+    }
+    setButtonSelected((prev) => {
+      const copy = [...prev];
+      copy[idxThemeSelected] = true;
+      for (let i = 0; i < copy.length; i++) {
+        if (i === idxThemeSelected) continue;
+        copy[i] = false;
+      }
+      return copy;
+    });
+    setCurColors(colors_);
+    setTempColors(colors_);
+    setIsAddThemeVisible(true);
+  };
 
   const onHandleChangeColor = (idx: number, newColor: string) => {
     setTempColors((prev) => {
@@ -232,6 +306,17 @@ export function ThemePage() {
       copy[idx] = { name: copy[idx].name, colorHex: newColor };
       return copy;
     });
+
+    if (!buttonSelected[0] && (buttonSelected[1] || buttonSelected[2])) {
+      setButtonSelected((prev) => {
+        const copy = [...prev];
+        copy[0] = true;
+        for (let i = 1; i < copy.length; i++) {
+          copy[i] = false;
+        }
+        return copy;
+      });
+    }
   };
 
   const onCancelChangeColor = () => {
@@ -242,18 +327,65 @@ export function ThemePage() {
     setCurColors(tempColors);
   };
 
-  return (
-    <>
-      <Col xs={24} style={{ display: "flex", marginBottom: "20px" }}>
-        <ExistingThemesCarousel onSelect={((theme) => {onSelectedProfile(theme)})} />
-      </Col>
+  const onCancelAddTheme = () => {
+    setTempColors([]);
+    setCurColors([]);
+    setIsAddThemeVisible(false);
+    setButtonSelected((prev) => {
+      const copy = [...prev];
+      for (let i = 0; i < copy.length; i++) {
+        copy[i] = false;
+      }
+      return copy;
+    });
+
+    scrollToSection("topOfPage");
+    scrollToTop();
+  };
+
+  const onPressedAddThemeButton = () => {
+    const colors_: { name: string; colorHex: string }[] = [];
+
+    for (let i = 0; i < colors.length; i++) {
+      const colorName = colors[i].name;
+      const color = "#FFFFFF";
+
+      colors_.push({ name: colorName, colorHex: color });
+    }
+    setCurColors(colors_);
+    setTempColors(colors_);
+    setIsAddThemeVisible(true);
+    setButtonSelected((prev) => {
+      const copy = [...prev];
+      copy[0] = true;
+      for (let i = 1; i < copy.length; i++) {
+        copy[i] = false;
+      }
+      return copy;
+    });
+  };
+
+  const scrollToSection = (id: string) => {
+    const section = document.getElementById(id);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const addThemeHTML = (
+    <section id="addTheme">
       <Col xs={24}>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0 }}
           transition={{
             duration: 0.8,
-            delay: 0.5,
+            delay: 0.1,
             ease: [0, 0.71, 0.2, 1.01],
           }}
         >
@@ -261,7 +393,7 @@ export function ThemePage() {
             <CardTitle className="text-lg font-semibold">Añadir tema</CardTitle>
             <CardContent>
               <Row justify={"start"} align={"top"}>
-                <Col xs={24} md={8}>
+                <Col xs={24} md={18} lg={12}>
                   <Row>
                     <Col xs={24}>
                       <span className="text-md font-semibold">
@@ -303,7 +435,11 @@ export function ThemePage() {
               className="-mt-4"
               style={{ display: "flex", justifyContent: "left" }}
             >
-              <Button className="me-2" variant={"outline"}>
+              <Button
+                className="me-2"
+                variant={"outline"}
+                onClick={onCancelAddTheme}
+              >
                 Cancelar
               </Button>
               <Button>Confirmar</Button>
@@ -311,6 +447,25 @@ export function ThemePage() {
           </Card>
         </motion.div>
       </Col>
+    </section>
+  );
+
+  return (
+    <>
+      <section id="themesCarousel">
+        <Col xs={24} style={{ display: "flex", marginBottom: "20px" }}>
+          <ExistingThemesCarousel
+            onSelect={(theme, idx) => {
+              onSelectedProfile(theme, idx);
+            }}
+            onAdd={onPressedAddThemeButton}
+            buttonSelected={buttonSelected}
+          />
+        </Col>
+      </section>
+      <AnimatePresence initial={false}>
+        {isAddThemeVisible ? addThemeHTML : null}
+      </AnimatePresence>
     </>
   );
 }
@@ -341,7 +496,7 @@ function ColorPicker({
 
   return (
     <div style={{ display: "flex" }}>
-      <Popover>
+      <Popover onOpenChange={handleCancel}>
         <PopoverTrigger asChild>
           <div className="w-full shadow-xs flex">
             <div
