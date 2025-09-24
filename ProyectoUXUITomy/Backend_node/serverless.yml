@@ -17,6 +17,31 @@ provider:
   role: arn:aws:iam::992382436111:role/LabRole
   runtime: nodejs18.x
   region: us-east-1
+  environment:
+    USER_POOL_ID: { Ref: CognitoUserPool }
+    USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
+  logs:
+    httpApi: true
+  httpApi:
+    authorizers:
+      cognitoJwt:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Sub:
+            - https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
+            - { UserPoolId: { Ref: CognitoUserPool } }
+        audience:
+          - { Ref: CognitoUserPoolClient }
+    cors:
+      allowedOrigins:
+        - '*'              
+      allowedMethods:
+        - GET
+        - POST
+        - OPTIONS
+      allowedHeaders:
+        - '*'
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -39,7 +64,27 @@ functions:
       - httpApi:
           path: /agendamiento
           method: post
-
+  ### Cognito
+  login:
+    handler: cognito/login.login
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/login
+  refresh:
+    handler: cognito/refresh.refresh
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/refresh
+  me:
+    handler: cognito/me.me
+    events:
+      - httpApi:
+          method: GET
+          path: /me
+          authorizer:
+            name: cognitoJwt
 
   ### APIS
   ## Especialidades
@@ -275,6 +320,11 @@ functions:
           method: get
           cors: true
 
+package:
+  individually: true
+  patterns:
+    - '!**/*.md'
+    - '!**/*.test.*'
 
 resources:
   Resources:
@@ -330,3 +380,43 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${sls:stage}-pool
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+            RequireUppercase: true
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-${sls:stage}-app
+        GenerateSecret: false
+        UserPoolId: { Ref: CognitoUserPool }
+        PreventUserExistenceErrors: ENABLED
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        AccessTokenValidity: 60
+        IdTokenValidity: 60
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+
+  Outputs:
+    UserPoolId:
+      Value: { Ref: CognitoUserPool }
+    UserPoolClientId:
+      Value: { Ref: CognitoUserPoolClient }
