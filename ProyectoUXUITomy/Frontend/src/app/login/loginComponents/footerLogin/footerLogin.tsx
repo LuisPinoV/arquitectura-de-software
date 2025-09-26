@@ -12,7 +12,7 @@ export function Footer()
     return (
         <header className = "footer-container">
             <div className = "footer-item name">
-                Icaros Sols © 2025. Derechos reservados
+                Benluto Co. © 2025. Derechos reservados
             </div>
             <div className = "footer-item link-container">
                 <Link href = "/">

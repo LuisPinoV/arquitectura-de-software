@@ -26,11 +26,11 @@ export default function LoginPage()
                     <form>
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-2">
-                        <Label htmlFor="rut">RUT</Label>
+                        <Label htmlFor="mail">Correo electrónico</Label>
                         <Input
-                            id="rut"
-                            type="rut"
-                            placeholder="XXXXXXX-X"
+                            id="mail"
+                            type="mail"
+                            placeholder="email@example.com"
                             required
                         />
                         </div>

@@ -14,7 +14,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::992382436111:role/LabRole
+  role: arn:aws:iam::654654192608:role/LabRole
   runtime: nodejs18.x
   region: us-east-1
   environment:
