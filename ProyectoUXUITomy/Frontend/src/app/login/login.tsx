@@ -67,7 +67,7 @@ export default function LoginPage() {
       if (!refreshToken) return;
 
       try {
-        const apiUrl = process.env.REFRESH_USER_URL;
+        const apiUrl = process.env.NEXT_PUBLIC_REFRESH_USER_URL;
         const res = await fetch(
           `${apiUrl}`,
           {
@@ -99,7 +99,9 @@ export default function LoginPage() {
 
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
-      const apiUrl = process.env.LOGIN_USER_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_LOGIN_USER_URL;
+      console.log(apiUrl);
+      console.log("a");
       const res = await fetch(
         `${apiUrl}`,
         {

@@ -40,7 +40,7 @@ export function NavUser({
   useEffect(() => {
     async function GetClaims(accessToken: string) {
       try {
-        const apiUrl = process.env.AUTH_USER_URL;
+        const apiUrl = process.env.NEXT_PUBLIC_AUTH_USER_URL;
         const res = await fetch(
           `${apiUrl}`,
           {

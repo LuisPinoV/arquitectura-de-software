@@ -18,7 +18,7 @@ export default function DashboardLayout({
   useEffect(() => {
     async function RefreshSession(refreshToken: string) {
       try {
-        const apiUrl = process.env.REFRESH_USER_URL;
+        const apiUrl = process.env.NEXT_PUBLIC_REFRESH_USER_URL;
         const res = await fetch(
           `${apiUrl}`,
           {
@@ -40,8 +40,8 @@ export default function DashboardLayout({
         }
       } catch {
         localStorage.removeItem("refreshToken");
-          localStorage.removeItem("idToken");
-          localStorage.removeItem("accessToken");
+        localStorage.removeItem("idToken");
+        localStorage.removeItem("accessToken");
         router.push("/");
       }
     }
