@@ -83,9 +83,12 @@ export default function LoginPage() {
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
         } else {
-          
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("idToken");
+          localStorage.removeItem("accessToken");
         }
       } catch {
+        localStorage.removeItem("refreshToken");
         console.log("Nueva sesión necesaria");
       }
     }

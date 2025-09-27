@@ -62,13 +62,13 @@ export function NavUser({
     }
     const accessToken = localStorage.getItem("accessToken");
     if(accessToken)
-      GetClaims(accessToken ? accessToken : "");
+      GetClaims(accessToken);
   }, []);
 
   const logout = () => {
-    localStorage.setItem("accessToken", "");
-    localStorage.setItem("idToken", "");
-    localStorage.setItem("refreshToken", "");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("idToken");
+    localStorage.removeItem("accessToken");
     router.push("/");
   };
 

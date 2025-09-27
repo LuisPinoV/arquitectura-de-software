@@ -32,9 +32,15 @@ export default function DashboardLayout({
         if (res.ok) {
           console.log("Sesión mantenida correctamente");
         } else {
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("idToken");
+          localStorage.removeItem("accessToken");
           router.push("/");
         }
       } catch {
+        localStorage.removeItem("refreshToken");
+          localStorage.removeItem("idToken");
+          localStorage.removeItem("accessToken");
         router.push("/");
       }
     }
