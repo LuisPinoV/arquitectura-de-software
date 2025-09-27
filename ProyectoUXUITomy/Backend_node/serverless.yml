@@ -85,13 +85,6 @@ functions:
           path: /me
           authorizer:
             name: cognitoJwt
-  logout:
-    handler: cognito/logout.logout
-    events:
-      - httpApi:
-          method: POST
-          path: /auth/logout
-
   createUser:
     handler: cognito/createUser.createUser
     events:

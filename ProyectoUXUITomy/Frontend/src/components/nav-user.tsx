@@ -61,7 +61,8 @@ export function NavUser({
       }
     }
     const accessToken = localStorage.getItem("accessToken");
-    GetClaims(accessToken ? accessToken : "");
+    if(accessToken)
+      GetClaims(accessToken ? accessToken : "");
   }, []);
 
   const logout = () => {

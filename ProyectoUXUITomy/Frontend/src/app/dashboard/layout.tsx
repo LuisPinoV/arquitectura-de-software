@@ -39,7 +39,8 @@ export default function DashboardLayout({
       }
     }
     const refreshToken = localStorage.getItem("refreshToken");
-    RefreshSession(refreshToken ? refreshToken : "");
+    if(refreshToken)
+      RefreshSession(refreshToken);
   }, []);
 
   return (
