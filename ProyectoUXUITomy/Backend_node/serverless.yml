@@ -3,7 +3,7 @@ service: arquitectura-serverless
 plugins:
   - serverless-prune-plugin
   - serverless-scriptable-plugin
-  
+
 custom:
   scriptable:
     hooks:
@@ -35,19 +35,19 @@ provider:
           - { Ref: CognitoUserPoolClient }
     cors:
       allowedOrigins:
-        - '*'              
+        - "*"
       allowedMethods:
         - GET
         - POST
         - OPTIONS
       allowedHeaders:
-        - '*'
+        - "*"
   iamRoleStatements:
     - Effect: Allow
       Action:
         - sts:AssumeRole
         - dynamodb:*
-      Resource: 
+      Resource:
         - arn:aws:dynamodb:us-east-1:*:table/Paciente
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
@@ -56,8 +56,8 @@ functions:
   ### Simulador de base de datos
   poblarDynamo:
     handler: src/simulador.poblarDynamo
-    timeout: 60      
-    memorySize: 1024  
+    timeout: 60
+    memorySize: 1024
     environment:
       TABLE: Agendamiento
     events:
@@ -85,6 +85,19 @@ functions:
           path: /me
           authorizer:
             name: cognitoJwt
+  logout:
+    handler: cognito/logout.logout
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/logout
+
+  createUser:
+    handler: cognito/createUser.createUser
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/createUser
 
   ### APIS
   ## Especialidades
@@ -146,7 +159,6 @@ functions:
           path: boxes/disponibilidad
           method: get
           cors: true
-
 
   usoBox:
     handler: handlers/boxes/usoBox.main
@@ -323,8 +335,8 @@ functions:
 package:
   individually: true
   patterns:
-    - '!**/*.md'
-    - '!**/*.test.*'
+    - "!**/*.md"
+    - "!**/*.test.*"
 
 resources:
   Resources:
