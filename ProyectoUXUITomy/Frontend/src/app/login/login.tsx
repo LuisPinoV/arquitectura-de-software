@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 
 export default function LoginPage() {
   
@@ -64,7 +65,6 @@ export default function LoginPage() {
 
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
-      console.log(JSON.stringify(data, null, 2));
       const res = await fetch(
         "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/auth/login",
         {
@@ -165,6 +165,9 @@ export default function LoginPage() {
             <AlertDialogTitle>
               No se pudo conectar, inténtalo nuevamente!
             </AlertDialogTitle>
+            <AlertDialogDescription>
+                Hubo un error de conexión, <br/>aprete "Entiendo" para cerrar esta pestaña
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeAlert}>
