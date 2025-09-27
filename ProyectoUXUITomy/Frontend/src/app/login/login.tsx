@@ -30,13 +30,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 
 export default function LoginPage() {
-  
-
   const [open, setOpen] = useState(false);
 
   const showAlert = () => {
@@ -63,6 +61,38 @@ export default function LoginPage() {
 
   const router = useRouter();
 
+  useEffect(() => {
+    async function TryFirstLogin() {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) return;
+
+      try {
+        const res = await fetch(
+          "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/auth/refresh",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken: refreshToken }),
+          }
+        );
+
+        const resJson = await res.json();
+
+        if (res.ok) {
+          router.push("/dashboard/general")
+          localStorage.setItem("idToken", resJson.idToken);
+          localStorage.setItem("accessToken", resJson.accessToken);
+        } else {
+          
+        }
+      } catch {
+        console.log("Nueva sesión necesaria");
+      }
+    }
+
+    TryFirstLogin();
+  }, []);
+
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
       const res = await fetch(
@@ -75,18 +105,19 @@ export default function LoginPage() {
       );
 
       const resJson = await res.json();
-      console.log(res.status);
-      console.log(resJson.challenge);
 
       if (res.ok) {
-        console.log("Sesión iniciada correctamente", resJson);
+
+        localStorage.setItem("accessToken", resJson.accessToken);
+        localStorage.setItem("idToken", resJson.idToken);
+        localStorage.setItem("refreshToken", resJson.refreshToken);
         router.push("/dashboard/general");
       } else {
-        console.log("Sesión no pudo conectarse: ", resJson.error);
         showAlert();
       }
     } catch {
       console.log("Error fetching answer");
+      showAlert();
     }
   }
 
@@ -166,7 +197,8 @@ export default function LoginPage() {
               No se pudo conectar, inténtalo nuevamente!
             </AlertDialogTitle>
             <AlertDialogDescription>
-                Hubo un error de conexión, <br/>aprete "Entiendo" para cerrar esta pestaña
+              Hubo un error de conexión, <br />
+              aprete "Entiendo" para cerrar esta pestaña
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

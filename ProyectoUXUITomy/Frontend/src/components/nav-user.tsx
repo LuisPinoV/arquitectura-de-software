@@ -1,17 +1,14 @@
-"use client"
+"use client";
 
 import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
   LogOut,
-  Settings
-} from "lucide-react"
+  Settings,
+} from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,24 +17,59 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-  }
+    name: string;
+  };
 }) {
-  const { isMobile } = useSidebar()
+  const { isMobile } = useSidebar();
+  const router = useRouter();
 
+  useEffect(() => {
+    async function GetClaims(accessToken: string) {
+      try {
+        const res = await fetch(
+          "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/me",
+          {
+            method: "GET",
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
 
+        const resJson = await res.json();
+
+        if (res.ok) {
+          console.log("Got claims");
+          console.log(resJson.ok);
+        } else {
+          console.log("Couldn't get claims");
+        }
+      } catch {
+        console.log("Couldn't get claims");
+      }
+    }
+    const accessToken = localStorage.getItem("accessToken");
+    GetClaims(accessToken ? accessToken : "");
+  }, []);
+
+  const logout = () => {
+    localStorage.setItem("accessToken", "");
+    localStorage.setItem("idToken", "");
+    localStorage.setItem("refreshToken", "");
+    router.push("/");
+  };
 
   return (
     <SidebarMenu>
@@ -84,14 +116,14 @@ export function NavUser({
                 Notificaciones
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Settings/>
+                <Settings />
                 <a href="/dashboard/account-settings">
                   <span>Configuración</span>
                 </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
               <LogOut />
               Salir
             </DropdownMenuItem>
@@ -99,5 +131,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

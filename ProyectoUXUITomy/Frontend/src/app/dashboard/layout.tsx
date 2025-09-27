@@ -1,23 +1,46 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/shadcn-provider";
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
 import "./layoutDashboard.css";
+import { useEffect } from "react";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  
+  const router = useRouter();
 
-  const cookieStore = cookies();
-  const accessToken = (await cookieStore).get('accessToken')?.value;
-  console.log(accessToken);
+  useEffect(() => {
+    async function RefreshSession(refreshToken: string) {
+      try {
+        const res = await fetch(
+          "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/auth/refresh",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken: refreshToken }),
+          }
+        );
 
-  if (!accessToken) {
-    redirect('/');
-  }
+        //const resJson = await res.json();
+
+        if (res.ok) {
+          console.log("Sesión mantenida correctamente");
+        } else {
+          router.push("/");
+        }
+      } catch {
+        router.push("/");
+      }
+    }
+    const refreshToken = localStorage.getItem("refreshToken");
+    RefreshSession(refreshToken ? refreshToken : "");
+  }, []);
 
   return (
     <ThemeProvider
@@ -28,10 +51,13 @@ export default async function DashboardLayout({
     >
       <div className="[--header-height:calc(--spacing(14))] dashboard-layout">
         <SidebarProvider className="flex flex-col">
-          <SiteHeader/>
+          <SiteHeader />
           <div className="flex flex-1">
             <AppSidebar id="dashboard-sidebar" />
-            <SidebarInset className = "sidebar-inset" style = {{overflowY:"scroll", height:"calc(100vh - 4rem)"}}>
+            <SidebarInset
+              className="sidebar-inset"
+              style={{ overflowY: "scroll", height: "calc(100vh - 4rem)" }}
+            >
               <div className="flex flex-1 flex-col gap-4 p-4 main-dashboard">
                 {children}
               </div>
