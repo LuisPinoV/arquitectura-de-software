@@ -48,6 +48,8 @@ export default function DashboardLayout({
     const refreshToken = localStorage.getItem("refreshToken");
     if(refreshToken)
       RefreshSession(refreshToken);
+    else
+      router.push("/");
   }, []);
 
   return (
