@@ -42,7 +42,7 @@ export function NavUser({
       try {
         const apiUrl = process.env.AUTH_USER_URL;
         const res = await fetch(
-          "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/me",
+          `${apiUrl}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` },
