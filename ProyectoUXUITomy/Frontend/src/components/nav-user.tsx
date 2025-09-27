@@ -40,6 +40,7 @@ export function NavUser({
   useEffect(() => {
     async function GetClaims(accessToken: string) {
       try {
+        const apiUrl = process.env.AUTH_USER_URL;
         const res = await fetch(
           "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/me",
           {

@@ -67,8 +67,9 @@ export default function LoginPage() {
       if (!refreshToken) return;
 
       try {
+        const apiUrl = process.env.REFRESH_USER_URL;
         const res = await fetch(
-          "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/auth/refresh",
+          `${apiUrl}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -98,8 +99,9 @@ export default function LoginPage() {
 
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
+      const apiUrl = process.env.LOGIN_USER_URL;
       const res = await fetch(
-        "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/auth/login",
+        `${apiUrl}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

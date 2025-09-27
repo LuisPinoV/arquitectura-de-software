@@ -18,8 +18,9 @@ export default function DashboardLayout({
   useEffect(() => {
     async function RefreshSession(refreshToken: string) {
       try {
+        const apiUrl = process.env.REFRESH_USER_URL;
         const res = await fetch(
-          "https://ud7emz2nq0.execute-api.us-east-1.amazonaws.com/auth/refresh",
+          `${apiUrl}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
