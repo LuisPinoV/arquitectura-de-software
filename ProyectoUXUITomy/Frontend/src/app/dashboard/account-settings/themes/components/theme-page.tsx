@@ -98,7 +98,7 @@ type ThemesCarouselProps = {
   showDeleteButton: boolean;
   onSaved?: () => void;
   customProfiles?: { name: string; icon: any; id: string; colors: string[] }[];
-  onDeleted? : () => void;
+  onDeleted?: () => void;
 };
 
 export function ExistingThemesCarousel({
@@ -109,7 +109,7 @@ export function ExistingThemesCarousel({
   onSaved,
   customProfiles,
   showDeleteButton,
-  onDeleted
+  onDeleted,
 }: ThemesCarouselProps) {
   const existingThemes = [
     {
@@ -179,11 +179,9 @@ export function ExistingThemesCarousel({
     }
   };
 
-  const onDeletedCurrentTheme = () =>
-  {
-    if(onDeleted)
-      onDeleted();
-  }
+  const onDeletedCurrentTheme = () => {
+    if (onDeleted) onDeleted();
+  };
 
   return (
     <Card
@@ -210,106 +208,106 @@ export function ExistingThemesCarousel({
                   ease: [0, 0.71, 0.2, 1.01],
                 }}
               >
-                <Button variant={"secondary"} onClick={onSavedCurrentTheme} style = {{margin:"0px 5px"}}>Guardar</Button>
-                {showDeleteButton ? <Button variant={"default"} onClick={onDeletedCurrentTheme} style = {{margin:"0px 5px"}}>Borrar</Button> :null}
-                 
+                {showDeleteButton ? (
+                  <Button
+                    variant={"default"}
+                    onClick={onDeletedCurrentTheme}
+                    style={{ margin: "0px 5px" }}
+                  >
+                    Borrar
+                  </Button>
+                ) : null}
+                <Button
+                  variant={"outline"}
+                  onClick={onSavedCurrentTheme}
+                  style={{ margin: "0px 5px" }}
+                >
+                  Guardar
+                </Button>
               </motion.div>
-            ) : null}            
+            ) : null}
           </AnimatePresence>
         </CardAction>
       </CardHeader>
       <CardContent className="flex justify-center -mt-6">
-        <Carousel className="w-full -lm-2">
-          <CarouselContent className="px-1">
-            <CarouselItem className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/8 px-0">
-              <Card
-                className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1"
-                style={{
-                  borderWidth: "0px",
-                  boxShadow: "0 0 0 0  ",
-                  borderColor: "transparent",
-                }}
-              >
-                <CardContent className="flex aspect-square items-center justify-center p-2">
-                  <Button
-                    className="w-full h-full flex flex-col text-center"
-                    style={{ flex: "1 1 100%" }}
-                    variant={buttonSelected[0] ? "default" : "outline"}
-                    onClick={onAddButtonPressed}
-                  >
-                    <Plus style={iconsStyle} />
-                    <span className="text-sm sm:text-base">Añadir</span>
-                  </Button>
-                </CardContent>
-              </Card>
+        <Carousel className="w-full max-w-sm">
+          <CarouselContent className="-ml-1">
+            <CarouselItem className="pl-1 md:basis-1/2 lg:basis-1/3">
+              <div className="p-1">
+                <Card className="border-transparent">
+                  <CardContent className="flex aspect-square items-center justify-center p-0">
+                    <Button
+                      className="w-full h-full flex flex-col text-center"
+                      style={{ flex: "1 1 100%" }}
+                      variant={buttonSelected[0] ? "default" : "outline"}
+                      onClick={onAddButtonPressed}
+                    >
+                      <Plus style={iconsStyle} />
+                      <span className="text-sm sm:text-base">Añadir</span>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </CarouselItem>
             {existingThemes.map((data, index) => (
               <CarouselItem
                 key={index}
-                className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/8 px-0"
+                className="pl-1 md:basis-1/2 lg:basis-1/3"
               >
-                <Card
-                  className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1"
-                  style={{
-                    borderWidth: "0px",
-                    boxShadow: "0 0 0 0  ",
-                    borderColor: "transparent",
-                  }}
-                >
-                  <CardContent className="flex aspect-square items-center justify-center p-2">
-                    <Button
-                      className="w-full h-full flex flex-col text-center p-2"
-                      variant={
-                        buttonSelected[1 + index] ? "default" : "outline"
-                      }
-                      style={{ flex: "1 1 100%" }}
-                      onClick={() => onSelectDefaultTheme(data.id, 1 + index)}
-                    >
-                      {data.icon}
-                      <span className="text-sm sm:text-base">{data.name}</span>
-                    </Button>
-                  </CardContent>
-                </Card>
+                <div className="p-1">
+                  <Card className="border-transparent">
+                    <CardContent className="flex aspect-square items-center justify-center p-0">
+                      <Button
+                        className="w-full h-full flex flex-col text-center p-2"
+                        variant={
+                          buttonSelected[1 + index] ? "default" : "outline"
+                        }
+                        style={{ flex: "1 1 100%" }}
+                        onClick={() => onSelectDefaultTheme(data.id, 1 + index)}
+                      >
+                        {data.icon}
+                        <span className="text-sm sm:text-base">
+                          {data.name}
+                        </span>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
               </CarouselItem>
             ))}
             {customProfiles
               ? customProfiles.map((data, index) => (
                   <CarouselItem
                     key={index}
-                    className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/8 px-0"
+                    className="pl-1 md:basis-1/2 lg:basis-1/3"
                   >
-                    <Card
-                      className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1"
-                      style={{
-                        borderWidth: "0px",
-                        boxShadow: "0 0 0 0  ",
-                        borderColor: "transparent",
-                      }}
-                    >
-                      <CardContent className="flex aspect-square items-center justify-center p-2">
-                        <Button
-                          className="w-full h-full flex flex-col text-center p-2"
-                          variant={
-                            buttonSelected[1 + existingThemes.length + index]
-                              ? "default"
-                              : "outline"
-                          }
-                          style={{ flex: "1 1 100%" }}
-                          onClick={() =>
-                            onSelectCustomTheme(
-                              data.id,
-                              1 + existingThemes.length + index,
-                              index
-                            )
-                          }
-                        >
-                          {data.icon}
-                          <span className="text-sm sm:text-base">
-                            {data.name}
-                          </span>
-                        </Button>
-                      </CardContent>
-                    </Card>
+                    <div className="p-1">
+                      <Card className="border-transparent">
+                        <CardContent className="flex aspect-square items-center justify-center p-0">
+                          <Button
+                            className="w-full h-full flex flex-col text-center p-2"
+                            variant={
+                              buttonSelected[1 + existingThemes.length + index]
+                                ? "default"
+                                : "outline"
+                            }
+                            style={{ flex: "1 1 100%" }}
+                            onClick={() =>
+                              onSelectCustomTheme(
+                                data.id,
+                                1 + existingThemes.length + index,
+                                index
+                              )
+                            }
+                          >
+                            {data.icon}
+                            <span className="text-sm sm:text-base">
+                              {data.name}
+                            </span>
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </CarouselItem>
                 ))
               : null}
@@ -510,50 +508,51 @@ export function ThemePage() {
     }
 
     if (colorsProfile.length !== 0) {
-    // Create a style tag with theme variables
-    const styleTag = document.createElement("style");
-    styleTag.id = `theme-${profileId}`;
-    let theme = `[data-theme='${profileId}'] {\n`;
+      const styleTag = document.createElement("style");
+      styleTag.id = `theme-${profileId}`;
+      let theme = `[data-theme='${profileId}'] {\n`;
 
-    for (let i = 0; i < colors.length; i++) {
-      // Make sure your keys look like --primary, --secondary, etc.
-      theme += `  ${colors[i].color}: ${colorsProfile[i]};\n`;
+      for (let i = 0; i < colors.length; i++) {
+        theme += `  ${colors[i].color}: ${colorsProfile[i]};\n`;
+      }
+
+      theme += "}\n";
+      styleTag.innerHTML = theme;
+
+      const oldTag = document.getElementById(styleTag.id);
+      if (oldTag) oldTag.remove();
+
+      document.head.appendChild(styleTag);
     }
 
-    theme += "}\n";
-    styleTag.innerHTML = theme;
+    if (profileId != "dark" && profileId != "light") {
+      saveProfileToLocalStorage(profileId, colorsProfile);
+    }
 
-    // Avoid duplicating <style> tags
-    const oldTag = document.getElementById(styleTag.id);
-    if (oldTag) oldTag.remove();
-
-    document.head.appendChild(styleTag);
-  }
-
-    saveProfileToLocalStorage(profileId, colorsProfile);
     setTheme(profileId);
     setShowSaveButton(false);
     setShowDeleteButton(false);
   };
 
   const deleteProfile = (profileId: string) => {
-  // Remove from localStorage
-  const profiles = JSON.parse(localStorage.getItem("customProfiles") || "{}");
-  if (profiles[profileId]) {
-    delete profiles[profileId];
-    localStorage.setItem("customProfiles", JSON.stringify(profiles));
-  }
+    // Remove from localStorage
+    const profiles = JSON.parse(localStorage.getItem("customProfiles") || "{}");
+    if (profiles[profileId]) {
+      delete profiles[profileId];
+      localStorage.setItem("customProfiles", JSON.stringify(profiles));
+    }
 
-  const styleTag = document.getElementById(`theme-${profileId}`);
-  if (styleTag) {
-    styleTag.remove();
-  }
+    const styleTag = document.getElementById(`theme-${profileId}`);
+    if (styleTag) {
+      styleTag.remove();
+    }
 
-  if (window.document.documentElement.getAttribute("data-theme") === profileId) {
-    setTheme("system"); 
-  }
-  
-};
+    if (
+      window.document.documentElement.getAttribute("data-theme") === profileId
+    ) {
+      setTheme("system");
+    }
+  };
 
   const scrollToSection = (id: string) => {
     const section = document.getElementById(id);
@@ -615,7 +614,7 @@ export function ThemePage() {
 
   const addThemeHTML = (
     <section id="addTheme">
-      <Col xs={24}>
+      <Col xs={24} lg={18}>
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -690,7 +689,12 @@ export function ThemePage() {
   return (
     <>
       <section id="themesCarousel">
-        <Col xs={24} style={{ display: "flex", marginBottom: "20px" }}>
+        <Col
+          xs={24}
+          md={12}
+          lg={12}
+          style={{ display: "flex", marginBottom: "20px" }}
+        >
           <ExistingThemesCarousel
             onSelect={(id, theme, idx) => {
               onSelectedProfile(id, theme, idx);
@@ -887,9 +891,11 @@ async function AutohrizeAndGetClaims() {
   }
 }
 
-const saveProfileToLocalStorage = (profileId: string, colorsProfile: string[]) => {
+const saveProfileToLocalStorage = (
+  profileId: string,
+  colorsProfile: string[]
+) => {
   const profiles = JSON.parse(localStorage.getItem("customProfiles") || "{}");
   profiles[profileId] = colorsProfile;
   localStorage.setItem("customProfiles", JSON.stringify(profiles));
 };
-
