@@ -6,20 +6,21 @@ plugins:
 
 custom:
   scriptable:
-    hooks:
-      after:deploy:deploy: sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+    #hooks:
+      #after:deploy:deploy: sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
   prune:
     automatic: true
     number: 5
 
 provider:
   name: aws
-  role: arn:aws:iam::654654192608:role/LabRole
+  role: arn:aws:iam::905418069528:role/LabRole
   runtime: nodejs18.x
   region: us-east-1
   environment:
     USER_POOL_ID: { Ref: CognitoUserPool }
     USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
+    USER_PREFERENCES_TABLE: UserPreferences
   logs:
     httpApi: true
   httpApi:
@@ -39,6 +40,8 @@ provider:
       allowedMethods:
         - GET
         - POST
+        - PUT
+        - DELETE
         - OPTIONS
       allowedHeaders:
         - "*"
@@ -51,6 +54,7 @@ provider:
         - arn:aws:dynamodb:us-east-1:*:table/Paciente
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
 
 functions:
   ### Simulador de base de datos
@@ -93,6 +97,64 @@ functions:
           path: /auth/createUser
 
   ### APIS
+
+  #preferencias
+  createProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.createProfile
+    events:
+      - httpApi:
+          path: /profiles
+          method: post
+          cors: true
+
+  getProfiles:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.getProfiles
+    events:
+      - httpApi:
+          path: /profiles
+          method: get
+          cors: true
+
+  getProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.getProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/{profileType}
+          method: get
+          cors: true
+
+  updateProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.updateProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/{profileType}
+          method: put
+          cors: true
+
+  deleteProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.deleteProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/{profileType}
+          method: delete
+          cors: true
+  
+  getCurrentProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.getCurrentProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/current
+          method: get
+          cors: true
+
+  setCurrentProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
+    events:
+      - http:
+          path: profiles/{userId}/{profileType}/setCurrent
+          method: put
+          cors: true
+
   ## Especialidades
   getEspecialidad:
     handler: handlers/getEspecialidad.main
@@ -385,6 +447,23 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+    
+    UserPreferencesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserPreferences
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: profileType
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: profileType
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
 
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
