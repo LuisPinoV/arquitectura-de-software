@@ -42,7 +42,11 @@ export function NavUser({
       try {
         const apiUrl = process.env.NEXT_PUBLIC_AUTH_USER_URL;
         const res = await fetch(
+<<<<<<< Updated upstream
           `${apiUrl}`,
+=======
+          "https://can82gjd10.execute-api.us-east-1.amazonaws.com/me",
+>>>>>>> Stashed changes
           {
             method: "GET",
             headers: { Authorization: `Bearer ${accessToken}` },

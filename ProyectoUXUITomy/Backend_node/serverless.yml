@@ -7,14 +7,16 @@ plugins:
 custom:
   scriptable:
     hooks:
-      after:deploy:deploy: sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+      after:deploy:deploy: 
+        sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+        node srv/createUser.js
   prune:
     automatic: true
     number: 5
 
 provider:
   name: aws
-  role: arn:aws:iam::654654192608:role/LabRole
+  role: arn:aws:iam::992382436111:role/LabRole
   runtime: nodejs18.x
   region: us-east-1
   environment:
@@ -419,6 +421,13 @@ resources:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
+
+    CognitoUserPoolGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: Administradores
+        UserPoolId: !Ref CognitoUserPool
+        Description: "Grupo de administradores del sistema"
 
   Outputs:
     UserPoolId:
