@@ -8,7 +8,6 @@ const password = "Prueba123!";
 
 (async () => {
   try {
-    // Intentar crear usuario
     try {
       await cognito.adminCreateUser({
         UserPoolId: userPoolId,
@@ -28,7 +27,7 @@ const password = "Prueba123!";
       }
     }
 
-    // Setear contraseña permanente
+    // contraseña permanente
     await cognito.adminSetUserPassword({
       UserPoolId: userPoolId,
       Username: username,

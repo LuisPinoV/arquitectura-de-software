@@ -17,7 +17,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::626218016489:role/LabRole
+  role: arn:aws:iam::992382436111:role/LabRole
   runtime: nodejs18.x
   region: us-east-1
   environment:
@@ -507,7 +507,7 @@ resources:
         GroupName: Administradores
         UserPoolId: !Ref CognitoUserPool
         Description: "Grupo de administradores del sistema"
-
+    
   Outputs:
     UserPoolId:
       Value: !Ref CognitoUserPool
