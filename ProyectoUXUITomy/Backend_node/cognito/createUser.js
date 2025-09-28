@@ -4,7 +4,16 @@ const {
   AdminSetUserPasswordCommand,
 } = require("@aws-sdk/client-cognito-identity-provider");
 
-const client = new CognitoIdentityProviderClient();
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const {
+  DynamoDBDocumentClient,
+  PutCommand,
+} = require("@aws-sdk/lib-dynamodb");
+
+const cognito = new CognitoIdentityProviderClient();
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient());
+
+const TABLE_NAME = process.env.USER_PREFERENCES_TABLE;
 
 module.exports.createUser = async (event) => {
   try {
@@ -17,7 +26,7 @@ module.exports.createUser = async (event) => {
       };
     }
 
-    const command = new AdminCreateUserCommand({
+    const createCmd = new AdminCreateUserCommand({
       UserPoolId: process.env.USER_POOL_ID,
       Username: username,
       TemporaryPassword: password,
@@ -29,9 +38,10 @@ module.exports.createUser = async (event) => {
       DesiredDeliveryMediums: [],
     });
 
-    const response = await client.send(command);
+    const response = await cognito.send(createCmd);
 
-    await client.send(
+
+    await cognito.send(
       new AdminSetUserPasswordCommand({
         UserPoolId: process.env.USER_POOL_ID,
         Username: username,
@@ -39,11 +49,26 @@ module.exports.createUser = async (event) => {
         Permanent: true,
       })
     );
+     
+    const now = new Date().toISOString();
+
+    await dynamo.send(
+      new PutCommand({
+        TableName: TABLE_NAME,
+        Item: {
+          userId: response.User.Username,
+          profileType: "default",
+          preferences: { email: username },
+          createdAt: now,
+          updatedAt: now,
+        },
+      })
+    );
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: "User created successfully",
+        message: "User created successfully and profile stored in DynamoDB",
         user: response.User,
       }),
     };
