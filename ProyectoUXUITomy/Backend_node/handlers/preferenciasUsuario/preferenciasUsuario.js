@@ -3,10 +3,9 @@ const {
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
-  ScanCommand,
+  QueryCommand,
   UpdateCommand,
   DeleteCommand,
-  QueryCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient();
@@ -25,7 +24,7 @@ module.exports.createProfile = async (event) => {
       userId,
       profileType,
       preferences,
-      isCurrent: false, 
+      isCurrent: false,
       createdAt: now,
       updatedAt: now,
     },
@@ -38,7 +37,6 @@ module.exports.createProfile = async (event) => {
     body: JSON.stringify({ message: "Perfil creado correctamente" }),
   };
 };
-
 
 module.exports.getProfile = async (event) => {
   const { userId, profileType } = event.pathParameters;
@@ -70,10 +68,24 @@ module.exports.getProfile = async (event) => {
   }
 };
 
-
-module.exports.getProfiles = async () => {
-  const command = new ScanCommand({ TableName: TABLE_NAME });
+module.exports.getProfiles = async (event) => {
+  const { userId } = event.pathParameters;
+  const command = new QueryCommand({ 
+    TableName: TABLE_NAME, 
+    KeyConditionExpression: "userId = :pk",
+    ExpressionAttributeValues: {
+      ":pk": userId,
+    },
+   });
+   
   const result = await dynamo.send(command);
+
+  if (!result.Items) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ message: "Usuario no encontrado" }),
+    };
+  }
 
   return {
     statusCode: 200,

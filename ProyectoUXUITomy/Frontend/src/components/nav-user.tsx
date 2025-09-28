@@ -53,7 +53,6 @@ export function NavUser({
 
         if (res.ok) {
           console.log("Got claims");
-          console.log(resJson.ok);
         } else {
           console.log("Couldn't get claims");
         }

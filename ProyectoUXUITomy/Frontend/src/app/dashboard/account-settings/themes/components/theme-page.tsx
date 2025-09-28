@@ -31,17 +31,9 @@ import {
 import { PopoverClose } from "@radix-ui/react-popover";
 import { useEffect, useState } from "react";
 import convert from "color-convert";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { useTheme } from "next-themes";
+import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 const iconsStyle: React.CSSProperties = {
   height: "30px",
@@ -99,11 +91,14 @@ const colors = [
 ];
 
 type ThemesCarouselProps = {
-  onSelect?: (idTheme:string, colorData: any, idx: number) => void;
+  onSelect?: (idTheme: string, colorData: any, idx: number) => void;
   onAdd?: () => void;
   buttonSelected: boolean[];
-  showSaveButton : boolean;
+  showSaveButton: boolean;
+  showDeleteButton: boolean;
   onSaved?: () => void;
+  customProfiles?: { name: string; icon: any; id: string; colors: string[] }[];
+  onDeleted? : () => void;
 };
 
 export function ExistingThemesCarousel({
@@ -111,7 +106,10 @@ export function ExistingThemesCarousel({
   onAdd,
   buttonSelected,
   showSaveButton,
-  onSaved
+  onSaved,
+  customProfiles,
+  showDeleteButton,
+  onDeleted
 }: ThemesCarouselProps) {
   const existingThemes = [
     {
@@ -125,6 +123,23 @@ export function ExistingThemesCarousel({
       id: "dark",
     },
   ];
+
+  const onSelectCustomTheme = (id: string, idx: number, idxProfile: number) => {
+    if (!customProfiles) return;
+
+    const themeColors: string[] = [];
+    const profile = customProfiles[idxProfile];
+
+    for (let i = 0; i < profile.colors.length; i++) {
+      let curColor: string = profile.colors[i];
+
+      themeColors.push(curColor);
+    }
+
+    if (onSelect) {
+      onSelect(id, themeColors, idx);
+    }
+  };
 
   const onSelectDefaultTheme = (id: string, idx: number) => {
     if (id != "light" && id != "dark") {
@@ -159,11 +174,16 @@ export function ExistingThemesCarousel({
   };
 
   const onSavedCurrentTheme = () => {
-    if(onSaved)
-    {
+    if (onSaved) {
       onSaved();
     }
   };
+
+  const onDeletedCurrentTheme = () =>
+  {
+    if(onDeleted)
+      onDeleted();
+  }
 
   return (
     <Card
@@ -190,9 +210,11 @@ export function ExistingThemesCarousel({
                   ease: [0, 0.71, 0.2, 1.01],
                 }}
               >
-                <Button onClick={onSavedCurrentTheme}>Guardar</Button>
+                <Button variant={"secondary"} onClick={onSavedCurrentTheme} style = {{margin:"0px 5px"}}>Guardar</Button>
+                {showDeleteButton ? <Button variant={"default"} onClick={onDeletedCurrentTheme} style = {{margin:"0px 5px"}}>Borrar</Button> :null}
+                 
               </motion.div>
-            ) : null}
+            ) : null}            
           </AnimatePresence>
         </CardAction>
       </CardHeader>
@@ -250,6 +272,47 @@ export function ExistingThemesCarousel({
                 </Card>
               </CarouselItem>
             ))}
+            {customProfiles
+              ? customProfiles.map((data, index) => (
+                  <CarouselItem
+                    key={index}
+                    className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/8 px-0"
+                  >
+                    <Card
+                      className="w-full max-w-[160px] mx-auto border-transparent min-w-0 ps-1"
+                      style={{
+                        borderWidth: "0px",
+                        boxShadow: "0 0 0 0  ",
+                        borderColor: "transparent",
+                      }}
+                    >
+                      <CardContent className="flex aspect-square items-center justify-center p-2">
+                        <Button
+                          className="w-full h-full flex flex-col text-center p-2"
+                          variant={
+                            buttonSelected[1 + existingThemes.length + index]
+                              ? "default"
+                              : "outline"
+                          }
+                          style={{ flex: "1 1 100%" }}
+                          onClick={() =>
+                            onSelectCustomTheme(
+                              data.id,
+                              1 + existingThemes.length + index,
+                              index
+                            )
+                          }
+                        >
+                          {data.icon}
+                          <span className="text-sm sm:text-base">
+                            {data.name}
+                          </span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </CarouselItem>
+                ))
+              : null}
           </CarouselContent>
           <CarouselPrevious />
           <CarouselNext />
@@ -263,6 +326,7 @@ export function ExistingThemesCarousel({
 }
 
 export function ThemePage() {
+  const { setTheme } = useTheme();
   const [curColors, setCurColors] = useState<
     { name: string; colorHex: string }[]
   >([]);
@@ -272,6 +336,7 @@ export function ThemePage() {
   >([]);
 
   const [profileName, setProfileName] = useState<string>("");
+  const [profileId, setProfileId] = useState<string>("");
   const [isAddThemeVisible, setIsAddThemeVisible] = useState(false);
   const [buttonSelected, setButtonSelected] = useState<boolean[]>([
     false,
@@ -280,13 +345,35 @@ export function ThemePage() {
   ]);
 
   const [showSaveButton, setShowSaveButton] = useState(false);
-  const onSelectedProfile = (idTheme:string, theme: string[], idxThemeSelected: number) => {
-    if(idTheme == "light" || idTheme == "dark")
-    {
-      setProfileName(idTheme == "light" ? "Claro" : "Oscuro");
+  const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const [customProfiles, setCustomProfiles] = useState<
+    { name: string; icon: any; id: string; colors: string[] }[]
+  >([]);
+
+  useEffect(() => {
+    GetThemes();
+  }, []);
+
+  const onSelectedProfile = (
+    idTheme: string,
+    theme: string[],
+    idxThemeSelected: number
+  ) => {
+    let name = "";
+    if (idTheme == "light" || idTheme == "dark") {
+      name = idTheme == "light" ? "Claro" : "Oscuro";
+      setProfileName(name);
+      setShowDeleteButton(false);
+    } else {
+      for (let i = 0; i < customProfiles.length; i++) {
+        if (customProfiles[i].id === idTheme) {
+          name = customProfiles[i].name;
+          setProfileName(name);
+          break;
+        }
+      }
     }
     const colors_: { name: string; colorHex: string }[] = [];
-
     for (let i = 0; i < theme.length; i++) {
       const colorName = colors[i].name;
       const color = theme[i];
@@ -306,10 +393,44 @@ export function ThemePage() {
     setTempColors(colors_);
     setIsAddThemeVisible(true);
     setShowSaveButton(true);
+    setProfileId(idTheme);
+    if (idTheme != "light" && idTheme != "dark") {
+      setShowDeleteButton(true);
+    }
   };
 
+  async function GetThemes() {
+    const claims = await AutohrizeAndGetClaims();
+    const userId = claims.sub;
+    const profiles = await getCustomThemesFromDB(userId);
+
+    if (!profiles) return;
+
+    const profilesArr = [];
+
+    for (let i = 0; i < profiles.length; i++) {
+      const curProfile = profiles[i];
+      if (!curProfile.preferences.name) continue;
+
+      const colors: string[] = [];
+      for (let i = 0; i < curProfile.preferences.colors.length; i++) {
+        const curColor = curProfile.preferences.colors[i];
+        colors.push(curColor.colorHex);
+      }
+
+      const profileParams = {
+        name: curProfile.preferences.name,
+        icon: <Paintbrush style={iconsStyle} />,
+        id: curProfile.profileType,
+        colors: colors,
+      };
+      profilesArr.push(profileParams);
+    }
+
+    setCustomProfiles(profilesArr);
+  }
+
   const onHandleChangeColor = (idx: number, newColor: string) => {
-    setShowSaveButton(false);
     setTempColors((prev) => {
       const copy = [...prev];
       copy[idx] = { name: copy[idx].name, colorHex: newColor };
@@ -325,6 +446,7 @@ export function ThemePage() {
         }
         return copy;
       });
+      setShowSaveButton(false);
     }
   };
 
@@ -364,8 +486,10 @@ export function ThemePage() {
     setCurColors(colors_);
     setTempColors(colors_);
     setShowSaveButton(false);
+    setShowDeleteButton(false);
     setIsAddThemeVisible(true);
     setProfileName("");
+    setProfileId("");
     setButtonSelected((prev) => {
       const copy = [...prev];
       copy[0] = true;
@@ -376,10 +500,60 @@ export function ThemePage() {
     });
   };
 
-  const onSavedProfile = (async (id:string) =>
-  {
+  const onSavedProfile = async () => {
+    let colorsProfile: string[] = [];
+    for (let i = 0; i < customProfiles.length; i++) {
+      if (customProfiles[i].id === profileId) {
+        colorsProfile = customProfiles[i].colors;
+        break;
+      }
+    }
 
-  });
+    if (colorsProfile.length !== 0) {
+    // Create a style tag with theme variables
+    const styleTag = document.createElement("style");
+    styleTag.id = `theme-${profileId}`;
+    let theme = `[data-theme='${profileId}'] {\n`;
+
+    for (let i = 0; i < colors.length; i++) {
+      // Make sure your keys look like --primary, --secondary, etc.
+      theme += `  ${colors[i].color}: ${colorsProfile[i]};\n`;
+    }
+
+    theme += "}\n";
+    styleTag.innerHTML = theme;
+
+    // Avoid duplicating <style> tags
+    const oldTag = document.getElementById(styleTag.id);
+    if (oldTag) oldTag.remove();
+
+    document.head.appendChild(styleTag);
+  }
+
+    saveProfileToLocalStorage(profileId, colorsProfile);
+    setTheme(profileId);
+    setShowSaveButton(false);
+    setShowDeleteButton(false);
+  };
+
+  const deleteProfile = (profileId: string) => {
+  // Remove from localStorage
+  const profiles = JSON.parse(localStorage.getItem("customProfiles") || "{}");
+  if (profiles[profileId]) {
+    delete profiles[profileId];
+    localStorage.setItem("customProfiles", JSON.stringify(profiles));
+  }
+
+  const styleTag = document.getElementById(`theme-${profileId}`);
+  if (styleTag) {
+    styleTag.remove();
+  }
+
+  if (window.document.documentElement.getAttribute("data-theme") === profileId) {
+    setTheme("system"); 
+  }
+  
+};
 
   const scrollToSection = (id: string) => {
     const section = document.getElementById(id);
@@ -390,6 +564,53 @@ export function ThemePage() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const addNewTheme = async () => {
+    let userId = "";
+    const claims = await AutohrizeAndGetClaims();
+
+    if (claims) {
+      userId = claims.sub;
+    }
+
+    if (userId === "") return;
+
+    const profileId = uuidv4();
+    const name = profileName !== "" ? profileName : "Nuevo perfil";
+    const colors = curColors;
+    const params = { name: name, colors: colors };
+    const body = {
+      userId: userId,
+      profileType: profileId,
+      preferences: params,
+    };
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_THEME_PROFILE;
+      const res = await fetch(`${apiUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        console.log("Perfil creado correctamente");
+        onCancelAddTheme();
+        await GetThemes();
+        toast("Se ha creado nuevo tema", {
+          description: new Date().toLocaleString(),
+          action: {
+            label: "Descartar",
+            onClick: () => console.log("Descartar"),
+          },
+        });
+      } else {
+        console.log("Perfil no pudo ser creado");
+      }
+    } catch {
+      console.log("Perfil no pudo ser creado");
+    }
   };
 
   const addThemeHTML = (
@@ -458,7 +679,7 @@ export function ThemePage() {
               >
                 Cancelar
               </Button>
-              <Button>Confirmar</Button>
+              <Button onClick={addNewTheme}>Confirmar</Button>
             </CardFooter>
           </Card>
         </motion.div>
@@ -476,7 +697,11 @@ export function ThemePage() {
             }}
             onAdd={onPressedAddThemeButton}
             buttonSelected={buttonSelected}
-            showSaveButton = {showSaveButton}
+            showSaveButton={showSaveButton}
+            onSaved={onSavedProfile}
+            customProfiles={customProfiles}
+            showDeleteButton={showDeleteButton}
+            onDeleted={() => deleteProfile(profileId)}
           />
         </Col>
       </section>
@@ -615,6 +840,56 @@ function getThemeVariable(variable: string, theme: "light" | "dark") {
   return null;
 }
 
-async function getThemesFromDB() {
-  //TODO: Connect to DynamoDB using SNS
+async function getCustomThemesFromDB(id: string) {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_THEME_PROFILE;
+    const res = await fetch(`${apiUrl}/${id}`, {
+      method: "GET",
+    });
+
+    if (res.ok) {
+      console.log("Got profiles");
+      const resJson = await res.json();
+      return resJson;
+    } else {
+      console.log("Couldn't get profiles");
+      return null;
+    }
+  } catch {
+    console.log("Couldn't get profiles");
+    return null;
+  }
 }
+
+async function AutohrizeAndGetClaims() {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) return;
+
+    const apiUrl = process.env.NEXT_PUBLIC_AUTH_USER_URL;
+    const res = await fetch(`${apiUrl}`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const resJson = await res.json();
+
+    if (res.ok) {
+      console.log("Got claims");
+      return resJson;
+    } else {
+      console.log("Couldn't get claims");
+      return null;
+    }
+  } catch {
+    console.log("Couldn't get claims");
+    return null;
+  }
+}
+
+const saveProfileToLocalStorage = (profileId: string, colorsProfile: string[]) => {
+  const profiles = JSON.parse(localStorage.getItem("customProfiles") || "{}");
+  profiles[profileId] = colorsProfile;
+  localStorage.setItem("customProfiles", JSON.stringify(profiles));
+};
+

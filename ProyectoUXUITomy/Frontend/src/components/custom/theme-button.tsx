@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu"
 
 export function ModeToggle() {
   const { setTheme } = useTheme()
@@ -31,9 +32,10 @@ export function ModeToggle() {
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           Oscuro
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => setTheme("23128a9b-fedb-4eda-9361-8beb4f8b4e7f")}>
           Sistema
         </DropdownMenuItem>
+        <DropdownMenuSeparator/>
       </DropdownMenuContent>
     </DropdownMenu>
   )
