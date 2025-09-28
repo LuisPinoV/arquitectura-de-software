@@ -8,16 +8,25 @@ const password = "Prueba123!";
 
 (async () => {
   try {
-    // Crear usuario
-    await cognito.adminCreateUser({
-      UserPoolId: userPoolId,
-      Username: username,
-      UserAttributes: [
-        { Name: "email", Value: username },
-        { Name: "email_verified", Value: "true" },
-      ],
-      MessageAction: "SUPPRESS",
-    }).promise();
+    // Intentar crear usuario
+    try {
+      await cognito.adminCreateUser({
+        UserPoolId: userPoolId,
+        Username: username,
+        UserAttributes: [
+          { Name: "email", Value: username },
+          { Name: "email_verified", Value: "true" },
+        ],
+        MessageAction: "SUPPRESS",
+      }).promise();
+      console.log("Usuario creado en Cognito");
+    } catch (err) {
+      if (err.code === "UsernameExistsException") {
+        console.log("El usuario ya existe");
+      } else {
+        throw err;
+      }
+    }
 
     // Setear contraseña permanente
     await cognito.adminSetUserPassword({
@@ -34,8 +43,9 @@ const password = "Prueba123!";
       GroupName: "Administradores",
     }).promise();
 
-    console.log("✅ Usuario creado correctamente");
+    console.log("Usuario creado");
   } catch (err) {
-    console.error("❌ Error creando usuario:", err);
+    console.error("Error creando usuario:", err);
+    process.exit(1);
   }
 })();

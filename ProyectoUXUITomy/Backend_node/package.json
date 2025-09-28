@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "cross-env": "^10.0.0",
     "serverless": "^4.18.2"
   },
   "dependencies": {
