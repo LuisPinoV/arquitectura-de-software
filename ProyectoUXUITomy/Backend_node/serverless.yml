@@ -8,8 +8,9 @@ custom:
   scriptable:
     hooks:
       after:deploy:deploy: 
-        sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
-        node srv/createUser.js
+        - sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+        - npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
+
   prune:
     automatic: true
     number: 5
@@ -466,7 +467,6 @@ resources:
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
 
-
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -488,7 +488,7 @@ resources:
       Properties:
         ClientName: ${self:service}-${sls:stage}-app
         GenerateSecret: false
-        UserPoolId: { Ref: CognitoUserPool }
+        UserPoolId: !Ref CognitoUserPool
         PreventUserExistenceErrors: ENABLED
         ExplicitAuthFlows:
           - ALLOW_USER_PASSWORD_AUTH
@@ -510,6 +510,11 @@ resources:
 
   Outputs:
     UserPoolId:
-      Value: { Ref: CognitoUserPool }
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolId
+
     UserPoolClientId:
-      Value: { Ref: CognitoUserPoolClient }
+      Value: !Ref CognitoUserPoolClient
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolClientId
