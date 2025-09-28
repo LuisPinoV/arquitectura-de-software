@@ -20,11 +20,7 @@ export default function DashboardLayout({
       try {
         const apiUrl = process.env.NEXT_PUBLIC_REFRESH_USER_URL;
         const res = await fetch(
-<<<<<<< Updated upstream
           `${apiUrl}`,
-=======
-          "https://can82gjd10.execute-api.us-east-1.amazonaws.com/auth/refresh",
->>>>>>> Stashed changes
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

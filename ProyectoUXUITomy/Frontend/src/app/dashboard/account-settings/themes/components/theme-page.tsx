@@ -99,15 +99,19 @@ const colors = [
 ];
 
 type ThemesCarouselProps = {
-  onSelect?: (colorData: any, idx: number) => void;
+  onSelect?: (idTheme:string, colorData: any, idx: number) => void;
   onAdd?: () => void;
   buttonSelected: boolean[];
+  showSaveButton : boolean;
+  onSaved?: () => void;
 };
 
 export function ExistingThemesCarousel({
   onSelect,
   onAdd,
   buttonSelected,
+  showSaveButton,
+  onSaved
 }: ThemesCarouselProps) {
   const existingThemes = [
     {
@@ -145,22 +149,20 @@ export function ExistingThemesCarousel({
       themeColors.push(curColor);
     }
 
-    setShowButton(true);
-
     if (onSelect) {
-      onSelect(themeColors, idx);
+      onSelect(id, themeColors, idx);
     }
   };
 
   const onAddButtonPressed = () => {
-    setShowButton(false);
     if (onAdd) onAdd();
   };
 
-  const [showSaveButton, setShowButton] = useState(false);
-
   const onSavedCurrentTheme = () => {
-    setShowButton(false);
+    if(onSaved)
+    {
+      onSaved();
+    }
   };
 
   return (
@@ -277,7 +279,12 @@ export function ThemePage() {
     false,
   ]);
 
-  const onSelectedProfile = (theme: string[], idxThemeSelected: number) => {
+  const [showSaveButton, setShowSaveButton] = useState(false);
+  const onSelectedProfile = (idTheme:string, theme: string[], idxThemeSelected: number) => {
+    if(idTheme == "light" || idTheme == "dark")
+    {
+      setProfileName(idTheme == "light" ? "Claro" : "Oscuro");
+    }
     const colors_: { name: string; colorHex: string }[] = [];
 
     for (let i = 0; i < theme.length; i++) {
@@ -298,9 +305,11 @@ export function ThemePage() {
     setCurColors(colors_);
     setTempColors(colors_);
     setIsAddThemeVisible(true);
+    setShowSaveButton(true);
   };
 
   const onHandleChangeColor = (idx: number, newColor: string) => {
+    setShowSaveButton(false);
     setTempColors((prev) => {
       const copy = [...prev];
       copy[idx] = { name: copy[idx].name, colorHex: newColor };
@@ -354,7 +363,9 @@ export function ThemePage() {
     }
     setCurColors(colors_);
     setTempColors(colors_);
+    setShowSaveButton(false);
     setIsAddThemeVisible(true);
+    setProfileName("");
     setButtonSelected((prev) => {
       const copy = [...prev];
       copy[0] = true;
@@ -364,6 +375,11 @@ export function ThemePage() {
       return copy;
     });
   };
+
+  const onSavedProfile = (async (id:string) =>
+  {
+
+  });
 
   const scrollToSection = (id: string) => {
     const section = document.getElementById(id);
@@ -455,11 +471,12 @@ export function ThemePage() {
       <section id="themesCarousel">
         <Col xs={24} style={{ display: "flex", marginBottom: "20px" }}>
           <ExistingThemesCarousel
-            onSelect={(theme, idx) => {
-              onSelectedProfile(theme, idx);
+            onSelect={(id, theme, idx) => {
+              onSelectedProfile(id, theme, idx);
             }}
             onAdd={onPressedAddThemeButton}
             buttonSelected={buttonSelected}
+            showSaveButton = {showSaveButton}
           />
         </Col>
       </section>
@@ -553,95 +570,6 @@ function ColorPicker({
           </div>
         </PopoverContent>
       </Popover>
-    </div>
-  );
-}
-
-function ColorPickerAccordion({
-  onChange,
-  onConfirm,
-  onCancel,
-  color,
-}: ColorPickerProps) {
-  const handleConfirm = (newColor: string) => {
-    if (onConfirm) {
-      onConfirm(newColor);
-    }
-  };
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    }
-  };
-
-  const handleChange = (newColor: string) => {
-    if (onChange) {
-      onChange(newColor);
-    }
-  };
-
-  return (
-    <div style={{ display: "flex" }}>
-      <Accordion type="single" collapsible>
-        <AccordionItem value="item-1">
-          <AccordionContent>
-            <AccordionTrigger>
-              <div className="w-full shadow-xs flex">
-                <div
-                  className="h-full shadow-xs me-1"
-                  style={{
-                    flex: "1 1 100%",
-                    backgroundColor: color,
-                    borderRadius: "var(--radius)",
-                    borderColor: "var(--muted-foreground)",
-                    borderWidth: "1px",
-                  }}
-                ></div>
-                <Button variant="outline" style={{ flex: "1 1 5%" }}>
-                  <Paintbrush />
-                </Button>
-              </div>
-            </AccordionTrigger>
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <h4 className="leading-none font-medium text-center">
-                  Elegir color
-                </h4>
-                <p className="text-muted-foreground text-sm">
-                  Cambia el color de la propiedad actual
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <div
-                  className="items-center gap-2"
-                  style={{ display: "flex", justifyContent: "center" }}
-                >
-                  <HexColorPicker color={color} onChange={handleChange} />
-                </div>
-                <div
-                  className="grid grid-cols-3 items-center gap-4 mt-2"
-                  style={{ display: "flex", justifyContent: "center" }}
-                >
-                  <Button
-                    className="m-2"
-                    variant={"outline"}
-                    onClick={handleCancel}
-                    asChild
-                  >
-                    <CollapsibleTrigger>Cancelar</CollapsibleTrigger>
-                  </Button>
-                  <Button asChild>
-                    <CollapsibleTrigger onClick={() => handleConfirm(color)}>
-                      Confirmar
-                    </CollapsibleTrigger>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
     </div>
   );
 }

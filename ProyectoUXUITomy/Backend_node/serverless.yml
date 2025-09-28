@@ -8,15 +8,15 @@ custom:
   scriptable:
     hooks:
       after:deploy:deploy: 
-        sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
-        node srv/createUser.js
+        - sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+        - node src/createUser.js
   prune:
     automatic: true
     number: 5
 
 provider:
   name: aws
-  role: arn:aws:iam::992382436111:role/LabRole
+  role: arn:aws:iam::626218016489:role/LabRole
   runtime: nodejs18.x
   region: us-east-1
   environment:
