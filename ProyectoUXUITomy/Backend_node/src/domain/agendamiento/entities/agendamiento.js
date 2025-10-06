@@ -72,3 +72,5 @@ export class Agendamiento
         this._personal.splice(index, 1);
     }
 }
+
+module.exports = Agendamiento;

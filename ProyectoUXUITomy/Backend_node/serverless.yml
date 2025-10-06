@@ -3,6 +3,7 @@ service: arquitectura-serverless
 plugins:
   - serverless-prune-plugin
   - serverless-scriptable-plugin
+  - serverless-offline
 
 custom:
   scriptable:
@@ -10,6 +11,10 @@ custom:
       after:deploy:deploy: 
         - sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
         - npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002
+    noPrependStageInUrl: true
 
   prune:
     automatic: true
