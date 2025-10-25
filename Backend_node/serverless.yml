@@ -1,0 +1,525 @@
+service: arquitectura-serverless
+
+plugins:
+  - serverless-prune-plugin
+  - serverless-scriptable-plugin
+  - serverless-offline
+
+custom:
+  scriptable:
+    hooks:
+      after:deploy:deploy: 
+        - sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+        - npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002
+    noPrependStageInUrl: true
+
+  prune:
+    automatic: true
+    number: 5
+
+provider:
+  name: aws
+  role: arn:aws:iam::626218016489:role/LabRole
+  runtime: nodejs22.x
+  region: us-east-1
+  environment:
+    USER_POOL_ID: { Ref: CognitoUserPool }
+    USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
+    USER_PREFERENCES_TABLE: UserPreferences
+  logs:
+    httpApi: true
+  httpApi:
+    authorizers:
+      cognitoJwt:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Sub:
+            - https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPoolId}
+            - { UserPoolId: { Ref: CognitoUserPool } }
+        audience:
+          - { Ref: CognitoUserPoolClient }
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - "*"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sts:AssumeRole
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:*:table/Paciente
+        - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
+        - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
+        - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
+
+functions:
+  ### Simulador de base de datos
+  poblarDynamo:
+    handler: src/simulador.poblarDynamo
+    timeout: 60
+    memorySize: 1024
+    environment:
+      TABLE: Agendamiento
+    events:
+      - httpApi:
+          path: /agendamiento
+          method: post
+  ### Cognito
+  login:
+    handler: cognito/login.login
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/login
+  refresh:
+    handler: cognito/refresh.refresh
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/refresh
+  me:
+    handler: cognito/me.me
+    events:
+      - httpApi:
+          method: GET
+          path: /me
+          authorizer:
+            name: cognitoJwt
+  createUser:
+    handler: cognito/createUser.createUser
+    events:
+      - httpApi:
+          method: POST
+          path: /auth/createUser
+
+  ### APIS
+
+  #preferencias
+  createProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.createProfile
+    events:
+      - httpApi:
+          path: /profiles
+          method: post
+          cors: true
+
+  getProfiles:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.getProfiles
+    events:
+      - httpApi:
+          path: /profiles/{userId}
+          method: get
+          cors: true
+
+  getProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.getProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/{profileType}
+          method: get
+          cors: true
+
+  updateProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.updateProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/{profileType}
+          method: put
+          cors: true
+
+  deleteProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.deleteProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/{profileType}
+          method: delete
+          cors: true
+  
+  getCurrentProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.getCurrentProfile
+    events:
+      - httpApi:
+          path: /profiles/{userId}/current
+          method: get
+          cors: true
+
+  setCurrentProfile:
+    handler: handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
+    events:
+      - httpApi:
+          path: profiles/{userId}/{profileType}/setCurrent
+          method: put
+          cors: true
+
+  ## Especialidades
+  getEspecialidad:
+    handler: handlers/getEspecialidad.main
+    events:
+      - httpApi:
+          path: especialidades
+          method: get
+          cors: true
+
+  ## Pacientes
+  getPaciente:
+    handler: handlers/pacientes/getPaciente.main
+    events:
+      - httpApi:
+          path: pacientes
+          method: get
+          cors: true
+
+  ## Funcionarios
+  getFuncionario:
+    handler: handlers/funcionarios/getFuncionario.main
+    events:
+      - httpApi:
+          path: funcionarios
+          method: get
+          cors: true
+
+  funcionariosFull:
+    handler: handlers/funcionarios/funcionariosFull.main
+    events:
+      - httpApi:
+          path: funcionarios/full
+          method: get
+          cors: true
+
+  getTipoFuncionario:
+    handler: handlers/funcionarios/getTipoFuncionario.main
+    name: getTipoFuncionario
+    events:
+      - httpApi:
+          path: tipos-funcionario
+          method: get
+          cors: true
+
+  ## Boxes
+  getBox:
+    handler: handlers/boxes/getBox.main
+    events:
+      - httpApi:
+          path: boxes
+          method: get
+          cors: true
+  disponibilidad:
+    handler: handlers/boxes/disponibilidad.main
+    events:
+      - httpApi:
+          path: boxes/disponibilidad
+          method: get
+          cors: true
+
+  usoBox:
+    handler: handlers/boxes/usoBox.main
+    events:
+      - httpApi:
+          path: boxes/uso
+          method: get
+          cors: true
+
+  porcentajeDeUso:
+    handler: handlers/boxes/porcentajeDeUso.main
+    events:
+      - httpApi:
+          path: boxes/porcentaje-uso
+          method: get
+          cors: true
+
+  porcentajeDeOcupacionPorEspecialidadBoxes:
+    handler: handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
+    name: porcentajeDeOcupacionPorEspecialidadBoxes
+    events:
+      - httpApi:
+          path: boxes/porcentaje-ocupacion-especialidad
+          method: get
+          cors: true
+
+  ## Agendamiento
+  ## General
+  getAgendamiento:
+    handler: handlers/agendamiento/generales/getAgendamiento.main
+    events:
+      - httpApi:
+          path: agendamiento
+          method: get
+          cors: true
+
+  getResultadosConsulta:
+    handler: handlers/agendamiento/generales/getResultadosConsulta.main
+    name: getResultadosConsulta
+    events:
+      - httpApi:
+          path: agendamiento/resultados
+          method: get
+          cors: true
+
+  ## Por especialidad
+  getAgendamientoEspecialidad:
+    handler: handlers/agendamiento/especialidad/getAgendamientoEspecialidad.main
+    name: getAgendamientoEspecialidad
+    events:
+      - httpApi:
+          path: agendamiento/especialidad
+          method: get
+          cors: true
+
+  getCountAgendamientosPorEspecialidad:
+    handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
+    name: getCountAgendamientosPorEspecialidad
+    events:
+      - httpApi:
+          path: agendamiento/especialidad/count
+          method: get
+          cors: true
+
+  getCountAgendamientosPorEspecialidadRangoFechas:
+    handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
+    name: getCountAgendamientosPorEspecialidadRangoFechas
+    events:
+      - httpApi:
+          path: agendamiento/especialidad/count-rango
+          method: get
+          cors: true
+
+  porcentajeDeOcupacionPorEspecialidad:
+    handler: handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
+    name: porcentajeDeOcupacionPorEspecialidad
+    events:
+      - httpApi:
+          path: agendamiento/especialidad/porcentaje-ocupacion
+          method: get
+          cors: true
+
+  ## Por fecha
+  getAgendamientoFecha:
+    handler: handlers/agendamiento/fechas/getAgendamientoFecha.main
+    events:
+      - httpApi:
+          path: agendamiento/fecha
+          method: get
+          cors: true
+
+  getAgendamientoEspecialidadFecha:
+    handler: handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
+    name: getAgendamientoEspecialidadFecha
+    events:
+      - httpApi:
+          path: agendamiento/fecha-especialidad
+          method: get
+          cors: true
+
+  agendamientosPorFecha:
+    handler: handlers/agendamiento/fechas/agendamientosPorFecha.main
+    events:
+      - httpApi:
+          path: agendamiento/por-fecha
+          method: get
+          cors: true
+
+  agendamientoTotalHoyBox:
+    handler: handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
+    name: agendamientoTotalHoyBox
+    events:
+      - httpApi:
+          path: agendamiento/hoy/box
+          method: get
+          cors: true
+
+  cantidadAgendamientosEntreFechas:
+    handler: handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
+    name: cantidadAgendamientosEntreFechas
+    events:
+      - httpApi:
+          path: agendamiento/cantidad-entre-fechas
+          method: get
+          cors: true
+
+  ## Gestión
+  postAgendamientoPersonalizado:
+    handler: handlers/agendamiento/gestion/postAgendamientoPersonalizado.main
+    name: postAgendamientoPersonalizado
+    events:
+      - httpApi:
+          path: agendamiento/personalizado
+          method: post
+          cors: true
+
+  postAgendamientoSupremus:
+    handler: handlers/agendamiento/gestion/postAgendamientoSupremus.main
+    name: postAgendamientoSupremus
+    events:
+      - httpApi:
+          path: agendamiento/supremus
+          method: post
+          cors: true
+
+  eliminarAgendamiento:
+    handler: handlers/agendamiento/gestion/eliminarAgendamiento.main
+    name: eliminarAgendamiento
+    events:
+      - httpApi:
+          path: agendamiento
+          method: delete
+          cors: true
+
+  ## ocupacion
+  ocupacionTotalSegunDiaEntreFechas:
+    handler: handlers/ocupacion/ocupacionTotalSegunDiaEntreFechas.main
+    name: ocupacionTotalSegunDiaEntreFechas
+    events:
+      - httpApi:
+          path: ocupacion/ocupacion-total
+          method: get
+          cors: true
+
+  diferenciaOcupanciaMeses:
+    handler: handlers/ocupacion/diferenciaOcupanciaMeses.main
+    name: diferenciaOcupanciaMeses
+    events:
+      - httpApi:
+          path: ocupacion/diferencia-ocupacion-meses
+          method: get
+          cors: true
+
+package:
+  individually: true
+  patterns:
+    - "!**/*.md"
+    - "!**/*.test.*"
+
+resources:
+  Resources:
+    AgendamientoTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Agendamiento
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: PacienteId
+            AttributeType: S
+          - AttributeName: FechaPaciente
+            AttributeType: S
+          - AttributeName: FuncionarioId
+            AttributeType: S
+          - AttributeName: FechaFuncionario
+            AttributeType: S
+          - AttributeName: BoxId
+            AttributeType: S
+          - AttributeName: FechaBox
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        GlobalSecondaryIndexes:
+          - IndexName: AgendamientosPorPaciente
+            KeySchema:
+              - AttributeName: PacienteId
+                KeyType: HASH
+              - AttributeName: FechaPaciente
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: AgendamientosPorFuncionario
+            KeySchema:
+              - AttributeName: FuncionarioId
+                KeyType: HASH
+              - AttributeName: FechaFuncionario
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: AgendamientosPorBox
+            KeySchema:
+              - AttributeName: BoxId
+                KeyType: HASH
+              - AttributeName: FechaBox
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+    
+    UserPreferencesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserPreferences
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: profileType
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: profileType
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${sls:stage}-pool
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+            RequireUppercase: true
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-${sls:stage}-app
+        GenerateSecret: false
+        UserPoolId: !Ref CognitoUserPool
+        PreventUserExistenceErrors: ENABLED
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        AccessTokenValidity: 60
+        IdTokenValidity: 60
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+
+    CognitoUserPoolGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: Administradores
+        UserPoolId: !Ref CognitoUserPool
+        Description: "Grupo de administradores del sistema"
+    
+  Outputs:
+    UserPoolId:
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolId
+
+    UserPoolClientId:
+      Value: !Ref CognitoUserPoolClient
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolClientId
