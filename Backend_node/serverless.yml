@@ -22,7 +22,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::626218016489:role/LabRole
+  role: arn:aws:iam::905418069528:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -108,7 +108,7 @@ functions:
 
   #preferencias
   createProfile:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.createProfile
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.createProfile
     events:
       - httpApi:
           path: /profiles
@@ -116,7 +116,7 @@ functions:
           cors: true
 
   getProfiles:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.getProfiles
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getProfiles
     events:
       - httpApi:
           path: /profiles/{userId}
@@ -124,7 +124,7 @@ functions:
           cors: true
 
   getProfile:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.getProfile
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getProfile
     events:
       - httpApi:
           path: /profiles/{userId}/{profileType}
@@ -132,7 +132,7 @@ functions:
           cors: true
 
   updateProfile:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.updateProfile
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.updateProfile
     events:
       - httpApi:
           path: /profiles/{userId}/{profileType}
@@ -140,7 +140,7 @@ functions:
           cors: true
 
   deleteProfile:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.deleteProfile
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.deleteProfile
     events:
       - httpApi:
           path: /profiles/{userId}/{profileType}
@@ -148,7 +148,7 @@ functions:
           cors: true
   
   getCurrentProfile:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.getCurrentProfile
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getCurrentProfile
     events:
       - httpApi:
           path: /profiles/{userId}/current
@@ -156,7 +156,7 @@ functions:
           cors: true
 
   setCurrentProfile:
-    handler: handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
     events:
       - httpApi:
           path: profiles/{userId}/{profileType}/setCurrent
@@ -165,7 +165,7 @@ functions:
 
   ## Especialidades
   getEspecialidad:
-    handler: handlers/getEspecialidad.main
+    handler: src/handlers/getEspecialidad.main
     events:
       - httpApi:
           path: especialidades
@@ -174,7 +174,7 @@ functions:
 
   ## Pacientes
   getPaciente:
-    handler: handlers/pacientes/getPaciente.main
+    handler: src/handlers/pacientes/getPaciente.main
     events:
       - httpApi:
           path: pacientes
@@ -183,7 +183,7 @@ functions:
 
   ## Funcionarios
   getFuncionario:
-    handler: handlers/funcionarios/getFuncionario.main
+    handler: src/handlers/funcionarios/getFuncionario.main
     events:
       - httpApi:
           path: funcionarios
@@ -191,7 +191,7 @@ functions:
           cors: true
 
   funcionariosFull:
-    handler: handlers/funcionarios/funcionariosFull.main
+    handler: src/handlers/funcionarios/funcionariosFull.main
     events:
       - httpApi:
           path: funcionarios/full
@@ -199,7 +199,7 @@ functions:
           cors: true
 
   getTipoFuncionario:
-    handler: handlers/funcionarios/getTipoFuncionario.main
+    handler: src/handlers/funcionarios/getTipoFuncionario.main
     name: getTipoFuncionario
     events:
       - httpApi:
@@ -209,14 +209,14 @@ functions:
 
   ## Boxes
   getBox:
-    handler: handlers/boxes/getBox.main
+    handler: src/handlers/boxes/getBox.main
     events:
       - httpApi:
           path: boxes
           method: get
           cors: true
   disponibilidad:
-    handler: handlers/boxes/disponibilidad.main
+    handler: src/handlers/boxes/disponibilidad.main
     events:
       - httpApi:
           path: boxes/disponibilidad
@@ -224,7 +224,7 @@ functions:
           cors: true
 
   usoBox:
-    handler: handlers/boxes/usoBox.main
+    handler: src/handlers/boxes/usoBox.main
     events:
       - httpApi:
           path: boxes/uso
@@ -232,7 +232,7 @@ functions:
           cors: true
 
   porcentajeDeUso:
-    handler: handlers/boxes/porcentajeDeUso.main
+    handler: src/handlers/boxes/porcentajeDeUso.main
     events:
       - httpApi:
           path: boxes/porcentaje-uso
@@ -240,7 +240,7 @@ functions:
           cors: true
 
   porcentajeDeOcupacionPorEspecialidadBoxes:
-    handler: handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
+    handler: src/handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
     name: porcentajeDeOcupacionPorEspecialidadBoxes
     events:
       - httpApi:
@@ -251,7 +251,7 @@ functions:
   ## Agendamiento
   ## General
   getAgendamiento:
-    handler: handlers/agendamiento/generales/getAgendamiento.main
+    handler: src/handlers/agendamiento/generales/getAgendamiento.main
     events:
       - httpApi:
           path: agendamiento
@@ -259,7 +259,7 @@ functions:
           cors: true
 
   getResultadosConsulta:
-    handler: handlers/agendamiento/generales/getResultadosConsulta.main
+    handler: src/handlers/agendamiento/generales/getResultadosConsulta.main
     name: getResultadosConsulta
     events:
       - httpApi:
@@ -269,7 +269,7 @@ functions:
 
   ## Por especialidad
   getAgendamientoEspecialidad:
-    handler: handlers/agendamiento/especialidad/getAgendamientoEspecialidad.main
+    handler: src/handlers/agendamiento/especialidad/getAgendamientoEspecialidad.main
     name: getAgendamientoEspecialidad
     events:
       - httpApi:
@@ -278,7 +278,7 @@ functions:
           cors: true
 
   getCountAgendamientosPorEspecialidad:
-    handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
+    handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
     name: getCountAgendamientosPorEspecialidad
     events:
       - httpApi:
@@ -287,7 +287,7 @@ functions:
           cors: true
 
   getCountAgendamientosPorEspecialidadRangoFechas:
-    handler: handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
+    handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
     name: getCountAgendamientosPorEspecialidadRangoFechas
     events:
       - httpApi:
@@ -296,7 +296,7 @@ functions:
           cors: true
 
   porcentajeDeOcupacionPorEspecialidad:
-    handler: handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
+    handler: src/handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
     name: porcentajeDeOcupacionPorEspecialidad
     events:
       - httpApi:
@@ -306,7 +306,7 @@ functions:
 
   ## Por fecha
   getAgendamientoFecha:
-    handler: handlers/agendamiento/fechas/getAgendamientoFecha.main
+    handler: src/handlers/agendamiento/fechas/getAgendamientoFecha.main
     events:
       - httpApi:
           path: agendamiento/fecha
@@ -314,7 +314,7 @@ functions:
           cors: true
 
   getAgendamientoEspecialidadFecha:
-    handler: handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
+    handler: src/handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
     name: getAgendamientoEspecialidadFecha
     events:
       - httpApi:
@@ -323,7 +323,7 @@ functions:
           cors: true
 
   agendamientosPorFecha:
-    handler: handlers/agendamiento/fechas/agendamientosPorFecha.main
+    handler: src/handlers/agendamiento/fechas/agendamientosPorFecha.main
     events:
       - httpApi:
           path: agendamiento/por-fecha
@@ -331,7 +331,7 @@ functions:
           cors: true
 
   agendamientoTotalHoyBox:
-    handler: handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
+    handler: src/handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
     name: agendamientoTotalHoyBox
     events:
       - httpApi:
@@ -340,7 +340,7 @@ functions:
           cors: true
 
   cantidadAgendamientosEntreFechas:
-    handler: handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
+    handler: src/handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
     name: cantidadAgendamientosEntreFechas
     events:
       - httpApi:
@@ -350,7 +350,7 @@ functions:
 
   ## Gestión
   postAgendamientoPersonalizado:
-    handler: handlers/agendamiento/gestion/postAgendamientoPersonalizado.main
+    handler: src/handlers/agendamiento/gestion/postAgendamientoPersonalizado.main
     name: postAgendamientoPersonalizado
     events:
       - httpApi:
@@ -359,7 +359,7 @@ functions:
           cors: true
 
   postAgendamientoSupremus:
-    handler: handlers/agendamiento/gestion/postAgendamientoSupremus.main
+    handler: src/handlers/agendamiento/gestion/postAgendamientoSupremus.main
     name: postAgendamientoSupremus
     events:
       - httpApi:
@@ -368,7 +368,7 @@ functions:
           cors: true
 
   eliminarAgendamiento:
-    handler: handlers/agendamiento/gestion/eliminarAgendamiento.main
+    handler: src/handlers/agendamiento/gestion/eliminarAgendamiento.main
     name: eliminarAgendamiento
     events:
       - httpApi:
@@ -378,7 +378,7 @@ functions:
 
   ## ocupacion
   ocupacionTotalSegunDiaEntreFechas:
-    handler: handlers/ocupacion/ocupacionTotalSegunDiaEntreFechas.main
+    handler: src/handlers/ocupacion/ocupacionTotalSegunDiaEntreFechas.main
     name: ocupacionTotalSegunDiaEntreFechas
     events:
       - httpApi:
@@ -387,7 +387,7 @@ functions:
           cors: true
 
   diferenciaOcupanciaMeses:
-    handler: handlers/ocupacion/diferenciaOcupanciaMeses.main
+    handler: src/handlers/ocupacion/diferenciaOcupanciaMeses.main
     name: diferenciaOcupanciaMeses
     events:
       - httpApi:
