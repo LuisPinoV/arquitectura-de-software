@@ -41,7 +41,7 @@ export const createProfile = async (event) => {
   };
 };
 
-module.exports.getProfile = async (event) => {
+export const getProfile = async (event) => {
   const { userId, profileType } = event.pathParameters;
 
   try {
@@ -71,7 +71,7 @@ module.exports.getProfile = async (event) => {
   }
 };
 
-module.exports.getProfiles = async (event) => {
+export const getProfiles = async (event) => {
   const { userId } = event.pathParameters;
   const command = new QueryCommand({ 
     TableName: TABLE_NAME, 
@@ -96,7 +96,7 @@ module.exports.getProfiles = async (event) => {
   };
 };
 
-module.exports.updateProfile = async (event) => {
+export const updateProfile = async (event) => {
   const { userId, profileType } = event.pathParameters;
   const body = JSON.parse(event.body);
 
@@ -121,7 +121,7 @@ module.exports.updateProfile = async (event) => {
   };
 };
 
-module.exports.deleteProfile = async (event) => {
+export const deleteProfile = async (event) => {
   const { userId, profileType } = event.pathParameters;
 
   const command = new DeleteCommand({
@@ -137,7 +137,7 @@ module.exports.deleteProfile = async (event) => {
   };
 };
 
-module.exports.getCurrentProfile = async (event) => {
+export const getCurrentProfile = async (event) => {
   const { userId } = event.pathParameters;
 
   const command = new QueryCommand({
@@ -163,7 +163,7 @@ module.exports.getCurrentProfile = async (event) => {
  * Primero pone todos los perfiles del usuario en false,
  * luego marca el elegido como true.
  */
-module.exports.setCurrentProfile = async (event) => {
+export const setCurrentProfile = async (event) => {
   const { userId, profileType } = event.pathParameters;
 
   // 1. Traer todos los perfiles del usuario

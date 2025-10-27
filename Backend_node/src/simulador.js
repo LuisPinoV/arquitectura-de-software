@@ -1,5 +1,4 @@
-
-const AWS = require("aws-sdk");
+import AWS from "aws-sdk";
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const TABLE_NAME = process.env.TABLE || "Agendamiento";
