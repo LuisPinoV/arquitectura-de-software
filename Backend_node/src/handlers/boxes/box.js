@@ -79,8 +79,6 @@ async function createBox(req) {
 async function getBox(req) {
   const { idBox } = req.params;
 
-  console.log(idBox);
-
   try {
     const box = await boxService.getBox(idBox);
     if (!box)
