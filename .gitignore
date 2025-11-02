@@ -2,3 +2,9 @@
 *.serverless/*
 #prueba cognito
 PruebaLoginCognito/
+# Estado de Terraform
+*.tfstate
+*.tfstate.*
+# Lock file local
+.terraform.lock.hcl
+.terraform/

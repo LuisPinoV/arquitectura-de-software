@@ -22,3 +22,9 @@ rad.json
 TestResults.xml
 #archivo serverless
 *.serverless
+# Estado de Terraform
+*.tfstate
+*.tfstate.*
+# Lock file local
+.terraform.lock.hcl
+.terraform/
