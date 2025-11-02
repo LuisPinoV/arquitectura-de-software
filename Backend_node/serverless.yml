@@ -22,7 +22,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::626218016489:role/LabRole
+  role: arn:aws:iam::905418069528:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -107,54 +107,15 @@ functions:
   ### APIS
 
   #preferencias
-  createProfile:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.createProfile
+  preferenciaUsuarioHandler:
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.preferenciaUsuarioHandler
     events:
       - httpApi:
-          path: /profiles
-          method: post
-
-  getProfiles:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getProfiles
-    events:
+          path: /profile
+          method: any
       - httpApi:
-          path: /profiles/{userId}
-          method: get
-
-  getProfile:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getProfile
-    events:
-      - httpApi:
-          path: /profiles/{userId}/{profileType}
-          method: get
-
-  updateProfile:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.updateProfile
-    events:
-      - httpApi:
-          path: /profiles/{userId}/{profileType}
-          method: put
-
-  deleteProfile:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.deleteProfile
-    events:
-      - httpApi:
-          path: /profiles/{userId}/{profileType}
-          method: delete
-  
-  getCurrentProfile:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getCurrentProfile
-    events:
-      - httpApi:
-          path: /profiles/{userId}/current
-          method: get
-
-  setCurrentProfile:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
-    events:
-      - httpApi:
-          path: /profiles/{userId}/{profileType}/setCurrent
-          method: put
+          path: /profile/{proxy+}
+          method: any
 
   ## Especialidades
   getEspecialidad:
@@ -165,83 +126,29 @@ functions:
           method: get
 
   ## Pacientes
-  createPaciente:
-    handler: src/handlers/pacientes/paciente.createPaciente
+  pacienteHandler:
+    handler: src/handlers/pacientes/paciente.pacienteHandler
     events:
       - httpApi:
-          path: /pacientes
-          method: post
-
-  getPaciente:
-    handler: src/handlers/pacientes/paciente.getPaciente
-    events:
+          path: /paciente
+          method: any
       - httpApi:
-          path: /getPaciente/{pacienteId}
-          method: get
-  
-  getPacienteAgendamientos:
-    handler: src/handlers/pacientes/paciente.getPacienteAgendamientos
-    events:
+          path: /paciente/{proxy+}
+          method: any
       - httpApi:
-          path: /getPaciente/{pacienteId}/agendamientos
-          method: get
-
-  updatePaciente:
-    handler: src/handlers/pacientes/paciente.updatePaciente
-    events:
-      - httpApi:
-          path: /updatePaciente/{pacienteId}
-          method: put
-
-  deletePaciente:
-    handler: src/handlers/pacientes/paciente.deletePaciente
-    events:
-      - httpApi:
-          path: /deletePaciente/{pacienteId}
-          method: delete
-
-  createAgendamiento:
-    handler: src/handlers/pacientes/paciente.createAgendamiento
-    events:
-      - httpApi:
-          path: /pacientes/{pacienteId}/agendamientos
-          method: post
+          path: /agendamiento
+          method: any
 
   ## Funcionarios
-  createFuncionario:
-    handler: src/handlers/funcionarios/funcionario.createFuncionario
+  funcionarioHandler:
+    handler: src/handlers/funcionarios/funcionario.funcionarioHandler
     events:
       - httpApi:
-          path: /funcionarios
-          method: post
-
-  getFuncionario:
-    handler: src/handlers/funcionarios/funcionario.getFuncionario
-    events:
+          path: /funcionario
+          method: any
       - httpApi:
-          path: /getFuncionarios/{funcionarioId}
-          method: get
-
-  updateFuncionario:
-    handler: src/handlers/funcionarios/funcionario.updateFuncionario
-    events:
-      - httpApi:
-          path: /updateFuncionarios/{funcionarioId}
-          method: put
-
-  deleteFuncionario:
-    handler: src/handlers/funcionarios/funcionario.deleteFuncionario
-    events:
-      - httpApi:
-          path: /deleteFuncionarios/{funcionarioId}
-          method: delete
-
-  getFuncionarioAgendamientos:
-    handler: src/handlers/funcionarios/funcionario.getFuncionarioAgendamientos
-    events:
-      - httpApi:
-          path: /funcionarios/{funcionarioId}/agendamientos
-          method: get
+          path: /funcionario/{proxy+}
+          method: any
 
 
   ## Boxes

@@ -1,10 +1,64 @@
+import { AutoRouter } from "itty-router";
 import { pacienteRepository } from '../../infrastructure/db/paciente.repository.js';
 
-export const createPaciente = async (event) => {
-  try {
-    const body = JSON.parse(event.body);
-    const nuevoPaciente = await pacienteRepository.createPaciente(body);
+// Routing
+const router = AutoRouter();
 
+router
+  .post("/paciente", createPaciente)
+  .get("/paciente/:pacienteId", getPaciente)
+  .put("/paciente/:pacienteId", updatePaciente)
+  .delete("/paciente/:pacienteId", deletePaciente)
+  .get("/paciente/agendamientos/:pacienteId", getPacienteAgendamientos)
+  .post("/agendamiento", createAgendamiento);
+
+router.all("*", () => new Response("Not Found", { status: 404 }));
+
+// Router handler
+export const pacienteHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
+  try {
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+// Handlers
+async function createPaciente(req) {
+  if (!req.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "No hay body" }),
+    };
+  }
+
+  try {
+    const body = await req.json();
+    const nuevoPaciente = await pacienteRepository.createPaciente(body);
     return {
       statusCode: 201,
       body: JSON.stringify(nuevoPaciente),
@@ -16,14 +70,13 @@ export const createPaciente = async (event) => {
       body: JSON.stringify({ message: 'Error al crear paciente' }),
     };
   }
-};
+}
 
+async function getPaciente(req) {
+  const { pacienteId } = req.params;
 
-export const getPaciente = async (event) => {
   try {
-    const { pacienteId } = event.pathParameters;
     const paciente = await pacienteRepository.getPaciente(pacienteId);
-
     if (!paciente) {
       return {
         statusCode: 404,
@@ -42,13 +95,12 @@ export const getPaciente = async (event) => {
       body: JSON.stringify({ message: 'Error al obtener paciente' }),
     };
   }
-};
+}
 
+async function getPacienteAgendamientos(req) {
+  const { pacienteId } = req.params;
 
-export const getPacienteAgendamientos = async (event) => {
   try {
-    const { pacienteId } = event.pathParameters;
-
     const paciente = await pacienteRepository.getPaciente(pacienteId);
     if (!paciente) {
       return {
@@ -70,14 +122,19 @@ export const getPacienteAgendamientos = async (event) => {
       body: JSON.stringify({ message: 'Error interno del servidor' }),
     };
   }
-};
+}
 
+async function updatePaciente(req) {
+  if (!req.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "No hay body" }),
+    };
+  }
 
-export const updatePaciente = async (event) => {
   try {
-    const { pacienteId } = event.pathParameters;
-    const updates = JSON.parse(event.body);
-
+    const { pacienteId } = req.params;
+    const updates = await req.json();
     const actualizado = await pacienteRepository.updatePaciente(pacienteId, updates);
 
     return {
@@ -91,13 +148,11 @@ export const updatePaciente = async (event) => {
       body: JSON.stringify({ message: 'Error al actualizar paciente' }),
     };
   }
-};
+}
 
-
-export const deletePaciente = async (event) => {
+async function deletePaciente(req) {
   try {
-    const { pacienteId } = event.pathParameters;
-    console.log("Handler -> pacienteId:", pacienteId);
+    const { pacienteId } = req.params;
 
     if (!pacienteId) {
       return {
@@ -119,13 +174,18 @@ export const deletePaciente = async (event) => {
       body: JSON.stringify({ message: "Error al eliminar paciente" }),
     };
   }
-};
+}
 
+async function createAgendamiento(req) {
+  if (!req.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "No hay body" }),
+    };
+  }
 
-
-export const createAgendamiento = async (event) => {
   try {
-    const body = JSON.parse(event.body);
+    const body = await req.json();
     const nuevo = await pacienteRepository.createAgendamiento(body);
 
     return {
@@ -139,4 +199,4 @@ export const createAgendamiento = async (event) => {
       body: JSON.stringify({ message: 'Error al crear agendamiento' }),
     };
   }
-};
+}

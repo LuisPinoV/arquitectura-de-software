@@ -1,8 +1,64 @@
+import { AutoRouter } from "itty-router";
 import { userPreferencesRepository } from '../../infrastructure/db/preferenciaUsuario.repository.js';
 
-export const createProfile = async (event) => {
+// Routing
+const router = AutoRouter();
+
+router
+  .post("/profile", createProfile)
+  .get("/profile/:userId/:profileType", getProfile)
+  .get("/profile/:userId", getProfiles)
+  .put("/profile/:userId/:profileType", updateProfile)
+  .delete("/profile/:userId/:profileType", deleteProfile)
+  .get("/profile/current/:userId", getCurrentProfile)
+  .put("/profile/current/:userId/:profileType", setCurrentProfile);
+
+router.all("*", () => new Response("Not Found", { status: 404 }));
+
+// Router handler
+export const preferenciaUsuarioHandler = async (event) => {
+  const url = `https://${event.headers.host}${event.rawPath}`;
+  const method = event.requestContext?.http.method;
+
+  const init = {
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? Buffer.from(event.body, event.isBase64Encoded ? "base64" : "utf8")
+      : undefined,
+  };
+
   try {
-    const body = JSON.parse(event.body);
+    const request = new Request(url, init);
+    request.event = event;
+
+    const response = await router.fetch(request);
+
+    return {
+      statusCode: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: await response.text(),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
+  }
+};
+
+// Handlers
+async function createProfile(req) {
+  if (!req.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "No hay body" }),
+    };
+  }
+
+  try {
+    const body = await req.json();
     const { userId, profileType, preferences } = body;
 
     const profile = await userPreferencesRepository.createProfile(
@@ -24,11 +80,12 @@ export const createProfile = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
 
-export const getProfile = async (event) => {
+async function getProfile(req) {
+  const { userId, profileType } = req.params;
+
   try {
-    const { userId, profileType } = event.pathParameters;
     const profile = await userPreferencesRepository.getProfile(userId, profileType);
 
     if (!profile) {
@@ -48,11 +105,12 @@ export const getProfile = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
 
-export const getProfiles = async (event) => {
+async function getProfiles(req) {
+  const { userId } = req.params;
+
   try {
-    const { userId } = event.pathParameters;
     const profiles = await userPreferencesRepository.getProfilesByUserId(userId);
 
     if (profiles.length === 0) {
@@ -72,12 +130,19 @@ export const getProfiles = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
 
-export const updateProfile = async (event) => {
+async function updateProfile(req) {
+  if (!req.body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "No hay body" }),
+    };
+  }
+
   try {
-    const { userId, profileType } = event.pathParameters;
-    const body = JSON.parse(event.body);
+    const { userId, profileType } = req.params;
+    const body = await req.json();
 
     const updatedProfile = await userPreferencesRepository.updateProfile(
       userId, 
@@ -95,11 +160,11 @@ export const updateProfile = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
 
-export const deleteProfile = async (event) => {
+async function deleteProfile(req) {
   try {
-    const { userId, profileType } = event.pathParameters;
+    const { userId, profileType } = req.params;
     await userPreferencesRepository.deleteProfile(userId, profileType);
 
     return {
@@ -112,11 +177,12 @@ export const deleteProfile = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
 
-export const getCurrentProfile = async (event) => {
+async function getCurrentProfile(req) {
+  const { userId } = req.params;
+
   try {
-    const { userId } = event.pathParameters;
     const currentProfile = await userPreferencesRepository.getCurrentProfile(userId);
 
     return {
@@ -129,11 +195,11 @@ export const getCurrentProfile = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
 
-export const setCurrentProfile = async (event) => {
+async function setCurrentProfile(req) {
   try {
-    const { userId, profileType } = event.pathParameters;
+    const { userId, profileType } = req.params;
     await userPreferencesRepository.setCurrentProfile(userId, profileType);
 
     return {
@@ -146,4 +212,4 @@ export const setCurrentProfile = async (event) => {
       body: JSON.stringify({ error: error.message }),
     };
   }
-};
+}
