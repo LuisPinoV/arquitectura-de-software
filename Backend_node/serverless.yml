@@ -22,7 +22,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::905418069528:role/LabRole
+  role: arn:aws:iam::626218016489:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -113,7 +113,6 @@ functions:
       - httpApi:
           path: /profiles
           method: post
-          cors: true
 
   getProfiles:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getProfiles
@@ -121,7 +120,6 @@ functions:
       - httpApi:
           path: /profiles/{userId}
           method: get
-          cors: true
 
   getProfile:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getProfile
@@ -129,7 +127,6 @@ functions:
       - httpApi:
           path: /profiles/{userId}/{profileType}
           method: get
-          cors: true
 
   updateProfile:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.updateProfile
@@ -137,7 +134,6 @@ functions:
       - httpApi:
           path: /profiles/{userId}/{profileType}
           method: put
-          cors: true
 
   deleteProfile:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.deleteProfile
@@ -145,7 +141,6 @@ functions:
       - httpApi:
           path: /profiles/{userId}/{profileType}
           method: delete
-          cors: true
   
   getCurrentProfile:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.getCurrentProfile
@@ -153,7 +148,6 @@ functions:
       - httpApi:
           path: /profiles/{userId}/current
           method: get
-          cors: true
 
   setCurrentProfile:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
@@ -161,7 +155,6 @@ functions:
       - httpApi:
           path: /profiles/{userId}/{profileType}/setCurrent
           method: put
-          cors: true
 
   ## Especialidades
   getEspecialidad:
@@ -170,7 +163,6 @@ functions:
       - httpApi:
           path: /especialidades
           method: get
-          cors: true
 
   ## Pacientes
   createPaciente:
@@ -179,7 +171,6 @@ functions:
       - httpApi:
           path: /pacientes
           method: post
-          cors: true
 
   getPaciente:
     handler: src/handlers/pacientes/paciente.getPaciente
@@ -187,7 +178,6 @@ functions:
       - httpApi:
           path: /getPaciente/{pacienteId}
           method: get
-          cors: true
   
   getPacienteAgendamientos:
     handler: src/handlers/pacientes/paciente.getPacienteAgendamientos
@@ -195,7 +185,6 @@ functions:
       - httpApi:
           path: /getPaciente/{pacienteId}/agendamientos
           method: get
-          cors: true
 
   updatePaciente:
     handler: src/handlers/pacientes/paciente.updatePaciente
@@ -203,7 +192,6 @@ functions:
       - httpApi:
           path: /updatePaciente/{pacienteId}
           method: put
-          cors: true
 
   deletePaciente:
     handler: src/handlers/pacientes/paciente.deletePaciente
@@ -211,7 +199,6 @@ functions:
       - httpApi:
           path: /deletePaciente/{pacienteId}
           method: delete
-          cors: true
 
   createAgendamiento:
     handler: src/handlers/pacientes/paciente.createAgendamiento
@@ -219,7 +206,6 @@ functions:
       - httpApi:
           path: /pacientes/{pacienteId}/agendamientos
           method: post
-          cors: true
 
   ## Funcionarios
   createFuncionario:
@@ -228,7 +214,6 @@ functions:
       - httpApi:
           path: /funcionarios
           method: post
-          cors: true
 
   getFuncionario:
     handler: src/handlers/funcionarios/funcionario.getFuncionario
@@ -236,7 +221,6 @@ functions:
       - httpApi:
           path: /getFuncionarios/{funcionarioId}
           method: get
-          cors: true
 
   updateFuncionario:
     handler: src/handlers/funcionarios/funcionario.updateFuncionario
@@ -244,7 +228,6 @@ functions:
       - httpApi:
           path: /updateFuncionarios/{funcionarioId}
           method: put
-          cors: true
 
   deleteFuncionario:
     handler: src/handlers/funcionarios/funcionario.deleteFuncionario
@@ -252,7 +235,6 @@ functions:
       - httpApi:
           path: /deleteFuncionarios/{funcionarioId}
           method: delete
-          cors: true
 
   getFuncionarioAgendamientos:
     handler: src/handlers/funcionarios/funcionario.getFuncionarioAgendamientos
@@ -260,7 +242,6 @@ functions:
       - httpApi:
           path: /funcionarios/{funcionarioId}/agendamientos
           method: get
-          cors: true
 
 
   ## Boxes
@@ -270,7 +251,6 @@ functions:
       - httpApi:
           path: /boxes/disponibilidad
           method: get
-          cors: true
 
   usoBox:
     handler: src/handlers/boxes/usoBox.main
@@ -278,7 +258,6 @@ functions:
       - httpApi:
           path: /boxes/uso
           method: get
-          cors: true
 
   porcentajeDeUso:
     handler: src/handlers/boxes/porcentajeDeUso.main
@@ -286,7 +265,6 @@ functions:
       - httpApi:
           path: /boxes/porcentaje-uso
           method: get
-          cors: true
 
   porcentajeDeOcupacionPorEspecialidadBoxes:
     handler: src/handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
@@ -295,55 +273,17 @@ functions:
       - httpApi:
           path: /boxes/porcentaje-ocupacion-especialidad
           method: get
-          cors: true
   
-  createBox:
-    handler: src/handlers/boxes/box.createBox
+  boxHandler:
+    handler: src/handlers/boxes/box.boxHandler
     events:
       - httpApi:
-          path: /boxes
-          method: post
-          cors: true
+          path: /box
+          method: any
 
-  getBox:
-    handler: src/handlers/boxes/box.getBox
-    events:
       - httpApi:
-          path: /getBox/{idBox}
-          method: get
-          cors: true
-
-  getAllBoxes:
-    handler: src/handlers/boxes/box.getAllBoxes
-    events:
-      - httpApi:
-          path: /getBoxes
-          method: get
-          cors: true
-
-  updateBox:
-    handler: src/handlers/boxes/box.updateBox
-    events:
-      - httpApi:
-          path: /updateBox/{idBox}
-          method: put
-          cors: true
-
-  deleteBox:
-    handler: src/handlers/boxes/box.deleteBox
-    events:
-      - httpApi:
-          path: /deleteBox/{idBox}
-          method: delete
-          cors: true
-
-  getBoxAgendamientos:
-    handler: src/handlers/boxes/box.getBoxAgendamientos
-    events:
-      - httpApi:
-          path: /getBox/{idBox}/agendamientos
-          method: get
-          cors: true
+          path: /box/{proxy+}
+          method: any
 
   ## Agendamiento
   ## General
@@ -353,7 +293,7 @@ functions:
       - httpApi:
           path: /agendamiento
           method: get
-          cors: true
+
 
   getResultadosConsulta:
     handler: src/handlers/agendamiento/generales/getResultadosConsulta.main
@@ -372,7 +312,6 @@ functions:
       - httpApi:
           path: /agendamiento/especialidad
           method: get
-          cors: true
 
   getCountAgendamientosPorEspecialidad:
     handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
@@ -381,7 +320,6 @@ functions:
       - httpApi:
           path: /agendamiento/especialidad/count
           method: get
-          cors: true
 
   getCountAgendamientosPorEspecialidadRangoFechas:
     handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
@@ -390,7 +328,6 @@ functions:
       - httpApi:
           path: /agendamiento/especialidad/count-rango
           method: get
-          cors: true
 
   porcentajeDeOcupacionPorEspecialidad:
     handler: src/handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
@@ -399,7 +336,6 @@ functions:
       - httpApi:
           path: /agendamiento/especialidad/porcentaje-ocupacion
           method: get
-          cors: true
 
   ## Por fecha
   getAgendamientoFecha:
@@ -408,7 +344,6 @@ functions:
       - httpApi:
           path: /agendamiento/fecha
           method: get
-          cors: true
 
   getAgendamientoEspecialidadFecha:
     handler: src/handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
@@ -417,7 +352,6 @@ functions:
       - httpApi:
           path: /agendamiento/fecha-especialidad
           method: get
-          cors: true
 
   agendamientosPorFecha:
     handler: src/handlers/agendamiento/fechas/agendamientosPorFecha.main
@@ -425,7 +359,6 @@ functions:
       - httpApi:
           path: /agendamiento/por-fecha
           method: get
-          cors: true
 
   agendamientoTotalHoyBox:
     handler: src/handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
@@ -434,7 +367,6 @@ functions:
       - httpApi:
           path: /agendamiento/hoy/box
           method: get
-          cors: true
 
   cantidadAgendamientosEntreFechas:
     handler: src/handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
@@ -443,7 +375,6 @@ functions:
       - httpApi:
           path: /agendamiento/cantidad-entre-fechas
           method: get
-          cors: true
 
   ## Gestión
   postAgendamientoPersonalizado:
@@ -453,7 +384,6 @@ functions:
       - httpApi:
           path: /agendamiento/personalizado
           method: post
-          cors: true
 
   postAgendamientoSupremus:
     handler: src/handlers/agendamiento/gestion/postAgendamientoSupremus.main
@@ -462,7 +392,6 @@ functions:
       - httpApi:
           path: /agendamiento/supremus
           method: post
-          cors: true
 
   eliminarAgendamiento:
     handler: src/handlers/agendamiento/gestion/eliminarAgendamiento.main
@@ -471,7 +400,6 @@ functions:
       - httpApi:
           path: /agendamiento
           method: delete
-          cors: true
 
   ## ocupacion
   ocupacionTotalSegunDiaEntreFechas:
@@ -481,7 +409,6 @@ functions:
       - httpApi:
           path: /ocupacion/ocupacion-total
           method: get
-          cors: true
 
   diferenciaOcupanciaMeses:
     handler: src/handlers/ocupacion/diferenciaOcupanciaMeses.main
@@ -490,7 +417,6 @@ functions:
       - httpApi:
           path: /ocupacion/diferencia-ocupacion-meses
           method: get
-          cors: true
 
 package:
   individually: true

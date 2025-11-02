@@ -1,4 +1,4 @@
-import { userPreferencesRepository } from '../../infrastructure/preferenciasUsuario/preferenciaUsuario.repository.js';
+import { userPreferencesRepository } from '../../infrastructure/db/preferenciaUsuario.repository.js';
 
 export const createProfile = async (event) => {
   try {
