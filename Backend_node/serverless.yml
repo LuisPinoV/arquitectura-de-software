@@ -7,10 +7,10 @@ plugins:
 
 custom:
   scriptable:
-    hooks:
-      after:deploy:deploy: 
-        - sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
-        - npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
+    #hooks:
+      #after:deploy:deploy: 
+        - #sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
+        - #npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
   serverless-offline:
     httpPort: 3000
     lambdaPort: 3002
@@ -159,7 +159,7 @@ functions:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.setCurrentProfile
     events:
       - httpApi:
-          path: profiles/{userId}/{profileType}/setCurrent
+          path: /profiles/{userId}/{profileType}/setCurrent
           method: put
           cors: true
 
@@ -168,58 +168,107 @@ functions:
     handler: src/handlers/getEspecialidad.main
     events:
       - httpApi:
-          path: especialidades
+          path: /especialidades
           method: get
           cors: true
 
   ## Pacientes
-  getPaciente:
-    handler: src/handlers/pacientes/getPaciente.main
+  createPaciente:
+    handler: src/handlers/pacientes/paciente.createPaciente
     events:
       - httpApi:
-          path: pacientes
+          path: /pacientes
+          method: post
+          cors: true
+
+  getPaciente:
+    handler: src/handlers/pacientes/paciente.getPaciente
+    events:
+      - httpApi:
+          path: /getPaciente/{pacienteId}
           method: get
+          cors: true
+  
+  getPacienteAgendamientos:
+    handler: src/handlers/pacientes/paciente.getPacienteAgendamientos
+    events:
+      - httpApi:
+          path: /getPaciente/{pacienteId}/agendamientos
+          method: get
+          cors: true
+
+  updatePaciente:
+    handler: src/handlers/pacientes/paciente.updatePaciente
+    events:
+      - httpApi:
+          path: /updatePaciente/{pacienteId}
+          method: put
+          cors: true
+
+  deletePaciente:
+    handler: src/handlers/pacientes/paciente.deletePaciente
+    events:
+      - httpApi:
+          path: /deletePaciente/{pacienteId}
+          method: delete
+          cors: true
+
+  createAgendamiento:
+    handler: src/handlers/pacientes/paciente.createAgendamiento
+    events:
+      - httpApi:
+          path: /pacientes/{pacienteId}/agendamientos
+          method: post
           cors: true
 
   ## Funcionarios
+  createFuncionario:
+    handler: src/handlers/funcionarios/funcionario.createFuncionario
+    events:
+      - httpApi:
+          path: /funcionarios
+          method: post
+          cors: true
+
   getFuncionario:
-    handler: src/handlers/funcionarios/getFuncionario.main
+    handler: src/handlers/funcionarios/funcionario.getFuncionario
     events:
       - httpApi:
-          path: funcionarios
+          path: /getFuncionarios/{funcionarioId}
           method: get
           cors: true
 
-  funcionariosFull:
-    handler: src/handlers/funcionarios/funcionariosFull.main
+  updateFuncionario:
+    handler: src/handlers/funcionarios/funcionario.updateFuncionario
     events:
       - httpApi:
-          path: funcionarios/full
+          path: /updateFuncionarios/{funcionarioId}
+          method: put
+          cors: true
+
+  deleteFuncionario:
+    handler: src/handlers/funcionarios/funcionario.deleteFuncionario
+    events:
+      - httpApi:
+          path: /deleteFuncionarios/{funcionarioId}
+          method: delete
+          cors: true
+
+  getFuncionarioAgendamientos:
+    handler: src/handlers/funcionarios/funcionario.getFuncionarioAgendamientos
+    events:
+      - httpApi:
+          path: /funcionarios/{funcionarioId}/agendamientos
           method: get
           cors: true
 
-  getTipoFuncionario:
-    handler: src/handlers/funcionarios/getTipoFuncionario.main
-    name: getTipoFuncionario
-    events:
-      - httpApi:
-          path: tipos-funcionario
-          method: get
-          cors: true
 
   ## Boxes
-  getBox:
-    handler: src/handlers/boxes/getBox.main
-    events:
-      - httpApi:
-          path: boxes
-          method: get
-          cors: true
   disponibilidad:
     handler: src/handlers/boxes/disponibilidad.main
     events:
       - httpApi:
-          path: boxes/disponibilidad
+          path: /boxes/disponibilidad
           method: get
           cors: true
 
@@ -227,7 +276,7 @@ functions:
     handler: src/handlers/boxes/usoBox.main
     events:
       - httpApi:
-          path: boxes/uso
+          path: /boxes/uso
           method: get
           cors: true
 
@@ -235,7 +284,7 @@ functions:
     handler: src/handlers/boxes/porcentajeDeUso.main
     events:
       - httpApi:
-          path: boxes/porcentaje-uso
+          path: /boxes/porcentaje-uso
           method: get
           cors: true
 
@@ -244,7 +293,55 @@ functions:
     name: porcentajeDeOcupacionPorEspecialidadBoxes
     events:
       - httpApi:
-          path: boxes/porcentaje-ocupacion-especialidad
+          path: /boxes/porcentaje-ocupacion-especialidad
+          method: get
+          cors: true
+  
+  createBox:
+    handler: src/handlers/boxes/box.createBox
+    events:
+      - httpApi:
+          path: /boxes
+          method: post
+          cors: true
+
+  getBox:
+    handler: src/handlers/boxes/box.getBox
+    events:
+      - httpApi:
+          path: /getBox/{idBox}
+          method: get
+          cors: true
+
+  getAllBoxes:
+    handler: src/handlers/boxes/box.getAllBoxes
+    events:
+      - httpApi:
+          path: /getBoxes
+          method: get
+          cors: true
+
+  updateBox:
+    handler: src/handlers/boxes/box.updateBox
+    events:
+      - httpApi:
+          path: /updateBox/{idBox}
+          method: put
+          cors: true
+
+  deleteBox:
+    handler: src/handlers/boxes/box.deleteBox
+    events:
+      - httpApi:
+          path: /deleteBox/{idBox}
+          method: delete
+          cors: true
+
+  getBoxAgendamientos:
+    handler: src/handlers/boxes/box.getBoxAgendamientos
+    events:
+      - httpApi:
+          path: /getBox/{idBox}/agendamientos
           method: get
           cors: true
 
@@ -254,7 +351,7 @@ functions:
     handler: src/handlers/agendamiento/generales/getAgendamiento.main
     events:
       - httpApi:
-          path: agendamiento
+          path: /agendamiento
           method: get
           cors: true
 
@@ -263,7 +360,7 @@ functions:
     name: getResultadosConsulta
     events:
       - httpApi:
-          path: agendamiento/resultados
+          path: /agendamiento/resultados
           method: get
           cors: true
 
@@ -273,7 +370,7 @@ functions:
     name: getAgendamientoEspecialidad
     events:
       - httpApi:
-          path: agendamiento/especialidad
+          path: /agendamiento/especialidad
           method: get
           cors: true
 
@@ -282,7 +379,7 @@ functions:
     name: getCountAgendamientosPorEspecialidad
     events:
       - httpApi:
-          path: agendamiento/especialidad/count
+          path: /agendamiento/especialidad/count
           method: get
           cors: true
 
@@ -291,7 +388,7 @@ functions:
     name: getCountAgendamientosPorEspecialidadRangoFechas
     events:
       - httpApi:
-          path: agendamiento/especialidad/count-rango
+          path: /agendamiento/especialidad/count-rango
           method: get
           cors: true
 
@@ -300,7 +397,7 @@ functions:
     name: porcentajeDeOcupacionPorEspecialidad
     events:
       - httpApi:
-          path: agendamiento/especialidad/porcentaje-ocupacion
+          path: /agendamiento/especialidad/porcentaje-ocupacion
           method: get
           cors: true
 
@@ -309,7 +406,7 @@ functions:
     handler: src/handlers/agendamiento/fechas/getAgendamientoFecha.main
     events:
       - httpApi:
-          path: agendamiento/fecha
+          path: /agendamiento/fecha
           method: get
           cors: true
 
@@ -318,7 +415,7 @@ functions:
     name: getAgendamientoEspecialidadFecha
     events:
       - httpApi:
-          path: agendamiento/fecha-especialidad
+          path: /agendamiento/fecha-especialidad
           method: get
           cors: true
 
@@ -326,7 +423,7 @@ functions:
     handler: src/handlers/agendamiento/fechas/agendamientosPorFecha.main
     events:
       - httpApi:
-          path: agendamiento/por-fecha
+          path: /agendamiento/por-fecha
           method: get
           cors: true
 
@@ -335,7 +432,7 @@ functions:
     name: agendamientoTotalHoyBox
     events:
       - httpApi:
-          path: agendamiento/hoy/box
+          path: /agendamiento/hoy/box
           method: get
           cors: true
 
@@ -344,7 +441,7 @@ functions:
     name: cantidadAgendamientosEntreFechas
     events:
       - httpApi:
-          path: agendamiento/cantidad-entre-fechas
+          path: /agendamiento/cantidad-entre-fechas
           method: get
           cors: true
 
@@ -354,7 +451,7 @@ functions:
     name: postAgendamientoPersonalizado
     events:
       - httpApi:
-          path: agendamiento/personalizado
+          path: /agendamiento/personalizado
           method: post
           cors: true
 
@@ -363,7 +460,7 @@ functions:
     name: postAgendamientoSupremus
     events:
       - httpApi:
-          path: agendamiento/supremus
+          path: /agendamiento/supremus
           method: post
           cors: true
 
@@ -372,7 +469,7 @@ functions:
     name: eliminarAgendamiento
     events:
       - httpApi:
-          path: agendamiento
+          path: /agendamiento
           method: delete
           cors: true
 
@@ -382,7 +479,7 @@ functions:
     name: ocupacionTotalSegunDiaEntreFechas
     events:
       - httpApi:
-          path: ocupacion/ocupacion-total
+          path: /ocupacion/ocupacion-total
           method: get
           cors: true
 
@@ -391,7 +488,7 @@ functions:
     name: diferenciaOcupanciaMeses
     events:
       - httpApi:
-          path: ocupacion/diferencia-ocupacion-meses
+          path: /ocupacion/diferencia-ocupacion-meses
           method: get
           cors: true
 
