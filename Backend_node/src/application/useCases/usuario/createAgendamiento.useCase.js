@@ -1,4 +1,4 @@
-export class GetUsuarioUseCase {
+export class CreateAgendamientoUsuarioUseCase {
   constructor(usuarioRepository) {
     this.usuarioRepository = usuarioRepository;
   }

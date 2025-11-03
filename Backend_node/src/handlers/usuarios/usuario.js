@@ -165,7 +165,7 @@ async function deleteUsuario(req) {
       };
     }
 
-    const eliminado = await usuarioRepository.deleteUsuario(pacienteId);
+    const eliminado = await usuarioService.deleteUsuario(usuarioId);
 
     return {
       statusCode: 200,
@@ -190,7 +190,7 @@ async function createAgendamiento(req) {
 
   try {
     const body = await req.json();
-    const nuevo = await usuarioRepository.createAgendamiento(body);
+    const nuevo = await usuarioService.createAgendamiento(body);
 
     return {
       statusCode: 201,
