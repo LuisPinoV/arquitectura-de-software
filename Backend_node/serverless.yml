@@ -127,13 +127,13 @@ functions:
 
   ## Pacientes
   pacienteHandler:
-    handler: src/handlers/pacientes/paciente.pacienteHandler
+    handler: src/handlers/usuarios/usuario.pacienteHandler
     events:
       - httpApi:
-          path: /paciente
+          path: /usuario
           method: any
       - httpApi:
-          path: /paciente/{proxy+}
+          path: /usuario/{proxy+}
           method: any
       - httpApi:
           path: /agendamiento

@@ -1,21 +1,25 @@
 import { AutoRouter } from "itty-router";
-import { pacienteRepository } from '../../infrastructure/db/paciente.repository.js';
+import { usuarioRepository } from '../../infrastructure/db/usuario.repository.js';
+import { UsuarioService } from "../../application/services/usuario.service.js";
+
+//Service
+const usuarioService = new UsuarioService(usuarioRepository);
 
 // Routing
 const router = AutoRouter();
 
 router
-  .post("/paciente", createPaciente)
-  .get("/paciente/:pacienteId", getPaciente)
-  .put("/paciente/:pacienteId", updatePaciente)
-  .delete("/paciente/:pacienteId", deletePaciente)
-  .get("/paciente/agendamientos/:pacienteId", getPacienteAgendamientos)
+  .post("/usuario", createUsuario)
+  .get("/usuario/:usuarioId", getUsuario)
+  .put("/usuario/:usuarioId", updateUsuario)
+  .delete("/usuario/:usuarioId", deleteUsuario)
+  .get("/usuario/agendamientos/:usuarioId", getUsuarioAgendamientos)
   .post("/agendamiento", createAgendamiento);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 
 // Router handler
-export const pacienteHandler = async (event) => {
+export const usuarioHandler = async (event) => {
   const url = `https://${event.headers.host}${event.rawPath}`;
   const method = event.requestContext?.http.method;
 
@@ -48,7 +52,7 @@ export const pacienteHandler = async (event) => {
 };
 
 // Handlers
-async function createPaciente(req) {
+async function createUsuario(req) {
   if (!req.body) {
     return {
       statusCode: 400,
@@ -58,65 +62,65 @@ async function createPaciente(req) {
 
   try {
     const body = await req.json();
-    const nuevoPaciente = await pacienteRepository.createPaciente(body);
+    const nuevoPaciente = await usuarioService.createUsuario(body);
     return {
       statusCode: 201,
       body: JSON.stringify(nuevoPaciente),
     };
   } catch (error) {
-    console.error('Error al crear paciente:', error);
+    console.error('Error al crear usuario:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Error al crear paciente' }),
+      body: JSON.stringify({ message: 'Error al crear usuario' }),
     };
   }
 }
 
-async function getPaciente(req) {
-  const { pacienteId } = req.params;
+async function getUsuario(req) {
+  const { usuarioId } = req.params;
 
   try {
-    const paciente = await pacienteRepository.getPaciente(pacienteId);
-    if (!paciente) {
+    const usuario = await usuarioService.getUsuario(usuarioId);
+    if (!usuario) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ message: 'Paciente no encontrado' }),
+        body: JSON.stringify({ message: 'Usuario no encontrado' }),
       };
     }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(paciente),
+      body: JSON.stringify(usuario),
     };
   } catch (error) {
-    console.error('Error al obtener paciente:', error);
+    console.error('Error al obtener usuario:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Error al obtener paciente' }),
+      body: JSON.stringify({ message: 'Error al obtener usuario' }),
     };
   }
 }
 
-async function getPacienteAgendamientos(req) {
-  const { pacienteId } = req.params;
+async function getUsuarioAgendamientos(req) {
+  const { usuarioId } = req.params;
 
   try {
-    const paciente = await pacienteRepository.getPaciente(pacienteId);
-    if (!paciente) {
+    const usuario = await usuarioService.getUsuario(usuarioId);
+    if (!usuario) {
       return {
         statusCode: 404,
-        body: JSON.stringify({ message: 'Paciente no encontrado' }),
+        body: JSON.stringify({ message: 'Usuario no encontrado' }),
       };
     }
 
-    const agendamientos = await pacienteRepository.getAgendamientosByPaciente(pacienteId);
+    const agendamientos = await usuarioService.getUsuarioAgendamientos(usuarioId);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ paciente, agendamientos }),
+      body: JSON.stringify({ paciente: usuario, agendamientos }),
     };
   } catch (error) {
-    console.error('Error al obtener paciente con agendamientos:', error);
+    console.error('Error al obtener usuario con agendamientos:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: 'Error interno del servidor' }),
@@ -124,7 +128,7 @@ async function getPacienteAgendamientos(req) {
   }
 }
 
-async function updatePaciente(req) {
+async function updateUsuario(req) {
   if (!req.body) {
     return {
       statusCode: 400,
@@ -133,9 +137,9 @@ async function updatePaciente(req) {
   }
 
   try {
-    const { pacienteId } = req.params;
+    const { usuarioId } = req.params;
     const updates = await req.json();
-    const actualizado = await pacienteRepository.updatePaciente(pacienteId, updates);
+    const actualizado = await usuarioService.updateUsuario(usuarioId, updates);
 
     return {
       statusCode: 200,
@@ -150,18 +154,18 @@ async function updatePaciente(req) {
   }
 }
 
-async function deletePaciente(req) {
+async function deleteUsuario(req) {
   try {
-    const { pacienteId } = req.params;
+    const { usuarioId } = req.params;
 
-    if (!pacienteId) {
+    if (!usuarioId) {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "Falta el parámetro pacienteId en la ruta" }),
       };
     }
 
-    const eliminado = await pacienteRepository.deletePaciente(pacienteId);
+    const eliminado = await usuarioRepository.deleteUsuario(pacienteId);
 
     return {
       statusCode: 200,
@@ -186,7 +190,7 @@ async function createAgendamiento(req) {
 
   try {
     const body = await req.json();
-    const nuevo = await pacienteRepository.createAgendamiento(body);
+    const nuevo = await usuarioRepository.createAgendamiento(body);
 
     return {
       statusCode: 201,

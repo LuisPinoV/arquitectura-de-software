@@ -5,11 +5,11 @@ export class GetUsuariosUseCase
         this.usuarioRepository = usuarioRepository;
     }
 
-    async execute()
+    async execute(body)
     {
-        const usuarios = await this.usuarioRepository.getUsuarios();
+        const usuarios = await this.usuarioRepository.createPaciente(body);
 
-        if(!usuarios) throw new Error("Couldn't get users");
+        if(!usuarios) throw new Error("Couldn't create user");
 
         return usuarios;
     }

@@ -13,13 +13,13 @@ import {
 const client = new DynamoDBClient();
 const dynamo = DynamoDBDocumentClient.from(client);
 
-export class PacienteRepository {
+export class UsuarioRepisitory {
   constructor(tableName) {
     this.tableName = tableName;
     this.dynamo = dynamo;
   }
 
-  async createPaciente({ idPaciente, nombre, apellido, rut }) {
+  async createUsuario({ idPaciente, nombre, apellido, rut }) {
     const now = new Date().toISOString();
 
     const item = {
@@ -44,7 +44,7 @@ export class PacienteRepository {
     return item;
   }
 
-  async getPaciente(idPaciente) {
+  async getUsuario(idPaciente) {
     const command = new GetCommand({
       TableName: this.tableName,
       Key: {
@@ -68,7 +68,7 @@ export class PacienteRepository {
     return result.Items || [];
   }
 
-  async updatePaciente(idPaciente, updates) {
+  async updateUsuario(idPaciente, updates) {
     const now = new Date().toISOString();
 
     const updateExpr = [];
@@ -98,7 +98,7 @@ export class PacienteRepository {
   }
 
 
- async deletePaciente(idPaciente) {
+ async deleteUsuario(idPaciente) {
   console.log("deletePaciente -> idPaciente:", idPaciente);
   console.log("deletePaciente -> table:", this.tableName);
 
@@ -130,7 +130,7 @@ export class PacienteRepository {
 
 
 
-  async getAgendamientosByPaciente(idPaciente) {
+  async getAgendamientosByUsuario(idPaciente) {
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: "AgendamientosPorPaciente",
@@ -198,5 +198,5 @@ export class PacienteRepository {
   }
 }
 
-export const pacienteRepository = new PacienteRepository("Agendamiento");
+export const usuarioRepository = new UsuarioRepisitory("Agendamiento");
 
