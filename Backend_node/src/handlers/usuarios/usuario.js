@@ -117,7 +117,7 @@ async function getUsuarioAgendamientos(req) {
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ paciente: usuario, agendamientos }),
+      body: JSON.stringify({ usuario: usuario, agendamientos }),
     };
   } catch (error) {
     console.error('Error al obtener usuario con agendamientos:', error);
