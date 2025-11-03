@@ -1,5 +1,8 @@
 import { AutoRouter } from "itty-router";
 import { userPreferencesRepository } from '../../infrastructure/db/preferenciaUsuario.repository.js';
+import { PreferenciasUsuarioService } from "../../application/services/preferenciasUsuario.service.js";
+
+const preferenciasService = new PreferenciasUsuarioService(userPreferencesRepository);
 
 // Routing
 const router = AutoRouter();
@@ -61,7 +64,7 @@ async function createProfile(req) {
     const body = await req.json();
     const { userId, profileType, preferences } = body;
 
-    const profile = await userPreferencesRepository.createProfile(
+    const profile = await preferenciasService.createProfile(
       userId, 
       profileType, 
       preferences
@@ -86,7 +89,7 @@ async function getProfile(req) {
   const { userId, profileType } = req.params;
 
   try {
-    const profile = await userPreferencesRepository.getProfile(userId, profileType);
+    const profile = await preferenciasService.getProfile(userId, profileType);
 
     if (!profile) {
       return {
@@ -111,7 +114,7 @@ async function getProfiles(req) {
   const { userId } = req.params;
 
   try {
-    const profiles = await userPreferencesRepository.getProfilesByUserId(userId);
+    const profiles = await preferenciasService.getProfiles(userId);
 
     if (profiles.length === 0) {
       return {
@@ -144,7 +147,7 @@ async function updateProfile(req) {
     const { userId, profileType } = req.params;
     const body = await req.json();
 
-    const updatedProfile = await userPreferencesRepository.updateProfile(
+    const updatedProfile = await preferenciasService.updateProfile(
       userId, 
       profileType, 
       body.preferences
@@ -165,7 +168,7 @@ async function updateProfile(req) {
 async function deleteProfile(req) {
   try {
     const { userId, profileType } = req.params;
-    await userPreferencesRepository.deleteProfile(userId, profileType);
+    await preferenciasService.deleteProfile(userId, profileType);
 
     return {
       statusCode: 200,
@@ -183,7 +186,7 @@ async function getCurrentProfile(req) {
   const { userId } = req.params;
 
   try {
-    const currentProfile = await userPreferencesRepository.getCurrentProfile(userId);
+    const currentProfile = await preferenciasService.getCurrentProfile(userId);
 
     return {
       statusCode: 200,
@@ -200,7 +203,7 @@ async function getCurrentProfile(req) {
 async function setCurrentProfile(req) {
   try {
     const { userId, profileType } = req.params;
-    await userPreferencesRepository.setCurrentProfile(userId, profileType);
+    await preferenciasService.setCurrentProfile(userId, profileType);
 
     return {
       statusCode: 200,

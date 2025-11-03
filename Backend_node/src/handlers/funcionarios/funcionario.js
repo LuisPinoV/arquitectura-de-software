@@ -1,5 +1,10 @@
 import { AutoRouter } from "itty-router";
 import { funcionarioRepository } from '../../infrastructure/db/funcionario.repository.js';
+import { FuncionarioService } from "../../application/services/funcionario.service.js";
+
+//Service
+
+const funcionarioService = new FuncionarioService(funcionarioRepository);
 
 // Routing
 const router = AutoRouter();
@@ -57,7 +62,7 @@ async function createFuncionario(req) {
 
   try {
     const body = await req.json();
-    const nuevo = await funcionarioRepository.createFuncionario(body);
+    const nuevo = await funcionarioService.createFuncionario(body);
 
     return {
       statusCode: 201,
@@ -76,7 +81,7 @@ async function getFuncionario(req) {
   const { funcionarioId } = req.params;
 
   try {
-    const funcionario = await funcionarioRepository.getFuncionario(funcionarioId);
+    const funcionario = await funcionarioService.getFuncionario(funcionarioId);
 
     if (!funcionario) {
       return { 
@@ -109,7 +114,7 @@ async function updateFuncionario(req) {
   try {
     const { funcionarioId } = req.params;
     const updates = await req.json();
-    const updated = await funcionarioRepository.updateFuncionario(funcionarioId, updates);
+    const updated = await funcionarioService.updateFuncionario(funcionarioId, updates);
 
     return {
       statusCode: 200,
@@ -127,7 +132,7 @@ async function updateFuncionario(req) {
 async function deleteFuncionario(req) {
   try {
     const { funcionarioId } = req.params;
-    const eliminado = await funcionarioRepository.deleteFuncionario(funcionarioId);
+    const eliminado = await funcionarioService.deleteFuncionario(funcionarioId);
 
     return {
       statusCode: 200,
@@ -146,7 +151,7 @@ async function getFuncionarioAgendamientos(req) {
   const { funcionarioId } = req.params;
 
   try {
-    const funcionario = await funcionarioRepository.getFuncionario(funcionarioId);
+    const funcionario = await funcionarioService.getFuncionario(funcionarioId);
 
     if (!funcionario) {
       return { 
@@ -155,7 +160,7 @@ async function getFuncionarioAgendamientos(req) {
       };
     }
 
-    const agendamientos = await funcionarioRepository.getAgendamientosByFuncionario(funcionarioId);
+    const agendamientos = await funcionarioService.getFuncionarioAgendamientos(funcionarioId);
 
     return {
       statusCode: 200,
