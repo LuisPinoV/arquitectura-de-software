@@ -1,6 +1,15 @@
 import {
   InitiateAuthCommand,
+  AdminCreateUserCommand,
+  AdminSetUserPasswordCommand,
+  GlobalSignOutCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/client-dynamodb";
+
+import jwtDecode from "jwt-decode";
 
 export class CognitoRepository {
   cognito_client;
@@ -23,26 +32,54 @@ export class CognitoRepository {
       });
 
       const out = await this.cognito_client.send(cmd);
+      const auth = out.AuthenticationResult;
 
-      if (out.ChallengeName) {
-        // TODO: Manage challenges
-        return out.ChallengeName ?? {};
-      }
+      //Save to logs
+      const userData = this.getUserFromIdToken(auth.IdToken);
 
-      return this.response(200, {
-        ok: true,
-        idToken: auth.IdToken,
-        accessToken: auth.AccessToken,
-        refreshToken: auth.RefreshToken,
-        expiresIn: auth.ExpiresIn,
-      });
+      await dynamo_client.send(
+        new PutCommand({
+          TableName: process.env.TOKENS_TABLE,
+          Item: {
+            userId: userData.sub,
+            refreshToken: auth.RefreshToken,
+            issuedAt: new Date().toISOString(),
+            expiresAt: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            valid: true,
+          },
+        })
+      );
+
+      return auth
+        ? {
+            accessToken: auth.AccessToken,
+            idToken: auth.IdToken,
+            refreshToken: auth.RefreshToken,
+            expiresIn: auth.ExpiresIn,
+          }
+        : {};
     } catch (err) {
       console.error(err);
       return {};
     }
   }
 
-  async createUser(username, password, tableName, userPool) {
+  async logout(accessToken) {
+    try {
+      const cmd = new GlobalSignOutCommand({ AccessToken: accessToken });
+      const res = await this.cognito_client.send(cmd);
+
+      if (res.httpStatusCode == 200) return true;
+      else return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async createUser(username, password, userPool) {
     try {
       const createCmd = new AdminCreateUserCommand({
         UserPoolId: userPool,
@@ -67,11 +104,13 @@ export class CognitoRepository {
         })
       );
 
+      const preferencesTable = process.env.USER_PREFERENCES_TABLE;
+
       const now = new Date().toISOString();
 
       await this.dynamo_client.send(
         new PutCommand({
-          TableName: tableName,
+          TableName: preferencesTable,
           Item: {
             userId: response.User.Username,
             profileType: "default",
@@ -82,18 +121,9 @@ export class CognitoRepository {
         })
       );
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          message: "User created successfully and profile stored in DynamoDB",
-          user: response.User,
-        }),
-      };
+      return true;
     } catch (err) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: err.message }),
-      };
+      return false;
     }
   }
 
@@ -120,37 +150,23 @@ export class CognitoRepository {
     console.error(err);
     return this.response(400, {
       ok: false,
-      error: "No se pudo refrescar el token",
+      error: "Couldn't refresh token",
     });
   }
 
-  async getUserData(claims)
-  {
-
+  getUserFromIdToken(idToken) {
+    const decoded = jwtDecode(idToken);
     return {
-    statusCode: 200,
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      ok: true,
       sub: claims.sub,
-      email: claims.email,
-      username: claims["cognito:username"],
-      groups: claims["cognito:groups"] || [],
-      claims
-    })
-  };
-  }
-
-  response(statusCode, body) {
-    return {
-      statusCode,
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(body),
+      username: decoded["cognito:username"],
+      email: decoded.email,
+      groups: decoded["cognito:groups"],
+      exp: decoded.exp,
     };
   }
-  
 }
 
-export const cognitoRepository = CognitoRepository;
+export const cognitoRepository = new CognitoRepository(
+  new CognitoIdentityProviderClient({}),
+  DynamoDBDocumentClient.from(new DynamoDBClient())
+);

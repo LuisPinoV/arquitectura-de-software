@@ -29,6 +29,7 @@ provider:
     USER_POOL_ID: { Ref: CognitoUserPool }
     USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
     USER_PREFERENCES_TABLE: UserPreferences
+    USER_TOKEN_TABLE: UserCognitoToken
   logs:
     httpApi: true
   httpApi:
@@ -125,7 +126,7 @@ functions:
           path: /especialidades
           method: get
 
-  ## Pacientes
+  ## Usuarios
   pacienteHandler:
     handler: src/handlers/usuarios/usuario.pacienteHandler
     events:
@@ -180,7 +181,6 @@ functions:
       - httpApi:
           path: /agendamiento/resultados
           method: get
-          cors: true
 
   ## Por especialidad
   getAgendamientoEspecialidad:
@@ -372,6 +372,22 @@ resources:
           - AttributeName: profileType
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
+
+    UserTokenTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserCognitoToken
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: refreshToken
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: refreshToken
+            KeyType: RANGE
 
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
