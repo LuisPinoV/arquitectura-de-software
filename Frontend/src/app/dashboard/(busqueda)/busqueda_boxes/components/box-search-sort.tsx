@@ -19,6 +19,7 @@ const sortBy = {
   desc: "Ordenar por...",
   categories: ["Mayor a menor", "Menor a mayor", "Alfabético"],
   default: false,
+  defaultAllSelected:false,
 };
 
 const pagesPerDisplay = {

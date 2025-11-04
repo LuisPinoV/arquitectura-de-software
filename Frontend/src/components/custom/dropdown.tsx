@@ -31,8 +31,8 @@ type DropdownMultipleSelectedProps = {
     categories: string[];
     defaultAllSelected: boolean;
   };
-  value: CheckedState[];
-  onChange: (selected: string) => void;
+  value?: CheckedState[];
+  onChange?: (selected: string) => void;
 };
 
 export function DropdownMenuCheckboxes({
@@ -42,7 +42,9 @@ export function DropdownMenuCheckboxes({
 }: DropdownMultipleSelectedProps) {
 
   const handleChange = (label: string) => {
-    onChange(label);
+
+    if(onChange)
+      onChange(label);
   };
 
   return (
@@ -61,7 +63,7 @@ export function DropdownMenuCheckboxes({
       <DropdownMenuContent className="dropdown-filters">
         <DropdownMenuLabel>{settings.desc}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {settings.categories.map((label: any, i) => (
+        {settings.categories.map((label: any, i) => value ? (
           <DropdownMenuCheckboxItem
             key={label}
             checked={value[i]}
@@ -69,7 +71,7 @@ export function DropdownMenuCheckboxes({
           >
             {label}
           </DropdownMenuCheckboxItem>
-        ))}
+        ): null)}
       </DropdownMenuContent>
     </DropdownMenu>
   );

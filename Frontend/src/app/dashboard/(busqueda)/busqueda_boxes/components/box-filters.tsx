@@ -20,12 +20,14 @@ const filter_specialties = {
     "Especialidad 4",
     "Especialidad 5",
   ],
+  defaultAllSelected: false,
 };
 
 const filter_state = {
   name: "Estado actual",
   desc: "Elija por estado de box...",
   categories: ["Libre", "Ocupado", "Libre especialidad"],
+  defaultAllSelected:false,
 };
 
 export function BoxFilters() {
