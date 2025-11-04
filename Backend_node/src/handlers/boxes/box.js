@@ -10,11 +10,16 @@ const router = AutoRouter();
 
 router
   .post("/box", createBox)
-  .get("/box/:idBox", getBox)
+  .get("/box/agendamientos/:idBox", getBoxAgendamientos)
+  .get("/box/disponibilidad/:idBox/:fecha", getDisponibilidadBox) // ejemploPro: /box/disponibilidad/1/2025-11-04
+  .get("/box/porcentaje-uso/:fecha/:hora", getPorcentajeUsoBoxes) // ejemploPro: /box/porcentaje-uso/2025-11-07/14:30
+  .get("/box/ocupacion-especialidad/:fecha/:hora", getOcupacionPorEspecialidad) // ejemploPro: /box/ocupacion-especialidad/2025-11-07/14:30
+  .get("/box/uso/:idBox/:fecha/:hora", getUsoBox) // ejemploPro: /box/uso/10/2025-11-07/14:00
+  .get("/box/:idBox", getBox)  
   .get("/box", getAllBoxes)
   .put("/box/:idBox", updateBox)
-  .delete("/box/:idBox", deleteBox)
-  .get("/box/agendamientos/:idBox", getBoxAgendamientos);
+  .delete("/box/:idBox", deleteBox);
+
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 
@@ -53,6 +58,86 @@ export const boxHandler = async (event) => {
 };
 
 // Handlers
+
+async function getDisponibilidadBox(req) {
+  const { idBox, fecha } = req.params;
+
+  
+
+  if (!idBox || !fecha) {
+    return { 
+      statusCode: 400, 
+      body: JSON.stringify({ error: "idBox y fecha requeridos" }) 
+    };
+  }
+
+  try {
+    const result = await boxService.getDisponibilidadBox(idBox, fecha);
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error) {
+    console.error("Error en getDisponibilidadBox:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+  }
+}
+
+async function getPorcentajeUsoBoxes(req) {
+  const { fecha, hora } = req.params;
+
+  if (!fecha || !hora) {
+    return { 
+      statusCode: 400, 
+      body: JSON.stringify({ error: "fecha y hora requeridas" }) 
+    };
+  }
+
+  try {
+    const result = await boxService.getPorcentajeUsoBoxes(fecha, hora);
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error) {
+    console.error("Error en getPorcentajeUsoBoxes:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+  }
+}
+
+async function getOcupacionPorEspecialidad(req) {
+  const { fecha, hora } = req.params;
+
+  if (!fecha || !hora) {
+    return { 
+      statusCode: 400, 
+      body: JSON.stringify({ error: "fecha y hora requeridas" }) 
+    };
+  }
+
+  try {
+    const result = await boxService.getOcupacionPorEspecialidad(fecha, hora);
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error) {
+    console.error("Error en getOcupacionPorEspecialidad:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+  }
+}
+
+async function getUsoBox(req) {
+  const { idBox, fecha, hora } = req.params;
+
+  if (!idBox || !fecha || !hora) {
+    return { 
+      statusCode: 400, 
+      body: JSON.stringify({ error: "idBox, fecha y hora requeridos" }) 
+    };
+  }
+
+  try {
+    const result = await boxService.getUsoBox(idBox, fecha, hora);
+    return { statusCode: 200, body: JSON.stringify(result) };
+  } catch (error) {
+    console.error("Error en getUsoBox:", error);
+    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+  }
+}
+
+
 async function createBox(req) {
 
   if(!req.body) return  {
@@ -164,3 +249,4 @@ async function getBoxAgendamientos(req) {
     };
   }
 }
+

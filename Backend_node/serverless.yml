@@ -152,35 +152,6 @@ functions:
 
 
   ## Boxes
-  disponibilidad:
-    handler: src/handlers/boxes/disponibilidad.main
-    events:
-      - httpApi:
-          path: /boxes/disponibilidad
-          method: get
-
-  usoBox:
-    handler: src/handlers/boxes/usoBox.main
-    events:
-      - httpApi:
-          path: /boxes/uso
-          method: get
-
-  porcentajeDeUso:
-    handler: src/handlers/boxes/porcentajeDeUso.main
-    events:
-      - httpApi:
-          path: /boxes/porcentaje-uso
-          method: get
-
-  porcentajeDeOcupacionPorEspecialidadBoxes:
-    handler: src/handlers/boxes/porcentajeDeOcupacionPorEspecialidadBoxes.main
-    name: porcentajeDeOcupacionPorEspecialidadBoxes
-    events:
-      - httpApi:
-          path: /boxes/porcentaje-ocupacion-especialidad
-          method: get
-  
   boxHandler:
     handler: src/handlers/boxes/box.boxHandler
     events:

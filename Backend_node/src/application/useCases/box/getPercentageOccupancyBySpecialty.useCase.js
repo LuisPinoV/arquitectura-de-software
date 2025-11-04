@@ -3,18 +3,12 @@ export class GetPercentageOccupancyBySpecialtyUseCase {
     this.boxRepository = boxRepository;
   }
 
-  async execute(date, time) {
-    const percentageBox =
-      await this.boxRepository.getPercentageOccupancyBySpecialtyUseCase(
-        date,
-        time
-      );
-
-    if (!percentageBox)
-      throw new Error(
-        "Couldn't get box query: percentage occupancy by specialty"
-      );
-
-    return percentageBox;
+  async execute(fecha, hora) {
+    try {
+      const ocupacion = await this.boxRepository.getOcupacionPorEspecialidad(fecha, hora);
+      return ocupacion;
+    } catch (error) {
+      throw new Error("Couldn't get occupancy by specialty");
+    }
   }
 }

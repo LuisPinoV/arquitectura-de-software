@@ -3,12 +3,12 @@ export class GetUsageBoxUseCase {
     this.boxRepository = boxRepository;
   }
 
-  async execute(date, time) {
-
-    const getUsageBox = await this.boxRepository.getUsageBox(idBox, date, time);
-
-    if(!getUsageBox) throw new Error("Couldn't get usage box");
-
-    return getUsageBox; 
+  async execute(idBox, fecha, hora) {
+    try {
+      const uso = await this.boxRepository.getUsoBox(idBox, fecha, hora);
+      return uso;
+    } catch (error) {
+      throw new Error("Couldn't get box usage");
+    }
   }
 }
