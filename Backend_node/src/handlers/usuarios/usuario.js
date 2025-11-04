@@ -14,7 +14,7 @@ router
   .put("/usuario/:usuarioId", updateUsuario)
   .delete("/usuario/:usuarioId", deleteUsuario)
   .get("/usuario/agendamientos/:usuarioId", getUsuarioAgendamientos)
-  .post("/usuario/agendamiento", createAgendamiento);
+  .post("/agendamiento", createAgendamiento);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 

@@ -1,222 +1,117 @@
-import {
-  DynamoDBClient,
-} from "@aws-sdk/client-dynamodb";
+import { IAgendamientoRespository } from "../../domain/agendamiento/repositories/IAgendamientoEspacioRepository";
+import { Agendamiento } from "../../domain/agendamiento/entities/agendamiento";
+import { SpaceUtil } from "../../domain/agendamiento/entities/spaceUtils";
+
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+
 import {
   DynamoDBDocumentClient,
-  PutCommand,
-  GetCommand,
-  UpdateCommand,
-  DeleteCommand,
-  QueryCommand,
   ScanCommand,
+  GetCommand,
+  QueryCommand,
+  DeleteCommand,
+  UpdateCommand,
+  PutCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-const client = new DynamoDBClient();
-const dynamo = DynamoDBDocumentClient.from(client);
-
-export class AgendamientoRepository {
-  constructor(tableName) {
-    this.tableName = tableName;
-    this.dynamo = dynamo;
+class DynamoAgendamientoRepository extends IAgendamientoRespository {
+  constructor() {
+    super();
+    const client = new DynamoDBClient({});
+    this.docClient = DynamoDBDocumentClient.from(client);
+    this.agendamientoTableName = process.env.AGENDAMIENTO_TABLE;
   }
 
-  async createAgendamiento(agendamientoData) {
-    const now = new Date().toISOString();
-    const item = {
-      PK: `AGENDAMIENTO#${agendamientoData.idConsulta}`,
-      SK: "METADATA",
-      tipo: "Agendamiento",
-      ...agendamientoData,
-      createdAt: now,
-      updatedAt: now,
-    };
-    
-    await this.dynamo.send(new PutCommand({ 
-      TableName: this.tableName, 
-      Item: item 
-    }));
-    return item;
-  }
-
-  async getAgendamiento(idConsulta) {
-    const result = await this.dynamo.send(new GetCommand({
-      TableName: this.tableName,
-      Key: { 
-        PK: `AGENDAMIENTO#${idConsulta}`, 
-        SK: "METADATA" 
-      },
-    }));
-    return result.Item || null;
-  }
-
-  async getAllAgendamientos() {
-  console.log("Escaneando tabla:", this.tableName);
-  const command = new ScanCommand({
-    TableName: this.tableName,
-    FilterExpression: "#tipo = :t",
-    ExpressionAttributeNames: { "#tipo": "tipo" },
-    ExpressionAttributeValues: { ":t": "Agendamiento" },
-  });
-  const result = await this.dynamo.send(command);
-  console.log("Items encontrados:", result.Items?.length || 0);
-  return result.Items || [];
-}
-
-
-  async updateAgendamiento(idConsulta, updates) {
-    const now = new Date().toISOString();
-    const updateExpr = [];
-    const exprAttrValues = { ":u": now };
-    const exprAttrNames = {};
-    
-    for (const [key, value] of Object.entries(updates)) {
-      updateExpr.push(`#${key} = :${key}`);
-      exprAttrValues[`:${key}`] = value;
-      exprAttrNames[`#${key}`] = key;
-    }
-    
-    const command = new UpdateCommand({
-      TableName: this.tableName,
-      Key: { 
-        PK: `AGENDAMIENTO#${idConsulta}`, 
-        SK: "METADATA" 
-      },
-      UpdateExpression: `SET ${updateExpr.join(", ")}, updatedAt = :u`,
-      ExpressionAttributeNames: exprAttrNames,
-      ExpressionAttributeValues: exprAttrValues,
-      ReturnValues: "ALL_NEW",
-    });
-    const result = await this.dynamo.send(command);
-    return result.Attributes;
-  }
-
-  async deleteAgendamiento(idConsulta) {
-    const found = await this.dynamo.send(new GetCommand({
-      TableName: this.tableName,
-      Key: { 
-        PK: `AGENDAMIENTO#${idConsulta}`, 
-        SK: "METADATA" 
-      },
-    }));
-    console.log("Agendamiento borrado:", found.Item);
-    
-    const result = await this.dynamo.send(new DeleteCommand({
-      TableName: this.tableName,
-      Key: { 
-        PK: `AGENDAMIENTO#${idConsulta}`, 
-        SK: "METADATA" 
-      },
-      ReturnValues: "ALL_OLD",
-    }));
-    return { idConsulta, deletedItem: result.Attributes || null };
-  }
-
-  
-  async getAgendamientosByPaciente(idPaciente) {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: "AgendamientosPorPaciente",
-      KeyConditionExpression: "PacienteId = :pid",
-      ExpressionAttributeValues: { 
-        ":pid": `PACIENTE#${idPaciente}` 
-      },
-    });
-    const result = await this.dynamo.send(command);
-    return result.Items || [];
-  }
-
-  async getAgendamientosByFuncionario(idFuncionario) {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: "AgendamientosPorFuncionario", 
-      KeyConditionExpression: "FuncionarioId = :fid",
-      ExpressionAttributeValues: { 
-        ":fid": `FUNCIONARIO#${idFuncionario}` 
-      },
-    });
-    const result = await this.dynamo.send(command);
-    return result.Items || [];
-  }
-
-  async getAgendamientosByBox(idBox) {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      IndexName: "AgendamientosPorBox",
-      KeyConditionExpression: "BoxId = :bid",
-      ExpressionAttributeValues: { 
-        ":bid": `BOX#${idBox}` 
-      },
-    });
-    const result = await this.dynamo.send(command);
-    return result.Items || [];
-  }
-
-  async getAgendamientosByFecha(fecha) {
-    const command = new ScanCommand({
-      TableName: this.tableName,
-      FilterExpression: "fecha = :fecha",
-      ExpressionAttributeValues: { 
-        ":fecha": fecha 
-      },
-    });
-    const result = await this.dynamo.send(command);
-    return result.Items || [];
-  }
-  
-  async getEstadosAgendamiento(idConsulta) {
-    const command = new QueryCommand({
-      TableName: this.tableName,
-      KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+  async findById(id) {
+    const params = {
+      TableName: this.agendamientoTableName,
+      KeyConditionExpression: "idAgendamiento = :id",
       ExpressionAttributeValues: {
-        ":pk": `AGENDAMIENTO#${idConsulta}`,
-        ":sk": "ESTADO#"
+        ":id": id,
       },
-    });
-    const result = await this.dynamo.send(command);
-    return result.Items || [];
-  }
-
-  async addEstadoAgendamiento(idConsulta, estado) {
-    const now = new Date().toISOString();
-    const estadoItem = {
-      PK: `AGENDAMIENTO#${idConsulta}`,
-      SK: `ESTADO#${Date.now()}#${Math.floor(Math.random() * 1000)}`,
-      tipo: "EstadoAgendamiento",
-      estado: estado,
-      fechaEstado: now,
     };
-    
-    await this.dynamo.send(new PutCommand({ 
-      TableName: this.tableName, 
-      Item: estadoItem 
-    }));
-    return estadoItem;
+
+    const result = await this.docClient.send(new ScanCommand(params));
+
+    if (!result.Item) return undefined;
+
+    const data = JSON.parse(result.Item.data);
+
+    const utils = data.spaceUtils.map(
+      (item) => new SpaceUtil(item.name, item.quantity)
+    );
+
+    return new Agendamiento(
+      id,
+      data.dateStart,
+      data.dateEnd,
+      data.statePetition,
+      data.personal,
+      utils,
+      data.specialty
+    );
   }
-  
-  async getResultadoConsulta(idConsulta) {
-    const result = await this.dynamo.send(new GetCommand({
-      TableName: this.tableName,
-      Key: { 
-        PK: `AGENDAMIENTO#${idConsulta}`, 
-        SK: "RESULTADO" 
-      },
-    }));
-    return result.Item || null;
+
+  async create(agendamiento) {
+    const data = JSON.stringify(agendamiento);
+    const id = agendamiento.getId();
+
+    try {
+      await this.docClient.send(
+        new PutCommand({
+          TableName: this.agendamientoTableName,
+          Item: {
+            idAgendamiento: id,
+            data: data,
+          },
+        })
+      );
+
+      return { ok: true, agendamiento };
+    } catch (err) {
+      console.error("Failed to insert agendamiento:", err);
+      return { ok: false, error: err };
+    }
   }
 
-  async getAgendamientoCompleto(idConsulta) {
-  
-  const agendamiento = await this.getAgendamiento(idConsulta);
-  if (!agendamiento) return null;
-  const estados = await this.getEstadosAgendamiento(idConsulta);
-  const resultado = await this.getResultadoConsulta(idConsulta);
+  async delete(id) {
+    try {
+      await this.docClient.send(
+        new DeleteCommand({
+          TableName: this.agendamientoTableName,
+          Key: { idAgendamiento: id },
+          ConditionExpression: "attribute_exists(id)",
+        })
+      );
+      return { ok: true };
+    } catch (err) {
+      console.error("Delete failed:", err);
+      return { ok: false, error: err };
+    }
+  }
 
-  return {
-    agendamiento,
-    estados,
-    resultado
-  };
-}
+  async update(agendamiento) {
+    const updateExpression = [];
+    const expressionAttributeValues = {};
+
+    const dataJsonString = JSON.stringify(agendamiento);
+    const dataJson = JSON.parse(dataJsonString);
+
+    for (const key in dataJson) {
+      updateExpression.push(`${key} = :${key}`);
+      expressionAttributeValues[`:${key}`] = dataJson[key];
+    }
+
+    await docClient.send(
+      new UpdateCommand({
+        TableName: this.agendamientoTableName,
+        Key: { idAgendamiento: agendamiento.id },
+        UpdateExpression: "SET " + updateExpression.join(", "),
+        ExpressionAttributeValues: expressionAttributeValues,
+        ReturnValues: "ALL_NEW",
+      })
+    );
+  }
 }
 
-export const agendamientoRepository = new AgendamientoRepository("Agendamiento");
+export const agendamientoRepository = DynamoAgendamientoRepository;
