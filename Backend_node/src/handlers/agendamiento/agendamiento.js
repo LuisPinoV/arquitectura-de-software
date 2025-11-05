@@ -13,6 +13,10 @@ router
   .get("/agendamiento/funcionario/:idFuncionario", getAgendamientosByFuncionario) // ej: /agendamiento/funcionario/1
   .get("/agendamiento/box/:idBox", getAgendamientosByBox) // ej: /agendamiento/box/1
   .get("/agendamiento/fecha/:fecha", getAgendamientosByFecha) // ej: /agendamiento/fecha/2025-11-04
+  .get("/agendamiento/especialidad/:especialidad", getAgendamientosByEspecialidad) // ej: /agendamiento/especialidad/cardiologia TIENE QUE IR SIEMPRE SIN TILDE LA BUSQUEDA JIJI
+  .get("/agendamiento/estadisticas/especialidad/conteo", getCountAgendamientosPorEspecialidad) // ej: /agendamiento/estadisticas/especialidad/conteo
+  .get("/agendamiento/estadisticas/especialidad/conteo-rango/:fechaInicio/:fechaFin", getCountAgendamientosPorEspecialidadRangoFechas) // ej: /agendamiento/estadisticas/especialidad/conteo-rango/2025-01-01/2025-12-31
+  .get("/agendamiento/estadisticas/especialidad/ocupacion/:fechaInicio/:fechaFin", getPorcentajeOcupacionPorEspecialidad) // ej: /agendamiento/estadisticas/especialidad/ocupacion/2024-01-01/2024-12-31
   .get("/agendamiento/estados/:idConsulta", getEstadosAgendamiento) // ej: /agendamiento/estados/1
   .post("/agendamiento/estado/:idConsulta", addEstadoAgendamiento) // ej: POST /agendamiento/estado/1
   .get("/agendamiento/resultado/:idConsulta", getResultadoConsulta) // ej: /agendamiento/resultado/1
@@ -231,6 +235,120 @@ async function getAgendamientosByFecha(req) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+
+
+async function getAgendamientosByEspecialidad(req) {
+  const { especialidad } = req.params;
+
+  if (!especialidad) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "especialidad requerida" }),
+    };
+  }
+
+  try {
+    const agendamientos = await agendamientoService.getAgendamientosByEspecialidad(especialidad);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(agendamientos) 
+    };
+  } catch (error) {
+    console.error("Error al obtener agendamientos por especialidad:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno del servidor" }),
+    };
+  }
+}
+
+async function getCountAgendamientosPorEspecialidad(_) {
+  try {
+    const conteo = await agendamientoService.getCountAgendamientosPorEspecialidad();
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(conteo) 
+    };
+  } catch (error) {
+    console.error("Error al obtener conteo por especialidad:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: "Error interno del servidor",
+        details: error.message 
+      }),
+    };
+  }
+}
+
+async function getCountAgendamientosPorEspecialidadRangoFechas(req) {
+  try {
+    // Ahora con req.params
+    const { fechaInicio, fechaFin } = req.params;
+    
+    console.log("Parámetros recibidos:", { fechaInicio, fechaFin });
+    
+    // La validación sigue igual
+    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ 
+          error: "Formato de fecha inválido. Use YYYY-MM-DD" 
+        }),
+      };
+    }
+
+    const resultado = await agendamientoService.getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(resultado) 
+    };
+  } catch (error) {
+    console.error("Error al obtener conteo por especialidad en rango:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: "Error interno del servidor",
+        details: error.message 
+      }),
+    };
+  }
+}
+
+async function getPorcentajeOcupacionPorEspecialidad(req) {
+  try {
+    // Ahora con req.params
+    const { fechaInicio, fechaFin } = req.params;
+    
+    console.log("Parámetros recibidos:", { fechaInicio, fechaFin });
+    
+    const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ 
+          error: "Formato de fecha inválido. Use YYYY-MM-DD" 
+        }),
+      };
+    }
+
+    const resultado = await agendamientoService.getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(resultado) 
+    };
+  } catch (error) {
+    console.error("Error al obtener porcentaje de ocupación:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: "Error interno del servidor",
+        details: error.message 
+      }),
     };
   }
 }

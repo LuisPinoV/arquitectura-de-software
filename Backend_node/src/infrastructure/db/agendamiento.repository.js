@@ -162,6 +162,242 @@ export class AgendamientoRepository {
     const result = await this.dynamo.send(command);
     return result.Items || [];
   }
+
+
+  async getAgendamientosByEspecialidad(especialidadNombre) {
+  try {
+    const especialidadNormalizada = this.normalizarEspecialidad(especialidadNombre);
+    const boxesCommand = new ScanCommand({
+      TableName: this.tableName,
+      FilterExpression: "#tipo = :tipoBox",
+      ExpressionAttributeNames: { 
+        "#tipo": "tipo" 
+      },
+      ExpressionAttributeValues: { 
+        ":tipoBox": "Box"
+      },
+    });
+    
+    const boxesResult = await this.dynamo.send(boxesCommand);
+    const boxesFiltrados = boxesResult.Items?.filter(box => 
+      this.normalizarEspecialidad(box.especialidad) === especialidadNormalizada
+    ) || [];
+    const boxIds = boxesFiltrados.map(box => box.idBox);
+    
+    if (boxIds.length === 0) {
+      console.log(`No se encontraron boxes para especialidad: ${especialidadNombre}`);
+      return [];
+    }
+    
+    const agendamientosPromises = boxIds.map(boxId => 
+      this.getAgendamientosByBox(boxId)
+    );
+    
+    const agendamientosPorBox = await Promise.all(agendamientosPromises);
+    const todosAgendamientos = agendamientosPorBox.flat();
+    
+    return todosAgendamientos;
+    
+  } catch (error) {
+    console.error("Error en getAgendamientosByEspecialidad:", error);
+    throw error;
+  }
+}
+normalizarEspecialidad(especialidad) {
+  if (!especialidad) return '';
+  
+  return especialidad
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") 
+    .replace(/\s+/g, "");
+}
+
+async getCountAgendamientosPorEspecialidad() {
+  try {
+    console.log("Obteniendo conteo de agendamientos por especialidad...");
+    
+    // Obtener todas las especialidades únicas
+    const boxesCommand = new ScanCommand({
+      TableName: this.tableName,
+      FilterExpression: "#tipo = :tipoBox",
+      ExpressionAttributeNames: { "#tipo": "tipo" },
+      ExpressionAttributeValues: { ":tipoBox": "Box" },
+    });
+    
+    const boxesResult = await this.dynamo.send(boxesCommand);
+    const especialidadesUnicas = [...new Set(boxesResult.Items?.map(box => box.especialidad).filter(Boolean))];
+    
+    console.log(`Especialidades encontradas: ${especialidadesUnicas.length}`);
+    
+    // Contar agendamientos por cada especialidad
+    const conteoPorEspecialidad = {};
+    
+    for (const especialidad of especialidadesUnicas) {
+      const agendamientos = await this.getAgendamientosByEspecialidad(especialidad);
+      conteoPorEspecialidad[especialidad] = agendamientos.length;
+    }
+    
+    // Ordenar por cantidad descendente
+    const resultadoOrdenado = Object.entries(conteoPorEspecialidad)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((acc, [especialidad, count]) => {
+        acc[especialidad] = count;
+        return acc;
+      }, {});
+    
+    console.log("Conteo por especialidad:", resultadoOrdenado);
+    
+    return resultadoOrdenado;
+    
+  } catch (error) {
+    console.error("Error en getCountAgendamientosPorEspecialidad:", error);
+    throw error;
+  }
+}
+
+async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin) {
+  try {
+    console.log(`Obteniendo conteo por especialidad entre ${fechaInicio} y ${fechaFin}`);
+    
+    if (!fechaInicio || !fechaFin) {
+      throw new Error("fechaInicio y fechaFin son requeridos");
+    }
+    const boxesCommand = new ScanCommand({
+      TableName: this.tableName,
+      FilterExpression: "#tipo = :tipoBox",
+      ExpressionAttributeNames: { "#tipo": "tipo" },
+      ExpressionAttributeValues: { ":tipoBox": "Box" },
+    });
+    
+    const boxesResult = await this.dynamo.send(boxesCommand);
+    const especialidadesUnicas = [...new Set(boxesResult.Items?.map(box => box.especialidad).filter(Boolean))];
+    
+    console.log(`Especialidades encontradas: ${especialidadesUnicas.length}`);
+    
+    const conteoPorEspecialidad = {};
+    
+    for (const especialidad of especialidadesUnicas) {
+      const agendamientos = await this.getAgendamientosByEspecialidad(especialidad);
+      
+      const agendamientosFiltrados = agendamientos.filter(ag => {
+        const fechaAgendamiento = ag.fecha;
+        return fechaAgendamiento >= fechaInicio && fechaAgendamiento <= fechaFin;
+      });
+      
+      conteoPorEspecialidad[especialidad] = agendamientosFiltrados.length;
+    }
+    const resultadoOrdenado = Object.entries(conteoPorEspecialidad)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((acc, [especialidad, count]) => {
+        acc[especialidad] = count;
+        return acc;
+      }, {});
+    
+    console.log("Conteo por especialidad en rango de fechas:", resultadoOrdenado);
+    
+    return {
+      fechaInicio,
+      fechaFin,
+      conteo: resultadoOrdenado,
+      total: Object.values(conteoPorEspecialidad).reduce((sum, count) => sum + count, 0)
+    };
+    
+  } catch (error) {
+    console.error("Error en getCountAgendamientosPorEspecialidadRangoFechas:", error);
+    throw error;
+  }
+}
+
+async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
+  try {
+    console.log(`Calculando porcentaje de ocupación por especialidad entre ${fechaInicio} y ${fechaFin}`);
+    
+    
+    const conteoResultado = await this.getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin);
+    
+    const boxesCommand = new ScanCommand({
+      TableName: this.tableName,
+      FilterExpression: "#tipo = :tipoBox",
+      ExpressionAttributeNames: { "#tipo": "tipo" },
+      ExpressionAttributeValues: { ":tipoBox": "Box" },
+    });
+    
+    const boxesResult = await this.dynamo.send(boxesCommand);
+    
+    // Calcular capacidad máxima por especialidad
+    const capacidadPorEspecialidad = {};
+    const boxesPorEspecialidad = {};
+    
+    boxesResult.Items?.forEach(box => {
+      const especialidad = box.especialidad;
+      if (!especialidad) return;
+      
+      if (!capacidadPorEspecialidad[especialidad]) {
+        capacidadPorEspecialidad[especialidad] = 0;
+        boxesPorEspecialidad[especialidad] = 0;
+      }
+      
+      // Sumar capacidad del box (asumiendo que capacidad es el número máximo de pacientes por día)
+      capacidadPorEspecialidad[especialidad] += box.capacidad || 1;
+      boxesPorEspecialidad[especialidad]++;
+    });
+    
+    // Calcular porcentaje de ocupación
+    const porcentajeOcupacion = {};
+    
+    Object.entries(conteoResultado.conteo).forEach(([especialidad, count]) => {
+      const capacidad = capacidadPorEspecialidad[especialidad] || 1;
+      
+      // Calcular días en el rango
+      const diasRango = this.calcularDiasEntreFechas(fechaInicio, fechaFin);
+      
+      // Capacidad total en el período = capacidad por día * número de días
+      const capacidadTotal = capacidad * diasRango;
+      
+      // Porcentaje de ocupación
+      const porcentaje = capacidadTotal > 0 ? (count / capacidadTotal) * 100 : 0;
+      
+      porcentajeOcupacion[especialidad] = {
+        agendamientos: count,
+        capacidadDiaria: capacidad,
+        capacidadTotalPeriodo: capacidadTotal,
+        porcentajeOcupacion: Math.round(porcentaje * 100) / 100, // Redondear a 2 decimales
+        boxes: boxesPorEspecialidad[especialidad] || 0
+      };
+    });
+    
+    // Ordenar por porcentaje de ocupación descendente
+    const resultadoOrdenado = Object.entries(porcentajeOcupacion)
+      .sort(([, a], [, b]) => b.porcentajeOcupacion - a.porcentajeOcupacion)
+      .reduce((acc, [especialidad, datos]) => {
+        acc[especialidad] = datos;
+        return acc;
+      }, {});
+    
+    console.log("Porcentaje de ocupación por especialidad:", resultadoOrdenado);
+    
+    return {
+      fechaInicio,
+      fechaFin,
+      diasPeriodo: this.calcularDiasEntreFechas(fechaInicio, fechaFin),
+      ocupacion: resultadoOrdenado
+    };
+    
+  } catch (error) {
+    console.error("Error en getPorcentajeOcupacionPorEspecialidad:", error);
+    throw error;
+  }
+}
+
+// Función auxiliar para calcular días entre fechas
+calcularDiasEntreFechas(fechaInicio, fechaFin) {
+  const inicio = new Date(fechaInicio);
+  const fin = new Date(fechaFin);
+  const diferenciaTiempo = fin.getTime() - inicio.getTime();
+  const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24)) + 1; // +1 para incluir ambos extremos
+  return Math.max(diferenciaDias, 1); // Mínimo 1 día
+}
   
   async getEstadosAgendamiento(idConsulta) {
     const command = new QueryCommand({

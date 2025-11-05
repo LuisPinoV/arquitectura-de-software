@@ -1,4 +1,4 @@
-// Use cases
+// agendamiento.service.js - VERSIÓN CORREGIDA
 import { GetAgendamientoUseCase } from "../useCases/agendamiento/getAgendamiento.useCase.js";
 import { GetAllAgendamientosUseCase } from "../useCases/agendamiento/getAllAgendamientos.useCase.js"; 
 import { GetAgendamientoCompletoUseCase } from "../useCases/agendamiento/getAgendamientoCompleto.useCase.js";
@@ -9,6 +9,10 @@ import { GetAgendamientosByPacienteUseCase } from "../useCases/agendamiento/getA
 import { GetAgendamientosByFuncionarioUseCase } from "../useCases/agendamiento/getAgendamientosByFuncionario.useCase.js";
 import { GetAgendamientosByBoxUseCase } from "../useCases/agendamiento/getAgendamientosByBox.useCase.js";
 import { GetAgendamientosByFechaUseCase } from "../useCases/agendamiento/getAgendamientosByFecha.useCase.js";
+import { GetAgendamientosByEspecialidadUseCase } from "../useCases/agendamiento/getAgendamientosByEspecialidad.useCase.js";
+import { GetCountAgendamientosPorEspecialidadUseCase } from "../useCases/agendamiento/getCountAgendamientosPorEspecialidad.useCase.js";
+import { GetCountAgendamientosPorEspecialidadRangoFechasUseCase } from "../useCases/agendamiento/getCountAgendamientosPorEspecialidadRangoFechas.useCase.js"; // ← Corregir nombre
+import { GetPorcentajeOcupacionPorEspecialidadUseCase } from "../useCases/agendamiento/getPorcentajeOcupacionPorEspecialidad.useCase.js";
 import { GetEstadosAgendamientoUseCase } from "../useCases/agendamiento/getEstadosAgendamiento.useCase.js";
 import { AddEstadoAgendamientoUseCase } from "../useCases/agendamiento/addEstadoAgendamiento.useCase.js";
 import { GetResultadoConsultaUseCase } from "../useCases/agendamiento/getResultadoConsulta.useCase.js";
@@ -69,6 +73,26 @@ export class AgendamientoService {
     return await getAgendamientosByFecha.execute(fecha);
   }
 
+  async getAgendamientosByEspecialidad(especialidadNombre) {
+    const getAgendamientosByEspecialidad = new GetAgendamientosByEspecialidadUseCase(this.agendamientoRepository);
+    return await getAgendamientosByEspecialidad.execute(especialidadNombre);
+  }
+
+  async getCountAgendamientosPorEspecialidad() {
+    const useCase = new GetCountAgendamientosPorEspecialidadUseCase(this.agendamientoRepository);
+    return await useCase.execute();
+  }
+
+  async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin) {
+    const useCase = new GetCountAgendamientosPorEspecialidadRangoFechasUseCase(this.agendamientoRepository);
+    return await useCase.execute(fechaInicio, fechaFin);
+  }
+
+  async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
+    const useCase = new GetPorcentajeOcupacionPorEspecialidadUseCase(this.agendamientoRepository);
+    return await useCase.execute(fechaInicio, fechaFin);
+  }
+
   async getEstadosAgendamiento(idConsulta) {
     const getEstadosAgendamiento = new GetEstadosAgendamientoUseCase(this.agendamientoRepository);
     return await getEstadosAgendamiento.execute(idConsulta);
@@ -83,8 +107,9 @@ export class AgendamientoService {
     const getResultadoConsulta = new GetResultadoConsultaUseCase(this.agendamientoRepository);
     return await getResultadoConsulta.execute(idConsulta);
   }
+
   async getAgendamientoCompleto(idConsulta) {
     const getAgendamientoCompleto = new GetAgendamientoCompletoUseCase(this.agendamientoRepository);
-  return await getAgendamientoCompleto.execute(idConsulta);
-}
+    return await getAgendamientoCompleto.execute(idConsulta);
+  }
 }

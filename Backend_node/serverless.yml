@@ -22,7 +22,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::626218016489:role/LabRole
+  role: arn:aws:iam::905418069528:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -158,14 +158,6 @@ functions:
 
   
   ## Por especialidad
-  getAgendamientoEspecialidad:
-    handler: src/handlers/agendamiento/especialidad/getAgendamientoEspecialidad.main
-    name: getAgendamientoEspecialidad
-    events:
-      - httpApi:
-          path: /agendamiento/especialidad
-          method: get
-
   getCountAgendamientosPorEspecialidad:
     handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
     name: getCountAgendamientosPorEspecialidad
