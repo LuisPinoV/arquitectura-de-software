@@ -4,16 +4,16 @@ import {
   AdminSetUserPasswordCommand,
   GlobalSignOutCommand,
   GetUserCommand,
+  CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
-  DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
-import jwtDecode from "jwt-decode";
+import jwt from "jsonwebtoken";
 
 export class CognitoRepository {
   cognito_client;
@@ -171,9 +171,10 @@ export class CognitoRepository {
   }
 
   getUserFromIdToken(idToken) {
-    const decoded = jwtDecode(idToken);
+    const decoded = jwt.decode(idToken);
+
     return {
-      sub: claims.sub,
+      sub: decoded.sub,
       username: decoded["cognito:username"],
       email: decoded.email,
       groups: decoded["cognito:groups"],

@@ -60,9 +60,7 @@ export const boxHandler = async (event) => {
 // Handlers
 
 async function getDisponibilidadBox(req) {
-  const { idBox, fecha } = req.params;
-
-  
+  const { idBox, fecha } = req.params;  
 
   if (!idBox || !fecha) {
     return { 

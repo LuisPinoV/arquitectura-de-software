@@ -1,15 +1,17 @@
-import { LoginUseCase } from "../useCases/auth/cognito/login.useCase";
 
-import { cognitoRepository } from "../../infrastructure/auth/cognito.repository";
-import { tokenRepository } from "../../infrastructure/auth/token.repository";
+//Use cases
+import { LoginUseCase } from "../useCases/auth/cognito/login.useCase.js";
+import { LogoutUseCase } from "../useCases/auth/cognito/logout.useCase.js";
+import { GetUserDataUseCase } from "../useCases/auth/cognito/getUserData.useCase.js";
+import { SaveResfreshTokenUseCase } from "../useCases/auth/tokens/saveRefreshToken.useCase.js";
+import { InvalidateTokenUseCase } from "../useCases/auth/tokens/invalidateToken.useCase.js";
+import { DecodeAccessTokenUseCase } from "../useCases/auth/tokens/decodeAccessToken.useCase.js";
+import { RefreshUseCase } from "../useCases/auth/cognito/refresh.useCase.js";
+import { UpdateResfreshTokenUseCase } from "../useCases/auth/tokens/updateRefreshToken.useCase.js";
 
-import { LogoutUseCase } from "../useCases/auth/cognito/logout.useCase";
-import { GetUserDataUseCase } from "../useCases/auth/cognito/getUserData.useCase";
-import { SaveResfreshTokenUseCase } from "../useCases/auth/tokens/saveRefreshToken.useCase";
-import { InvalidateTokenUseCase } from "../useCases/auth/tokens/invalidateToken.useCase";
-import { DecodeAccessTokenUseCase } from "../useCases/auth/tokens/decodeAccessToken.useCase";
-import { RefreshUseCase } from "../useCases/auth/cognito/refresh.useCase";
-import { UpdateResfreshTokenUseCase } from "../useCases/auth/tokens/updateRefreshToken.useCase";
+//Repositories
+import { cognitoRepository } from "../../infrastructure/auth/cognito.repository.js";
+import { tokenRepository } from "../../infrastructure/auth/token.repository.js";
 
 export class AuthService {
   constructor() {

@@ -16,6 +16,7 @@
     "serverless-prune-plugin": "^2.1.0"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.922.0",
     "@aws-sdk/client-dynamodb": "^3.x",
     "@aws-sdk/lib-dynamodb": "^3.x",
     "@faker-js/faker": "^10.0.0",
