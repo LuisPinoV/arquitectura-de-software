@@ -22,7 +22,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::905418069528:role/LabRole
+  role: arn:aws:iam::626218016489:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -84,6 +84,7 @@ functions:
       - httpApi:
           method: any
           path: /auth/{proxy+}
+      - authorizer: none
 
   ### APIS
 

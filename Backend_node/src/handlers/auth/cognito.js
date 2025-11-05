@@ -8,11 +8,10 @@ const authService = new AuthService();
 //Routing
 const router = AutoRouter();
 
-router
-  .post("/auth/createUser", createUser)
-  //.post("/auth/login", loginUser)
-  //.post("/auth/logout", logoutUser) 
-  //.post("/auth/refresh", refreshUser);
+router.post("/auth/createUser", createUser);
+//.post("/auth/login", loginUser)
+//.post("/auth/logout", logoutUser)
+//.post("/auth/refresh", refreshUser);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 
@@ -50,10 +49,8 @@ export const cognitoHandler = async (event) => {
   }
 };
 
-async function createUser(req)
-{
-    const { userName, password } = JSON.parse(req.body);
+async function createUser(req) {
+  const { username, password } = req.json();
 
-    console.log(userName);
-
+  console.log(username);
 }
