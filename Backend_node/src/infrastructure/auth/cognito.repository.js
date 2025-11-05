@@ -3,11 +3,15 @@ import {
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
   GlobalSignOutCommand,
+  GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  DeleteCommand,
+} from "@aws-sdk/lib-dynamodb";
 
 import jwtDecode from "jwt-decode";
 
@@ -34,35 +38,20 @@ export class CognitoRepository {
       const out = await this.cognito_client.send(cmd);
       const auth = out.AuthenticationResult;
 
-      //Save to logs
       const userData = this.getUserFromIdToken(auth.IdToken);
-
-      await dynamo_client.send(
-        new PutCommand({
-          TableName: process.env.TOKENS_TABLE,
-          Item: {
-            userId: userData.sub,
-            refreshToken: auth.RefreshToken,
-            issuedAt: new Date().toISOString(),
-            expiresAt: new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000
-            ).toISOString(),
-            valid: true,
-          },
-        })
-      );
 
       return auth
         ? {
+            sub: userData.sub,
             accessToken: auth.AccessToken,
             idToken: auth.IdToken,
             refreshToken: auth.RefreshToken,
             expiresIn: auth.ExpiresIn,
           }
-        : {};
+        : null;
     } catch (err) {
       console.error(err);
-      return {};
+      return null;
     }
   }
 
@@ -71,8 +60,9 @@ export class CognitoRepository {
       const cmd = new GlobalSignOutCommand({ AccessToken: accessToken });
       const res = await this.cognito_client.send(cmd);
 
-      if (res.httpStatusCode == 200) return true;
-      else return false;
+      if (res.httpStatusCode == 200) {
+        return true;
+      } else return false;
     } catch (err) {
       console.error(err);
       return false;
@@ -108,6 +98,7 @@ export class CognitoRepository {
 
       const now = new Date().toISOString();
 
+      //TODO: Create SNS and Invoke instead of adding stuff here
       await this.dynamo_client.send(
         new PutCommand({
           TableName: preferencesTable,
@@ -136,22 +127,47 @@ export class CognitoRepository {
       },
     });
 
-    const out = await this.cognito_client.send(cmd);
-    const auth = out.AuthenticationResult || {};
+    try {
+      const out = await this.cognito_client.send(cmd);
+      const auth = out.AuthenticationResult;
 
-    return this.response(200, {
-      ok: true,
-      idToken: auth.IdToken,
-      accessToken: auth.AccessToken,
-      expiresIn: auth.ExpiresIn,
-    });
+      if(auth)
+      {
+        const userData = this.getUserFromIdToken(auth.idToken);
+
+        return {
+            ok: true,
+            sub: userData.sub,
+            idToken: auth.IdToken,
+            accessToken: auth.AccessToken,
+            refreshToken: auth.refreshToken,
+            expiresIn: auth.ExpiresIn,
+          };
+      }
+
+      else
+        return null;
+
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   }
-  catch(err) {
-    console.error(err);
-    return this.response(400, {
-      ok: false,
-      error: "Couldn't refresh token",
+
+  async getUserData(accessToken) {
+    const cmd = new GetUserCommand({
+      AccessToken: accessToken,
     });
+
+    try {
+      const response = await this.cognito_client.send(cmd);
+
+      if (response) return response;
+      else null;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
   }
 
   getUserFromIdToken(idToken) {
