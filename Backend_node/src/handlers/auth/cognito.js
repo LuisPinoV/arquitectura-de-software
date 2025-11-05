@@ -53,4 +53,9 @@ async function createUser(req) {
   const { username, password } = req.json();
 
   console.log(username);
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ message: "Ok" }),
+  };
 }
