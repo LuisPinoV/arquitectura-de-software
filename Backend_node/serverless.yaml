@@ -1,3 +1,4 @@
+app: arqui
 service: arquitectura-serverless
 
 plugins:
@@ -265,91 +266,6 @@ package:
 
 resources:
   Resources:
-    AgendamientoTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: Agendamiento
-        AttributeDefinitions:
-          - AttributeName: PK
-            AttributeType: S
-          - AttributeName: SK
-            AttributeType: S
-          - AttributeName: PacienteId
-            AttributeType: S
-          - AttributeName: FechaPaciente
-            AttributeType: S
-          - AttributeName: FuncionarioId
-            AttributeType: S
-          - AttributeName: FechaFuncionario
-            AttributeType: S
-          - AttributeName: BoxId
-            AttributeType: S
-          - AttributeName: FechaBox
-            AttributeType: S
-        KeySchema:
-          - AttributeName: PK
-            KeyType: HASH
-          - AttributeName: SK
-            KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-        GlobalSecondaryIndexes:
-          - IndexName: AgendamientosPorPaciente
-            KeySchema:
-              - AttributeName: PacienteId
-                KeyType: HASH
-              - AttributeName: FechaPaciente
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: AgendamientosPorFuncionario
-            KeySchema:
-              - AttributeName: FuncionarioId
-                KeyType: HASH
-              - AttributeName: FechaFuncionario
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: AgendamientosPorBox
-            KeySchema:
-              - AttributeName: BoxId
-                KeyType: HASH
-              - AttributeName: FechaBox
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-    
-    UserPreferencesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: UserPreferences
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: profileType
-            AttributeType: S
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-          - AttributeName: profileType
-            KeyType: RANGE
-        BillingMode: PAY_PER_REQUEST
-
-    UserTokenTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: UserCognitoToken
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: refreshToken
-            AttributeType: S
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-          - AttributeName: refreshToken
-            KeyType: RANGE
-
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
