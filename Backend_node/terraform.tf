@@ -89,6 +89,11 @@ resource "aws_dynamodb_table" "user_preferences" {
     name = "profileType"
     type = "S"
   }
+  
+    tags = {
+    Environment = "Dev"
+    Feature     = "BlueGreenDeploy"
+  }
 }
 
 # S3

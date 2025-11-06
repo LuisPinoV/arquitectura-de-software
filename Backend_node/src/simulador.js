@@ -1,4 +1,3 @@
-
 const AWS = require("aws-sdk");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
@@ -161,8 +160,6 @@ class Agendamiento {
   }
 }
 
-
-
 module.exports.poblarDynamo = async () => {
   faker = (await getFaker()); 
 
@@ -176,7 +173,6 @@ module.exports.poblarDynamo = async () => {
   const tiposFuncionario = ["MedicoGeneral", "Enfermero", "EncargadoDePasillo"];
   const estadosAgendamiento = ["Completada", "Cancelada"];
 
- 
   const especialidadObjs = especialidades.map((e, i) => new Especialidad(i + 1, e));
   const boxObjs = Array.from({ length: NUM_BOXES }).map((_, i) =>
     new Box(i + 1, faker.helpers.arrayElement(especialidadObjs))
@@ -187,7 +183,6 @@ module.exports.poblarDynamo = async () => {
   const pacienteObjs = Array.from({ length: NUM_PACIENTES }).map((_, i) =>
     new Paciente(i + 1)
   );
-
 
   const START_HOUR = 8;
   const END_HOUR = 17;
@@ -204,43 +199,31 @@ module.exports.poblarDynamo = async () => {
     boxScheduleState[b.id] = { slotIndex: 0, dayOffset: 0 };
   }
 
-  
   const fechaBaseStart = faker.date.soon({ days: 7 });
   fechaBaseStart.setHours(0, 0, 0, 0);
-
 
   const items = [];
   let agendamientosCount = 0;
 
   for (let i = 0; i < NUM_AGENDAMIENTOS; i++) {
     const box = boxObjs[i % boxObjs.length];
-
     const state = boxScheduleState[box.id];
-
     const fechaObj = new Date(fechaBaseStart);
     fechaObj.setDate(fechaObj.getDate() + state.dayOffset);
     const fecha = fechaObj.toISOString().split("T")[0];
-
     const slotIdx = state.slotIndex % SLOTS_PER_DAY;
     const horaEntrada = bloques[slotIdx];
-
     state.slotIndex++;
     if (state.slotIndex >= SLOTS_PER_DAY) {
       state.slotIndex = 0;
       state.dayOffset++;
     }
-
-
     const paciente = faker.helpers.arrayElement(pacienteObjs);
     const funcionario = faker.helpers.arrayElement(funcionarioObjs.filter(f => ["MedicoGeneral", "Enfermero"].includes(f.tipoFuncionario)));
-
     const estado = faker.helpers.arrayElement(estadosAgendamiento);
-
     const ag = new Agendamiento(i + 1, paciente, funcionario, box, estado, fecha, horaEntrada);
-
     const agItems = ag.toItems();
     for (const it of agItems) items.push(it);
-
     agendamientosCount++;
   }
 
@@ -263,10 +246,36 @@ module.exports.poblarDynamo = async () => {
     await dynamodb.batchWrite(params).promise();
   }
 
+  // ======================================================
+  // AGREGAR COLOR A LOS USUARIOS (90% blue, 10% green)
+  // ======================================================
+  function assignDeploymentColor() {
+    const rand = Math.random();
+    return rand < 0.9 ? "blue" : "green";
+  }
+
+  const TABLE_USER_PREFERENCES = "UserPreferences";
+
+  const userPreferences = pacienteObjs.map((p) => ({
+    userId: `PACIENTE#${p.id}`,
+    profileType: "DEFAULT",
+    color: assignDeploymentColor(),
+  }));
+
+  for (let i = 0; i < userPreferences.length; i += 25) {
+    const batch = userPreferences.slice(i, i + 25);
+    const params = {
+      RequestItems: {
+        [TABLE_USER_PREFERENCES]: batch.map((item) => ({ PutRequest: { Item: item } })),
+      },
+    };
+    await dynamodb.batchWrite(params).promise();
+  }
+
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: "Se poblaron datos de agendamiento",
+      message: "Se poblaron datos de agendamiento y colores de usuarios",
       stats: {
         especialidades: especialidadObjs.length,
         boxes: boxObjs.length,
