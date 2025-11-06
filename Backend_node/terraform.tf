@@ -209,31 +209,32 @@ resource "aws_apigatewayv2_authorizer" "cognito_jwt" {
   }
 }
 
-
-# poblador
-
-
-resource "null_resource" "populate_dynamo" {
-  depends_on = [
-    aws_dynamodb_table.agendamiento,
-    aws_dynamodb_table.user_preferences
-  ]
-
-  provisioner "local-exec" {
-    working_dir = "${path.module}"
-    command     = "node src/simulador.cjs"
-
-    environment = {
-      TABLE              = aws_dynamodb_table.agendamiento.name
-      NUM_AGENDAMIENTOS  = "10000"
-      NUM_BOXES          = "120"
-      NUM_FUNCIONARIOS   = "50"
-      NUM_PACIENTES      = "100"
-    }
-  }
+# S3
+/*
+resource "aws_s3_bucket" "frontend" {
+  bucket = "frontend-app-uni-20251234567890" # nombre fijo
 }
 
+resource "aws_s3_bucket_public_access_block" "frontend_block" {
+  bucket                  = aws_s3_bucket.frontend.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
 
+resource "aws_s3_bucket_website_configuration" "frontend_site" {
+  bucket = aws_s3_bucket.frontend.bucket
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html" # importante para apps SPA/Next export
+  }
+}
+*/
 
 # Outputs
 
@@ -249,3 +250,28 @@ output "user_pool_client_id" {
 output "http_api_url" {
   value = aws_apigatewayv2_api.http_api.api_endpoint
 }
+
+
+# SERVERLESS
+
+resource "null_resource" "deploy_serverless" {
+  depends_on = [
+    aws_dynamodb_table.agendamiento,
+    aws_dynamodb_table.user_preferences,
+    aws_cognito_user_pool.user_pool,
+    aws_cognito_user_pool_client.user_pool_client,
+    aws_apigatewayv2_api.http_api
+  ]
+
+  provisioner "local-exec" {
+    interpreter = ["cmd", "/C"]
+    command = <<-EOT
+      echo Desplegando funciones Serverless...
+      set USER_POOL_ID=${aws_cognito_user_pool.user_pool.id}
+      set USER_POOL_CLIENT_ID=${aws_cognito_user_pool_client.user_pool_client.id}
+      set API_URL=${aws_apigatewayv2_api.http_api.api_endpoint}
+      npx serverless deploy --config serverless_terraform.yml
+    EOT
+  }
+}
+
