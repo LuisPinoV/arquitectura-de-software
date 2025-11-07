@@ -8,10 +8,10 @@ const authService = new AuthService();
 //Routing
 const router = AutoRouter();
 
-router.post("/auth/createUser", createUser);
-//.post("/auth/login", loginUser)
-//.post("/auth/logout", logoutUser)
-//.post("/auth/refresh", refreshUser);
+router
+  .post("/auth/login", loginUser)
+  .post("/auth/logout", logoutUser)
+  .post("/auth/refresh", refreshUser);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 
@@ -49,13 +49,110 @@ export const cognitoHandler = async (event) => {
   }
 };
 
-async function createUser(req) {
-  const { username, password } = req.json();
+async function loginUser(req) {
+  const { username, password } = await req.json();
 
-  console.log(username);
+  if (!username || !password) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Missing data" }),
+    };
+  }
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ message: "Ok" }),
-  };
+  try {
+    const res = await authService.login(username, password);
+    return { statusCode: 200, body: JSON.stringify(res) };
+  } catch (err) {
+    console.error("Error login user: ", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
 }
+
+async function logoutUser(req) {
+  const { accessToken } = await req.json();
+
+  if (!accessToken)
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Missing data" }),
+    };
+
+  try {
+    const res = await authService.logout(accessToken);
+    return { statusCode: 200, body: JSON.stringify(res) };
+  } catch (err) {
+    console.error("Error on logout: ", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+
+async function refreshUser(req) {
+  const { refreshToken } = await req.json();
+
+  if (!refreshToken)
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Missing data" }),
+    };
+
+  try {
+    const res = await authService.refresh(refreshToken);
+    return { statusCode: 200, body: JSON.stringify(res) };
+  } catch (err) {
+    console.error("Error on logout: ", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+
+// POST - /admin/createUser
+export async function createUser(event) {
+  const { username, password } = JSON.parse(event.body);
+
+  const claims = event.requestContext?.authorizer?.claims;
+
+  if (!claims) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: "Unauthorized: no token claims" }),
+    };
+  }
+
+  const groups = claims["cognito:groups"] || [];
+
+  if (!groups.includes("Administradores")) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({ message: "Forbidden: admin access required" }),
+    };
+  }
+
+  console.log(username, password);
+
+  if (!username || !password) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Missing data" }),
+    };
+  }
+
+  try {
+    const res = await authService.createUser(username, password);
+    return { statusCode: 200, body: JSON.stringify(res) };
+  } catch (err) {
+    console.error("Error creating user: ", err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+

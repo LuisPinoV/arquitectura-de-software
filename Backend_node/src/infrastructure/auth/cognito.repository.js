@@ -7,35 +7,27 @@ import {
   CognitoIdentityProviderClient,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  DynamoDBDocumentClient,
-  PutCommand,
-} from "@aws-sdk/lib-dynamodb";
-
 import jwt from "jsonwebtoken";
 
 export class CognitoRepository {
-  cognito_client;
-  dynamo_client;
-
-  constructor(cognito_client, dynamo_client) {
-    this.cognito_client = cognito_client;
-    this.dynamo_client = dynamo_client;
+  constructor(cognitoClient, userPool, clientId) {
+    this.cognitoClient = cognitoClient;
+    this.userPool = userPool;
+    this.clientId = clientId;
   }
 
-  async login(username, password, userPool) {
+  async login(username, password) {
     try {
       const cmd = new InitiateAuthCommand({
         AuthFlow: "USER_PASSWORD_AUTH",
-        ClientId: userPool,
+        ClientId: this.clientId,
         AuthParameters: {
           USERNAME: username,
           PASSWORD: password,
         },
       });
 
-      const out = await this.cognito_client.send(cmd);
+      const out = await this.cognitoClient.send(cmd);
       const auth = out.AuthenticationResult;
 
       const userData = this.getUserFromIdToken(auth.IdToken);
@@ -58,7 +50,7 @@ export class CognitoRepository {
   async logout(accessToken) {
     try {
       const cmd = new GlobalSignOutCommand({ AccessToken: accessToken });
-      const res = await this.cognito_client.send(cmd);
+      const res = await this.cognitoClient.send(cmd);
 
       if (res.httpStatusCode == 200) {
         return true;
@@ -69,10 +61,10 @@ export class CognitoRepository {
     }
   }
 
-  async createUser(username, password, userPool) {
+  async createUser(username, password) {
     try {
       const createCmd = new AdminCreateUserCommand({
-        UserPoolId: userPool,
+        UserPoolId: this.userPool,
         Username: username,
         TemporaryPassword: password,
         UserAttributes: [
@@ -83,71 +75,51 @@ export class CognitoRepository {
         DesiredDeliveryMediums: [],
       });
 
-      const response = await this.cognito_client.send(createCmd);
+      const response = await this.cognitoClient.send(createCmd);
 
-      await cognito.send(
+      await this.cognitoClient.send(
         new AdminSetUserPasswordCommand({
-          UserPoolId: userPool,
+          UserPoolId: this.userPool,
           Username: username,
           Password: password,
           Permanent: true,
         })
       );
 
-      const preferencesTable = process.env.USER_PREFERENCES_TABLE;
+      
 
-      const now = new Date().toISOString();
-
-      //TODO: Create SNS and Invoke instead of adding stuff here
-      await this.dynamo_client.send(
-        new PutCommand({
-          TableName: preferencesTable,
-          Item: {
-            userId: response.User.Username,
-            profileType: "default",
-            preferences: { email: username },
-            createdAt: now,
-            updatedAt: now,
-          },
-        })
-      );
-
-      return true;
+      return { userId: response.User.Username };
     } catch (err) {
-      return false;
+      console.error("There was an internal error: ", err);
+      return null;
     }
   }
 
-  async refreshSession(refreshToken, poolClientId) {
+  async refreshSession(refreshToken) {
     const cmd = new InitiateAuthCommand({
       AuthFlow: "REFRESH_TOKEN_AUTH",
-      ClientId: poolClientId,
+      ClientId: this.clientId,
       AuthParameters: {
         REFRESH_TOKEN: refreshToken,
       },
     });
 
     try {
-      const out = await this.cognito_client.send(cmd);
+      const out = await this.cognitoClient.send(cmd);
       const auth = out.AuthenticationResult;
 
-      if(auth)
-      {
+      if (auth) {
         const userData = this.getUserFromIdToken(auth.idToken);
 
         return {
-            ok: true,
-            sub: userData.sub,
-            idToken: auth.IdToken,
-            accessToken: auth.AccessToken,
-            refreshToken: auth.refreshToken,
-            expiresIn: auth.ExpiresIn,
-          };
-      }
-
-      else
-        return null;
-
+          ok: true,
+          sub: userData.sub,
+          idToken: auth.IdToken,
+          accessToken: auth.AccessToken,
+          refreshToken: auth.refreshToken,
+          expiresIn: auth.ExpiresIn,
+        };
+      } else return null;
     } catch (err) {
       console.error(err);
       return null;
@@ -160,7 +132,7 @@ export class CognitoRepository {
     });
 
     try {
-      const response = await this.cognito_client.send(cmd);
+      const response = await this.cognitoClient.send(cmd);
 
       if (response) return response;
       else null;
@@ -185,5 +157,6 @@ export class CognitoRepository {
 
 export const cognitoRepository = new CognitoRepository(
   new CognitoIdentityProviderClient({}),
-  DynamoDBDocumentClient.from(new DynamoDBClient())
+  process.env.USER_POOL_ID,
+  process.env.USER_POOL_CLIENT_ID
 );

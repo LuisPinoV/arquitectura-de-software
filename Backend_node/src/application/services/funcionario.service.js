@@ -1,12 +1,12 @@
 //Use cases
-import { CreateFuncionarioUseCase } from "../useCases/funcionario/createFuncionario.useCase";
-import { GetAllDataFuncionariosUseCase } from "../useCases/funcionario/getAllDataFuncionarios.useCase";
-import { GetFuncionariosUseCase } from "../useCases/funcionario/getFuncionarios.useCase";
-import { GetTiposFuncionariosUseCase } from "../useCases/funcionario/getTiposFuncionario.useCase";
-import { GetFuncionarioUseCase } from "../useCases/funcionario/getFuncionario.useCase";
-import { UpdateFuncionarioUseCase } from "../useCases/funcionario/updateFuncionario.useCase";
-import { DeleteFuncionarioUseCase } from "../useCases/funcionario/deleteFuncionario.useCase";
-import { GetFuncionarioAgendamientoUseCase } from "../useCases/funcionario/getFuncionarioAgendamiento.useCase";
+import { CreateFuncionarioUseCase } from "../useCases/funcionario/createFuncionario.useCase.js";
+import { GetAllDataFuncionariosUseCase } from "../useCases/funcionario/getAllDataFuncionarios.useCase.js";
+import { GetFuncionariosUseCase } from "../useCases/funcionario/getFuncionarios.useCase.js";
+import { GetTiposFuncionariosUseCase } from "../useCases/funcionario/getTiposFuncionario.useCase.js";
+import { GetFuncionarioUseCase } from "../useCases/funcionario/getFuncionario.useCase.js";
+import { UpdateFuncionarioUseCase } from "../useCases/funcionario/updateFuncionario.useCase.js";
+import { DeleteFuncionarioUseCase } from "../useCases/funcionario/deleteFuncionario.useCase.js";
+import { GetFuncionarioAgendamientoUseCase } from "../useCases/funcionario/getFuncionarioAgendamiento.useCase.js";
 
 //Repositories
 import { funcionarioRepository } from "../../infrastructure/db/funcionario.repository";

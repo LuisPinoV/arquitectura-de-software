@@ -14,7 +14,7 @@ export class TokenRepository {
   }
 
   async saveRefreshToken(userId, token, expireTime) {
-    const res = await dynamo_client.send(
+    const res = await this.dynamo_client.send(
       new PutCommand({
         TableName: process.env.USER_TOKEN_TABLE,
         Item: {

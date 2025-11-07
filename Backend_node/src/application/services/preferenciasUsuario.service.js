@@ -1,14 +1,16 @@
 //Use Cases
-import { CreateProfileUseCase } from "../useCases/preferenciasUsuario/createProfile.useCase";
-import { DeleteProfileUseCase } from "../useCases/preferenciasUsuario/deleteProfile.useCase";
-import { GetCurrentProfileUseCase } from "../useCases/preferenciasUsuario/getCurrentProfile.useCase";
-import { GetProfilesUseCase } from "../useCases/preferenciasUsuario/getProfilesUseCase";
-import { GetProfileUseCase } from "../useCases/preferenciasUsuario/getProfile.useCase";
-import { SetCurrentProfileUseCase } from "../useCases/preferenciasUsuario/setCurrentProfile.useCase";
-import { UpdateProfileUseCase } from "../useCases/preferenciasUsuario/updateProfile.useCase";
+import { CreateProfileUseCase } from "../useCases/preferenciasUsuario/createProfile.useCase.js";
+import { DeleteProfileUseCase } from "../useCases/preferenciasUsuario/deleteProfile.useCase.js";
+import { GetCurrentProfileUseCase } from "../useCases/preferenciasUsuario/getCurrentProfile.useCase.js";
+import { GetProfilesUseCase } from "../useCases/preferenciasUsuario/getProfilesUseCase.js";
+import { GetProfileUseCase } from "../useCases/preferenciasUsuario/getProfile.useCase.js";
+import { SetCurrentProfileUseCase } from "../useCases/preferenciasUsuario/setCurrentProfile.useCase.js";
+import { UpdateProfileUseCase } from "../useCases/preferenciasUsuario/updateProfile.useCase.js";
+import { CreatedUserUseCase } from "../useCases/preferenciasUsuario/createdUser.useCase.js";
+
 
 //Repositories
-import { userPreferencesRepository } from "../../infrastructure/db/preferenciaUsuario.repository";
+import { userPreferencesRepository } from "../../infrastructure/db/preferenciaUsuario.repository.js";
 
 
 export class PreferenciasUsuarioService
@@ -55,15 +57,22 @@ export class PreferenciasUsuarioService
 
     async getCurrentProfile(userId)
     {
-        const getCurrentProfile = GetCurrentProfileUseCase(this.preferencesRepository);
+        const getCurrentProfile = new GetCurrentProfileUseCase(this.preferencesRepository);
 
         return await getCurrentProfile.execute(userId);
     }
 
     async setCurrentProfile(userId, profileType)
     {
-        const setCurrentProfile = SetCurrentProfileUseCase(this.preferencesRepository);
+        const setCurrentProfile = new SetCurrentProfileUseCase(this.preferencesRepository);
 
         return await setCurrentProfile.execute(userId, profileType);
+    }
+
+    async onCreatedUser(userId, username)
+    {
+        const onCreateUser = new CreatedUserUseCase(this.preferencesRepository);
+
+        return await onCreateUser.execute(userId, username);
     }
 }

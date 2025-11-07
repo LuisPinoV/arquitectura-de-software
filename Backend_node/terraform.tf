@@ -203,7 +203,8 @@ resource "aws_s3_bucket_versioning" "backups_versioning" {
 resource "null_resource" "deploy_serverless" {
   depends_on = [
     aws_dynamodb_table.agendamiento,
-    aws_dynamodb_table.user_preferences
+    aws_dynamodb_table.user_preferences,
+    aws_dynamodb_table.user_token_table
   ]
 
   provisioner "local-exec" {

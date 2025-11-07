@@ -1,8 +1,10 @@
 import { AutoRouter } from "itty-router";
-import { userPreferencesRepository } from '../../infrastructure/db/preferenciaUsuario.repository.js';
+import { userPreferencesRepository } from "../../infrastructure/db/preferenciaUsuario.repository.js";
 import { PreferenciasUsuarioService } from "../../application/services/preferenciasUsuario.service.js";
 
-const preferenciasService = new PreferenciasUsuarioService(userPreferencesRepository);
+const preferenciasService = new PreferenciasUsuarioService(
+  userPreferencesRepository
+);
 
 // Routing
 const router = AutoRouter();
@@ -65,16 +67,16 @@ async function createProfile(req) {
     const { userId, profileType, preferences } = body;
 
     const profile = await preferenciasService.createProfile(
-      userId, 
-      profileType, 
+      userId,
+      profileType,
       preferences
     );
 
     return {
       statusCode: 201,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         message: "Perfil creado correctamente",
-        profile 
+        profile,
       }),
     };
   } catch (error) {
@@ -148,8 +150,8 @@ async function updateProfile(req) {
     const body = await req.json();
 
     const updatedProfile = await preferenciasService.updateProfile(
-      userId, 
-      profileType, 
+      userId,
+      profileType,
       body.preferences
     );
 
@@ -215,4 +217,31 @@ async function setCurrentProfile(req) {
       body: JSON.stringify({ error: error.message }),
     };
   }
+}
+
+export async function onCreatedNewUser(event) {
+  console.log("Raw SNS event:", JSON.stringify(event, null, 2));
+
+  for (const record of event.Records) {
+    const snsMessage = record.Sns.Message;
+
+    try {
+      const { username, userId } = JSON.parse(snsMessage);
+
+      console.log("Received SNS message for user creation:");
+      console.log("Username:", username);
+      console.log("User ID:", userId);
+
+      await preferenciasService.onCreatedUser(userId, username);
+    } catch (err) {
+      console.error("Failed to process SNS message:", err);
+    }
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: "Created preference image for the new user",
+    }),
+  };
 }
