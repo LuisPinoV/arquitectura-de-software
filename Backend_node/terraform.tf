@@ -5,7 +5,6 @@ provider "aws" {
 
 # DynamoDB
 
-
 resource "aws_dynamodb_table" "agendamiento" {
   name         = "Agendamiento"
   billing_mode = "PAY_PER_REQUEST"
@@ -89,7 +88,7 @@ resource "aws_dynamodb_table" "user_preferences" {
     name = "profileType"
     type = "S"
   }
-  
+
     tags = {
     Environment = "Dev"
     Feature     = "BlueGreenDeploy"
@@ -112,33 +111,92 @@ resource "aws_dynamodb_table" "user_token_table" {
   }
 }
 
-# S3
-/*
-resource "aws_s3_bucket" "frontend" {
-  bucket = "frontend-app-uni-20251234567890" # nombre fijo
+# Buckets de S3
+
+variable "region" {
+  default = "us-east-1"
 }
 
-resource "aws_s3_bucket_public_access_block" "frontend_block" {
-  bucket                  = aws_s3_bucket.frontend.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+data "aws_caller_identity" "current" {}
+
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+}
+
+# Bucket publico para el frontend
+
+resource "aws_s3_bucket" "frontend" {
+  bucket = "frontend-${local.account_id}-${var.region}"
 }
 
 resource "aws_s3_bucket_website_configuration" "frontend_site" {
   bucket = aws_s3_bucket.frontend.bucket
 
   index_document {
-    suffix = "index.html"
+    suffix = "index.html"  #placeholder hasta que se termine el frontend
   }
 
   error_document {
-    key = "index.html" # importante para apps SPA/Next export
+    key = "index.html"
   }
 }
-*/
 
+resource "aws_s3_bucket_public_access_block" "frontend_block" {
+  bucket                  = aws_s3_bucket.frontend.id
+  block_public_acls       = true
+  block_public_policy     = false
+  ignore_public_acls      = true
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_policy" "frontend_policy" {
+  bucket = aws_s3_bucket.frontend.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.frontend.arn}/*"
+      }
+    ]
+  })
+}
+
+# Bucket privado para backup de base de datos
+
+resource "aws_s3_bucket" "backups" {
+  bucket = "backups-${local.account_id}-${var.region}"
+}
+
+resource "aws_s3_bucket_public_access_block" "backups_block" {
+  bucket                  = aws_s3_bucket.backups.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "backups_encryption" {
+  bucket = aws_s3_bucket.backups.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "backups_versioning" {
+  bucket = aws_s3_bucket.backups.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
 
 # SERVERLESS
 
