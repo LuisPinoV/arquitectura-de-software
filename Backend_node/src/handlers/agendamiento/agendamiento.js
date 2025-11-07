@@ -17,6 +17,10 @@ router
   .get("/agendamiento/estadisticas/especialidad/conteo", getCountAgendamientosPorEspecialidad) // ej: /agendamiento/estadisticas/especialidad/conteo
   .get("/agendamiento/estadisticas/especialidad/conteo-rango/:fechaInicio/:fechaFin", getCountAgendamientosPorEspecialidadRangoFechas) // ej: /agendamiento/estadisticas/especialidad/conteo-rango/2025-01-01/2025-12-31
   .get("/agendamiento/estadisticas/especialidad/ocupacion/:fechaInicio/:fechaFin", getPorcentajeOcupacionPorEspecialidad) // ej: /agendamiento/estadisticas/especialidad/ocupacion/2024-01-01/2024-12-31
+  .get("/agendamiento/box/:idBox/fecha/:fecha", agendamientoTotalHoyBox)// ej: /agendamiento/box/10/fecha/2025-11-01
+  .get("/agendamiento/estadisticas/cantidad/:fechaInicio/:fechaFin", cantidadAgendamientosEntreFechas) // ej: /agendamiento/estadisticas/cantidad/2025-11-10/2025-11-11
+  .get("/agendamiento/estadisticas/diferencia-ocupacion/:mes1/:mes2", diferenciaOcupanciaMeses) // ej: /agendamiento/estadisticas/diferencia-ocupacion/2025-10/2025-11
+  .get("/agendamiento/estadisticas/ocupacion-diaria/:fechaInicio/:fechaFin", ocupacionTotalSegunDiaEntreFechas)// ej: /agendamiento/estadisticas/ocupacion-diaria/2025-11-10/2025-11-11
   .get("/agendamiento/estados/:idConsulta", getEstadosAgendamiento) // ej: /agendamiento/estados/1
   .post("/agendamiento/estado/:idConsulta", addEstadoAgendamiento) // ej: POST /agendamiento/estado/1
   .get("/agendamiento/resultado/:idConsulta", getResultadoConsulta) // ej: /agendamiento/resultado/1
@@ -286,12 +290,10 @@ async function getCountAgendamientosPorEspecialidad(_) {
 
 async function getCountAgendamientosPorEspecialidadRangoFechas(req) {
   try {
-    // Ahora con req.params
     const { fechaInicio, fechaFin } = req.params;
     
     console.log("Parámetros recibidos:", { fechaInicio, fechaFin });
     
-    // La validación sigue igual
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
       return {
@@ -321,7 +323,6 @@ async function getCountAgendamientosPorEspecialidadRangoFechas(req) {
 
 async function getPorcentajeOcupacionPorEspecialidad(req) {
   try {
-    // Ahora con req.params
     const { fechaInicio, fechaFin } = req.params;
     
     console.log("Parámetros recibidos:", { fechaInicio, fechaFin });
@@ -460,6 +461,142 @@ async function getResultadoConsulta(req) {
     return { statusCode: 200, body: JSON.stringify(resultado) };
   } catch (error) {
     console.error("Error al obtener resultado de consulta:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+
+async function agendamientoTotalHoyBox(req) {
+  const { idBox, fecha } = req.params;
+
+  if (!idBox || !fecha) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "idBox y fecha requeridos" }),
+    };
+  }
+  const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!fechaRegex.test(fecha)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }),
+    };
+  }
+
+  try {
+    const agendamientos = await agendamientoService.agendamientoTotalHoyBox(idBox, fecha);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(agendamientos) 
+    };
+  } catch (error) {
+    console.error("Error al obtener agendamientos por box y fecha:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+
+async function cantidadAgendamientosEntreFechas(req) {
+  const { fechaInicio, fechaFin } = req.params;
+
+  if (!fechaInicio || !fechaFin) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "fechaInicio y fechaFin requeridos" }),
+    };
+  }
+
+  const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }),
+    };
+  }
+
+  try {
+    const cantidad = await agendamientoService.cantidadAgendamientosEntreFechas(fechaInicio, fechaFin);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify({ 
+        fechaInicio, 
+        fechaFin, 
+        cantidad 
+      }) 
+    };
+  } catch (error) {
+    console.error("Error al obtener cantidad de agendamientos entre fechas:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+
+}
+async function diferenciaOcupanciaMeses(req) {
+  const { mes1, mes2 } = req.params;
+
+  if (!mes1 || !mes2) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "mes1 y mes2 requeridos (formato: YYYY-MM)" }),
+    };
+  }
+
+
+  const mesRegex = /^\d{4}-\d{2}$/;
+  if (!mesRegex.test(mes1) || !mesRegex.test(mes2)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Formato de mes inválido. Use YYYY-MM" }),
+    };
+  }
+
+  try {
+    const resultado = await agendamientoService.diferenciaOcupanciaMeses(mes1, mes2);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(resultado) 
+    };
+  } catch (error) {
+    console.error("Error al calcular diferencia de ocupación:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Error interno" }),
+    };
+  }
+}
+
+async function ocupacionTotalSegunDiaEntreFechas(req) {
+  const { fechaInicio, fechaFin } = req.params;
+
+  if (!fechaInicio || !fechaFin) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "fechaInicio y fechaFin requeridos" }),
+    };
+  }
+
+  const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }),
+    };
+  }
+
+  try {
+    const resultado = await agendamientoService.ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin);
+    return { 
+      statusCode: 200, 
+      body: JSON.stringify(resultado) 
+    };
+  } catch (error) {
+    console.error("Error al obtener ocupación por día:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "Error interno" }),

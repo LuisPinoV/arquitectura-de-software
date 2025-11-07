@@ -8,8 +8,8 @@ plugins:
 
 custom:
   scriptable:
-    #hooks:
-      #after:deploy:deploy: 
+    hooks:
+      after:deploy:deploy: 
         - #sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
         - #npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
   serverless-offline:
@@ -156,107 +156,6 @@ functions:
       - httpApi:
           path: /agendamiento/{proxy+}
           method: any
-
-  
-  ## Por especialidad
-  getCountAgendamientosPorEspecialidad:
-    handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidad.main
-    name: getCountAgendamientosPorEspecialidad
-    events:
-      - httpApi:
-          path: /agendamiento/especialidad/count
-          method: get
-
-  getCountAgendamientosPorEspecialidadRangoFechas:
-    handler: src/handlers/agendamiento/especialidad/getCountAgendamientosPorEspecialidadRangoFechas.main
-    name: getCountAgendamientosPorEspecialidadRangoFechas
-    events:
-      - httpApi:
-          path: /agendamiento/especialidad/count-rango
-          method: get
-
-  porcentajeDeOcupacionPorEspecialidad:
-    handler: src/handlers/agendamiento/especialidad/porcentajeDeOcupacionPorEspecialidad.main
-    name: porcentajeDeOcupacionPorEspecialidad
-    events:
-      - httpApi:
-          path: /agendamiento/especialidad/porcentaje-ocupacion
-          method: get
-
-  ## Por fecha
-
-  getAgendamientoEspecialidadFecha:
-    handler: src/handlers/agendamiento/fechas/getAgendamientoEspecialidadFecha.main
-    name: getAgendamientoEspecialidadFecha
-    events:
-      - httpApi:
-          path: /agendamiento/fecha-especialidad
-          method: get
-
-  agendamientosPorFecha:
-    handler: src/handlers/agendamiento/fechas/agendamientosPorFecha.main
-    events:
-      - httpApi:
-          path: /agendamiento/por-fecha
-          method: get
-
-  agendamientoTotalHoyBox:
-    handler: src/handlers/agendamiento/fechas/agendamientoTotalHoyBox.main
-    name: agendamientoTotalHoyBox
-    events:
-      - httpApi:
-          path: /agendamiento/hoy/box
-          method: get
-
-  cantidadAgendamientosEntreFechas:
-    handler: src/handlers/agendamiento/fechas/cantidadAgendamientosEntreFechas.main
-    name: cantidadAgendamientosEntreFechas
-    events:
-      - httpApi:
-          path: /agendamiento/cantidad-entre-fechas
-          method: get
-
-  ## Gestión
-  postAgendamientoPersonalizado:
-    handler: src/handlers/agendamiento/gestion/postAgendamientoPersonalizado.main
-    name: postAgendamientoPersonalizado
-    events:
-      - httpApi:
-          path: /agendamiento/personalizado
-          method: post
-
-  postAgendamientoSupremus:
-    handler: src/handlers/agendamiento/gestion/postAgendamientoSupremus.main
-    name: postAgendamientoSupremus
-    events:
-      - httpApi:
-          path: /agendamiento/supremus
-          method: post
-
-  eliminarAgendamiento:
-    handler: src/handlers/agendamiento/gestion/eliminarAgendamiento.main
-    name: eliminarAgendamiento
-    events:
-      - httpApi:
-          path: /agendamiento
-          method: delete
-
-  ## ocupacion
-  ocupacionTotalSegunDiaEntreFechas:
-    handler: src/handlers/ocupacion/ocupacionTotalSegunDiaEntreFechas.main
-    name: ocupacionTotalSegunDiaEntreFechas
-    events:
-      - httpApi:
-          path: /ocupacion/ocupacion-total
-          method: get
-
-  diferenciaOcupanciaMeses:
-    handler: src/handlers/ocupacion/diferenciaOcupanciaMeses.main
-    name: diferenciaOcupanciaMeses
-    events:
-      - httpApi:
-          path: /ocupacion/diferencia-ocupacion-meses
-          method: get
 
 package:
   individually: true

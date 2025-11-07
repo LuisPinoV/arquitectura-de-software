@@ -453,6 +453,294 @@ calcularDiasEntreFechas(fechaInicio, fechaFin) {
     resultado
   };
 }
+
+async agendamientoTotalHoyBox(idBox, fecha) {
+    try {
+      console.log(`Buscando agendamientos para box ${idBox} en fecha ${fecha}`);
+      
+      const command = new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#idBox = :idbox AND #fecha = :fecha AND #tipo = :tipo",
+        ExpressionAttributeNames: { 
+          "#idBox": "idBox",
+          "#fecha": "fecha",
+          "#tipo": "tipo"
+        },
+        ExpressionAttributeValues: { 
+          ":idbox": Number(idBox), 
+          ":fecha": fecha,
+          ":tipo": "Agendamiento"
+        }
+      });
+
+      const result = await this.dynamo.send(command);
+      console.log(`Encontrados ${result.Items?.length || 0} agendamientos para box ${idBox} en fecha ${fecha}`);
+      
+      return result.Items || [];
+      
+    } catch (error) {
+      console.error("Error en agendamientoTotalHoyBox:", error);
+      throw error;
+    }
+  }
+  async cantidadAgendamientosEntreFechas(fechaInicio, fechaFin) {
+    try {
+      console.log(`Contando agendamientos entre ${fechaInicio} y ${fechaFin}`);
+      
+      const command = new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#fecha BETWEEN :f1 AND :f2 AND #tipo = :tipo",
+        ExpressionAttributeNames: { 
+          "#fecha": "fecha",
+          "#tipo": "tipo"
+        },
+        ExpressionAttributeValues: { 
+          ":f1": fechaInicio, 
+          ":f2": fechaFin,
+          ":tipo": "Agendamiento"
+        },
+        Select: "COUNT"
+      });
+
+      const result = await this.dynamo.send(command);
+      console.log(`Total de agendamientos entre ${fechaInicio} y ${fechaFin}: ${result.Count}`);
+      
+      return result.Count || 0;
+      
+    } catch (error) {
+      console.error("Error en cantidadAgendamientosEntreFechas:", error);
+      throw error;
+    }
+  }
+
+  async diferenciaOcupanciaMeses(mes1, mes2) {
+    try {
+      console.log(`Calculando diferencia de ocupación entre ${mes1} y ${mes2}`);
+      
+      const meses30 = ["04", "06", "09", "11"]; // Abril, Junio, Septiembre, Noviembre
+
+      const calcularRangoMes = (mes) => {
+        const [year, mm] = mes.split("-");
+        let dias = 31;
+        if (mm === "02") dias = 28;
+        else if (meses30.includes(mm)) dias = 30;
+
+        const min = `${year}-${mm}-01`;
+        const max = `${year}-${mm}-${dias.toString().padStart(2, "0")}`;
+        return { min, max, dias };
+      };
+
+      const { min: mes1Min, max: mes1Max, dias: dias1 } = calcularRangoMes(mes1);
+      const { min: mes2Min, max: mes2Max, dias: dias2 } = calcularRangoMes(mes2);
+
+      // 1️⃣ Contar total de boxes
+      const boxesResult = await this.dynamo.send(new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#tipo = :tipoBox",
+        ExpressionAttributeNames: { "#tipo": "tipo" },
+        ExpressionAttributeValues: { ":tipoBox": "Box" },
+      }));
+      const totalBoxes = boxesResult.Items?.length || 0;
+
+      if (totalBoxes === 0) {
+        throw new Error("No se encontraron boxes en la base de datos");
+      }
+
+      // 2️⃣ Contar agendamientos mes1
+      const agendamientosMes1 = await this.dynamo.send(new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#fecha BETWEEN :min AND :max AND #tipo = :tipoAgendamiento",
+        ExpressionAttributeNames: { 
+          "#fecha": "fecha",
+          "#tipo": "tipo"
+        },
+        ExpressionAttributeValues: { 
+          ":min": mes1Min, 
+          ":max": mes1Max,
+          ":tipoAgendamiento": "Agendamiento"
+        },
+        Select: "COUNT",
+      }));
+
+      // 3️⃣ Contar agendamientos mes2
+      const agendamientosMes2 = await this.dynamo.send(new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#fecha BETWEEN :min AND :max AND #tipo = :tipoAgendamiento",
+        ExpressionAttributeNames: { 
+          "#fecha": "fecha",
+          "#tipo": "tipo"
+        },
+        ExpressionAttributeValues: { 
+          ":min": mes2Min, 
+          ":max": mes2Max,
+          ":tipoAgendamiento": "Agendamiento"
+        },
+        Select: "COUNT",
+      }));
+
+      const countMes1 = agendamientosMes1.Count || 0;
+      const countMes2 = agendamientosMes2.Count || 0;
+
+      // 4️⃣ Calcular diferencia de ocupación
+      // Capacidad total teórica: 930 minutos/día * días * totalBoxes
+      // (930 minutos = 15.5 horas de trabajo de 8:00 a 17:00)
+      const capacidadTotalMes1 = 930 * dias1 * totalBoxes;
+      const capacidadTotalMes2 = 930 * dias2 * totalBoxes;
+
+      // Tiempo ocupado real: cada agendamiento ocupa 30 minutos
+      const minutosOcupadosMes1 = countMes1 * 30;
+      const minutosOcupadosMes2 = countMes2 * 30;
+
+      const porcentajeMes1 = capacidadTotalMes1 > 0 ? (minutosOcupadosMes1 / capacidadTotalMes1) * 100 : 0;
+      const porcentajeMes2 = capacidadTotalMes2 > 0 ? (minutosOcupadosMes2 / capacidadTotalMes2) * 100 : 0;
+      
+      const diferencia = porcentajeMes2 - porcentajeMes1;
+
+      console.log(`Resultado diferencia ocupación: ${diferencia.toFixed(2)}%`);
+
+      return {
+        mes1: {
+          agendamientos: countMes1,
+          dias: dias1,
+          capacidadTotalMinutos: capacidadTotalMes1,
+          minutosOcupados: minutosOcupadosMes1,
+          porcentajeOcupacion: Math.round(porcentajeMes1 * 100) / 100
+        },
+        mes2: {
+          agendamientos: countMes2,
+          dias: dias2,
+          capacidadTotalMinutos: capacidadTotalMes2,
+          minutosOcupados: minutosOcupadosMes2,
+          porcentajeOcupacion: Math.round(porcentajeMes2 * 100) / 100
+        },
+        diferencia: Math.round(diferencia * 100) / 100,
+        totalBoxes
+      };
+      
+    } catch (error) {
+      console.error("Error en diferenciaOcupanciaMeses:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calcula la ocupación total por día entre un rango de fechas
+   * @param {string} fechaInicio - Fecha inicio YYYY-MM-DD
+   * @param {string} fechaFin - Fecha fin YYYY-MM-DD
+   * @returns {Promise<Object>} - Ocupación por día
+   */
+  async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin) {
+    try {
+      console.log(`Calculando ocupación por día entre ${fechaInicio} y ${fechaFin}`);
+      
+      // Función para generar fechas entre rango
+      const generarFechas = (fecha1, fecha2) => {
+        const fechas = [];
+        let current = new Date(fecha1);
+        const end = new Date(fecha2);
+        while (current <= end) {
+          fechas.push(current.toISOString().split('T')[0]);
+          current.setDate(current.getDate() + 1);
+        }
+        return fechas;
+      };
+
+      // Obtener total de boxes
+      const boxesResult = await this.dynamo.send(new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#tipo = :tipoBox",
+        ExpressionAttributeNames: { "#tipo": "tipo" },
+        ExpressionAttributeValues: { ":tipoBox": "Box" },
+      }));
+      const totalBoxes = boxesResult.Items?.length || 0;
+
+      if (totalBoxes === 0) {
+        throw new Error("No se encontraron boxes en la base de datos");
+      }
+
+      // Inicializar fechas
+      const fechas = generarFechas(fechaInicio, fechaFin);
+      const ocupacionPorDia = {};
+      fechas.forEach(f => {
+        ocupacionPorDia[f] = {
+          minutosOcupados: 0,
+          agendamientos: 0,
+          porcentajeOcupacion: 0
+        };
+      });
+
+      // Obtener agendamientos entre fechas
+      const agendamientosResult = await this.dynamo.send(new ScanCommand({
+        TableName: this.tableName,
+        FilterExpression: "#fecha BETWEEN :f1 AND :f2 AND #tipo = :tipoAgendamiento",
+        ExpressionAttributeNames: { 
+          "#fecha": "fecha",
+          "#tipo": "tipo"
+        },
+        ExpressionAttributeValues: { 
+          ":f1": fechaInicio, 
+          ":f2": fechaFin,
+          ":tipoAgendamiento": "Agendamiento"
+        },
+        ProjectionExpression: "fecha, horaEntrada, horaSalida, idBox"
+      }));
+
+      console.log(`Encontrados ${agendamientosResult.Items?.length || 0} agendamientos en el rango`);
+
+      // Calcular minutos ocupados por fecha
+      agendamientosResult.Items?.forEach(item => {
+        const fecha = item.fecha;
+        if (ocupacionPorDia[fecha]) {
+          // Calcular duración en minutos
+          const [hEntrada, mEntrada] = item.horaEntrada.split(":").map(Number);
+          const [hSalida, mSalida] = item.horaSalida.split(":").map(Number);
+          const minutos = (hSalida - hEntrada) * 60 + (mSalida - mEntrada);
+          
+          ocupacionPorDia[fecha].minutosOcupados += minutos;
+          ocupacionPorDia[fecha].agendamientos += 1;
+        }
+      });
+
+      // Calcular porcentaje de ocupación para cada día
+      fechas.forEach(fecha => {
+        const capacidadTotalDia = 930 * totalBoxes; // 930 minutos * número de boxes
+        const minutosOcupados = ocupacionPorDia[fecha].minutosOcupados;
+        
+        ocupacionPorDia[fecha].porcentajeOcupacion = capacidadTotalDia > 0 
+          ? Math.round((minutosOcupados / capacidadTotalDia) * 100 * 100) / 100 
+          : 0;
+        
+        // Agregar información adicional
+        ocupacionPorDia[fecha].capacidadTotalMinutos = capacidadTotalDia;
+        ocupacionPorDia[fecha].totalBoxes = totalBoxes;
+      });
+
+      // Calcular promedios
+      const diasConDatos = fechas.filter(f => ocupacionPorDia[f].agendamientos > 0);
+      const promedioOcupacion = diasConDatos.length > 0 
+        ? diasConDatos.reduce((sum, fecha) => sum + ocupacionPorDia[fecha].porcentajeOcupacion, 0) / diasConDatos.length
+        : 0;
+
+      console.log(`Ocupación promedio: ${promedioOcupacion.toFixed(2)}%`);
+
+      return {
+        fechaInicio,
+        fechaFin,
+        totalDias: fechas.length,
+        totalBoxes,
+        ocupacionPorDia,
+        resumen: {
+          promedioOcupacion: Math.round(promedioOcupacion * 100) / 100,
+          totalAgendamientos: agendamientosResult.Items?.length || 0,
+          diasConAgendamientos: diasConDatos.length
+        }
+      };
+      
+    } catch (error) {
+      console.error("Error en ocupacionTotalSegunDiaEntreFechas:", error);
+      throw error;
+    }
+  }
 }
 
 export const agendamientoRepository = new AgendamientoRepository("Agendamiento");

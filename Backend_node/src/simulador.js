@@ -1,15 +1,8 @@
-const AWS = require("aws-sdk");
+import AWS from "aws-sdk";
+import { faker } from "@faker-js/faker";
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 const TABLE_NAME = process.env.TABLE || "Agendamiento";
-
-let faker;
-async function getFaker() {
-  if (!faker) {
-    ({ faker } = await import("@faker-js/faker"));
-  }
-  return faker;
-}
 
 class Especialidad {
   constructor(id, nombre) {
@@ -160,11 +153,9 @@ class Agendamiento {
   }
 }
 
-module.exports.poblarDynamo = async () => {
-  faker = (await getFaker()); 
-
+export const poblarDynamo = async () => {
   // CONFIG
-  const NUM_AGENDAMIENTOS = parseInt(process.env.NUM_AGENDAMIENTOS) || 10000;
+  const NUM_AGENDAMIENTOS = parseInt(process.env.NUM_AGENDAMIENTOS) || 5000;
   const NUM_BOXES = parseInt(process.env.NUM_BOXES) || 120;
   const NUM_FUNCIONARIOS = parseInt(process.env.NUM_FUNCIONARIOS) || 50;
   const NUM_PACIENTES = parseInt(process.env.NUM_PACIENTES) || 100;

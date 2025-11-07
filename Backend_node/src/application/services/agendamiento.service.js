@@ -11,8 +11,12 @@ import { GetAgendamientosByBoxUseCase } from "../useCases/agendamiento/getAgenda
 import { GetAgendamientosByFechaUseCase } from "../useCases/agendamiento/getAgendamientosByFecha.useCase.js";
 import { GetAgendamientosByEspecialidadUseCase } from "../useCases/agendamiento/getAgendamientosByEspecialidad.useCase.js";
 import { GetCountAgendamientosPorEspecialidadUseCase } from "../useCases/agendamiento/getCountAgendamientosPorEspecialidad.useCase.js";
-import { GetCountAgendamientosPorEspecialidadRangoFechasUseCase } from "../useCases/agendamiento/getCountAgendamientosPorEspecialidadRangoFechas.useCase.js"; // ← Corregir nombre
+import { GetCountAgendamientosPorEspecialidadRangoFechasUseCase } from "../useCases/agendamiento/getCountAgendamientosPorEspecialidadRangoFechas.useCase.js";
+import { DiferenciaOcupanciaMesesUseCase } from "../useCases/agendamiento/diferenciaOcupanciaMeses.useCase.js";
+import { OcupacionTotalSegunDiaEntreFechasUseCase } from "../useCases/agendamiento/ocupacionTotalSegunDiaEntreFechas.useCase.js";
 import { GetPorcentajeOcupacionPorEspecialidadUseCase } from "../useCases/agendamiento/getPorcentajeOcupacionPorEspecialidad.useCase.js";
+import { AgendamientoTotalHoyBoxUseCase } from "../useCases/agendamiento/agendamientoTotalHoyBox.useCase.js";
+import { CantidadAgendamientosEntreFechasUseCase } from "../useCases/agendamiento/cantidadAgendamientosEntreFechas.useCase.js";
 import { GetEstadosAgendamientoUseCase } from "../useCases/agendamiento/getEstadosAgendamiento.useCase.js";
 import { AddEstadoAgendamientoUseCase } from "../useCases/agendamiento/addEstadoAgendamiento.useCase.js";
 import { GetResultadoConsultaUseCase } from "../useCases/agendamiento/getResultadoConsulta.useCase.js";
@@ -111,5 +115,25 @@ export class AgendamientoService {
   async getAgendamientoCompleto(idConsulta) {
     const getAgendamientoCompleto = new GetAgendamientoCompletoUseCase(this.agendamientoRepository);
     return await getAgendamientoCompleto.execute(idConsulta);
+  }
+
+  async agendamientoTotalHoyBox(idBox, fecha) {
+    const useCase = new AgendamientoTotalHoyBoxUseCase(this.agendamientoRepository);
+    return await useCase.execute(idBox, fecha);
+  }
+
+  async cantidadAgendamientosEntreFechas(fechaInicio, fechaFin) {
+    const useCase = new CantidadAgendamientosEntreFechasUseCase(this.agendamientoRepository);
+    return await useCase.execute(fechaInicio, fechaFin);
+  }
+
+  async diferenciaOcupanciaMeses(mes1, mes2) {
+    const useCase = new DiferenciaOcupanciaMesesUseCase(this.agendamientoRepository);
+    return await useCase.execute(mes1, mes2);
+  }
+
+  async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin) {
+    const useCase = new OcupacionTotalSegunDiaEntreFechasUseCase(this.agendamientoRepository);
+    return await useCase.execute(fechaInicio, fechaFin);
   }
 }
