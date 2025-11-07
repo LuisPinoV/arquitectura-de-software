@@ -20,9 +20,10 @@ export class AuthService {
     this.cognitoRepository = cognitoRepository;
     this.tokenRepository = tokenRepository;
 
-    this.createUserTopicArn = process.env.CREATE_USER_TOPIC_SNS_ARN;
-
-    this.authEventsRepository = new AuthEventsRepository(createUserTopicArn);
+    this.createdUserTopicArn = process.env.CREATE_USER_TOPIC_SNS_ARN ?? null;
+    this.loggedInUserTopicArn = process.env.CREATE_USER_TOPIC_SNS_ARN ?? null;
+    
+    this.authEventsRepository = new AuthEventsRepository(this.createdUserTopicArn, this.loggedInUserTopicArn);
   }
 
   async login(username, password) {

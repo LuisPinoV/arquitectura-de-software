@@ -82,7 +82,7 @@ functions:
           method: any
           path: /auth/{proxy+}
     environment:
-      CREATE_USER_TOPIC_SNS_ARN: 
+      CREATE_USER_TOPIC_SNS_ARN:
         Ref: CreatedUserTopic
 
   createUser:
@@ -93,7 +93,7 @@ functions:
           path: /admin/createUser
           authorizer: cognitoJwt
     environment:
-      CREATE_USER_TOPIC_SNS_ARN: 
+      CREATE_USER_TOPIC_SNS_ARN:
         Ref: CreatedUserTopic
   ### APIS
 
@@ -113,7 +113,7 @@ functions:
   onCreatedNewUser:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.onCreatedNewUser
     events:
-      - sns: 
+      - sns:
           topicName: CreatedUserTopic-${sls:stage}
           arn:
             Fn::GetAtt:
@@ -151,7 +151,7 @@ functions:
           path: /funcionario
           method: any
           authorizer: cognitoJwt
-          
+
       - httpApi:
           path: /funcionario/{proxy+}
           method: any
@@ -173,7 +173,7 @@ functions:
 
   ## Agendamiento
   ## General
-  
+
   agendamientoHandler:
     handler: src/handlers/agendamiento/agendamiento.agendamientoHandler
     events:
@@ -186,7 +186,34 @@ functions:
           path: /agendamiento/{proxy+}
           method: any
           authorizer: cognitoJwt
+  
+  # Backup
+  monthlyBackup:
+    handler: src/handlers/backup/backup.getDataForBackup
+    environment:
+      MONTHLY_BACKUP_TOPIC_SNS_ARN:
+        Ref: MonthlyBackupTopic
 
+  saveDataToS3:
+    handler: src/handlers/backup/backup.saveDataToS3
+    events:
+      - sns:
+          topicName: MonthlyBackupTopic-${sls:stage}
+          arn:
+            Fn::GetAtt:
+              - MonthlyBackupTopic
+              - TopicArn
+
+  logDataToS3:
+    handler: src/handlers/backup/backup.logDataToS3
+    events:
+      - sns:
+          topicName: MonthlyBackupTopic-${sls:stage}
+          arn:
+            Fn::GetAtt:
+              - MonthlyBackupTopic
+              - TopicArn
+              
 package:
   individually: true
   patterns:
@@ -198,7 +225,7 @@ package:
 
 resources:
   Resources:
-  #Cognito
+    #Cognito
     #Cognito User Pool
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
@@ -241,12 +268,52 @@ resources:
         UserPoolId: !Ref CognitoUserPool
         Description: "Grupo de administradores del sistema"
 
-    #SNS
+    #SNS - User
     CreatedUserTopic:
-        Type: AWS::SNS::Topic
-        Properties:
-          TopicName: CreatedUserTopic-${sls:stage}
-        
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: CreatedUserTopic-${sls:stage}
+
+    #SNS - Backup
+    MonthlyBackupTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: MonthlyBackupTopic-${sls:stage}
+
+    # EventBridge Scheduler Role
+    SchedulerInvokeRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: scheduler.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: AllowInvokeLambda
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action: lambda:InvokeFunction
+                  Resource: !GetAtt MonthlyBackupLambdaFunction.Arn
+
+    # EventBridge Scheduler (monthly)
+    ScheduledDynamoBackup:
+      Type: AWS::Scheduler::Schedule
+      Properties:
+        Name: scheduled-dynamo-backup
+        Description: "Runs monthly backup for DynamoDB tables"
+        FlexibleTimeWindow:
+          Mode: "OFF"
+        ScheduleExpression: "cron(0 0 1 * ? *)"
+        Target:
+          Arn: !GetAtt MonthlyBackupLambdaFunction.Arn
+          RoleArn: !GetAtt SchedulerInvokeRole.Arn
+          Input: '{"source":"eventbridge-scheduler"}'
+
   Outputs:
     UserPoolId:
       Value: !Ref CognitoUserPool

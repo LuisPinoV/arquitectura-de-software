@@ -117,7 +117,9 @@ async function refreshUser(req) {
 export async function createUser(event) {
   const { username, password } = JSON.parse(event.body);
 
-  const claims = event.requestContext?.authorizer?.claims;
+  const claims = event.requestContext?.authorizer?.jwt.claims;
+
+  console.log(claims);
 
   if (!claims) {
     return {

@@ -2,8 +2,8 @@ import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
 export class AuthEventsRepository {
   constructor(createdUserTopicArn, loggedinUserTopicArn) {
-    this.createdUserTopicArn = createdUserTopicArn;
-    this.loggedinUserTopicArn = loggedinUserTopicArn;
+    this.createdUserTopicArn = createdUserTopicArn ?? null;
+    this.loggedinUserTopicArn = loggedinUserTopicArn ?? null;
     this.snsClient = new SNSClient({});
   }
 

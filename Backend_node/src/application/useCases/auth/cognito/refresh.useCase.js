@@ -7,10 +7,10 @@ export class RefreshUseCase
 
     async execute(refreshToken)
     {
-        const loggedOut = await this.cognitoRepository.refresh(refreshToken);
+        const refresh = await this.cognitoRepository.refreshSession(refreshToken);
 
-        if(!loggedOut) throw new Error("Couldn't log out user");
+        if(!refresh) throw new Error("Couldn't refresh user");
 
-        return loggedOut;
+        return refresh;
     }
 }

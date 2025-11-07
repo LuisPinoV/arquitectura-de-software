@@ -11,33 +11,46 @@ import jwt from "jsonwebtoken";
 export class TokenRepository {
   constructor(dynamo_client) {
     this.dynamo_client = dynamo_client;
+    this.tokenTable = process.env.USER_TOKEN_TABLE;
   }
 
   async saveRefreshToken(userId, token, expireTime) {
-    const res = await this.dynamo_client.send(
-      new PutCommand({
-        TableName: process.env.USER_TOKEN_TABLE,
-        Item: {
-          userId: userId,
-          refreshToken: token,
-          issuedAt: new Date().toISOString(),
-          expiresAt: expireTime,
-          valid: true,
-        },
-      })
-    );
+    try {
+      const res = await this.dynamo_client.send(
+        new PutCommand({
+          TableName: this.tokenTable,
+          Item: {
+            userId: userId,
+            refreshToken: token,
+            issuedAt: new Date().toISOString(),
+            expiresAt: expireTime,
+            valid: true,
+          },
+        })
+      );
 
-    if (res.ok) return true;
-    else return false;
+      if (res) return true;
+      else return false;
+    } catch (err) {
+      console.error("AWS internal error: ", err);
+      return false;
+    }
   }
 
   async invalidateTokens(userId) {
-    await dynamo_client.send(
-      new DeleteCommand({
-        TableName: process.env.USER_TOKEN_TABLE,
-        Key: { userId },
-      })
-    );
+    try {
+      const res = await this.dynamo_client.send(
+        new DeleteCommand({
+          TableName: this.tokenTable,
+          Key: { userId },
+        })
+      );
+      if (res) return true;
+      else return false;
+    } catch (err) {
+      console.error("AWS Internal error: ", err);
+      return false;
+    }
   }
 
   decodeAccessToken(accessToken) {
@@ -59,7 +72,7 @@ export class TokenRepository {
     try {
       await this.dynamo_client.send(
         new PutCommand({
-          TableName: process.env.USER_TOKEN_TABLE,
+          TableName: this.tokenTable,
           Item: {
             userId,
             refreshToken: newToken,

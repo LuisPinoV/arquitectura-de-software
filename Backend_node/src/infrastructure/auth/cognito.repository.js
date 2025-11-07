@@ -52,7 +52,7 @@ export class CognitoRepository {
       const cmd = new GlobalSignOutCommand({ AccessToken: accessToken });
       const res = await this.cognitoClient.send(cmd);
 
-      if (res.httpStatusCode == 200) {
+      if (res) {
         return true;
       } else return false;
     } catch (err) {
@@ -109,14 +109,14 @@ export class CognitoRepository {
       const auth = out.AuthenticationResult;
 
       if (auth) {
-        const userData = this.getUserFromIdToken(auth.idToken);
+        const userData = this.getUserFromIdToken(auth.IdToken);
 
         return {
           ok: true,
           sub: userData.sub,
           idToken: auth.IdToken,
           accessToken: auth.AccessToken,
-          refreshToken: auth.refreshToken,
+          refreshToken: auth.RefreshToken,
           expiresIn: auth.ExpiresIn,
         };
       } else return null;
@@ -134,8 +134,7 @@ export class CognitoRepository {
     try {
       const response = await this.cognitoClient.send(cmd);
 
-      if (response) return response;
-      else null;
+      return response ?? null;
     } catch (err) {
       console.error(err);
       return null;
@@ -143,10 +142,13 @@ export class CognitoRepository {
   }
 
   getUserFromIdToken(idToken) {
+
+    console.log(idToken);
     const decoded = jwt.decode(idToken);
 
+    console.log(decoded);
     return {
-      sub: decoded.sub,
+      sub: decoded["sub"],
       username: decoded["cognito:username"],
       email: decoded.email,
       groups: decoded["cognito:groups"],
