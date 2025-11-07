@@ -95,6 +95,22 @@ resource "aws_dynamodb_table" "user_preferences" {
   }
 }
 
+resource "aws_dynamodb_table" "user_token_table" {
+  name         = "UserCognitoToken"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "userId"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+  
+    tags = {
+    Environment = "Dev"
+    Feature     = "BlueGreenDeploy"
+  }
+}
+
 # Buckets de S3
 
 variable "region" {
