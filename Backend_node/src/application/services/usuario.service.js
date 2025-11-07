@@ -1,12 +1,12 @@
 //Use cases
 
-import { CreateAgendamientoUsuarioUseCase } from "../useCases/usuario/createAgendamiento.useCase";
-import { CreateUsuarioUseCase } from "../useCases/usuario/createUsuario.useCase";
-import { DeleteUsuarioUseCase } from "../useCases/usuario/deleteUsuario.useCase";
-import { GetUsuarioUseCase } from "../useCases/usuario/getUsuario.useCase";
-import { GetUsuarioAgendamientoUseCase } from "../useCases/usuario/getUsuarioAgendamiento.useCase";
-import { GetUsuariosUseCase } from "../useCases/usuario/getUsuarios.useCase";
-import { UpdateUsuarioUseCase } from "../useCases/usuario/updateUsuario.useCase";
+import { CreateAgendamientoUsuarioUseCase } from "../useCases/usuario/createAgendamiento.useCase.js";
+import { CreateUsuarioUseCase } from "../useCases/usuario/createUsuario.useCase.js";
+import { DeleteUsuarioUseCase } from "../useCases/usuario/deleteUsuario.useCase.js";
+import { GetUsuarioUseCase } from "../useCases/usuario/getUsuario.useCase.js";
+import { GetUsuarioAgendamientoUseCase } from "../useCases/usuario/getUsuarioAgendamiento.useCase.js";
+import { GetUsuariosUseCase } from "../useCases/usuario/getUsuarios.useCase.js";
+import { UpdateUsuarioUseCase } from "../useCases/usuario/updateUsuario.useCase.js";
 
 export class UsuarioService {
   constructor(usuarioRepository) {

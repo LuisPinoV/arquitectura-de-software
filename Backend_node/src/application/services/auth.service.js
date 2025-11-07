@@ -1,4 +1,3 @@
-
 //Use cases
 import { LoginUseCase } from "../useCases/auth/cognito/login.useCase.js";
 import { LogoutUseCase } from "../useCases/auth/cognito/logout.useCase.js";
@@ -8,15 +7,22 @@ import { InvalidateTokenUseCase } from "../useCases/auth/tokens/invalidateToken.
 import { DecodeAccessTokenUseCase } from "../useCases/auth/tokens/decodeAccessToken.useCase.js";
 import { RefreshUseCase } from "../useCases/auth/cognito/refresh.useCase.js";
 import { UpdateResfreshTokenUseCase } from "../useCases/auth/tokens/updateRefreshToken.useCase.js";
+import { CreateUserUseCase } from "../useCases/auth/cognito/createUser.useCase.js";
+import { PublishCreateUserUseCase } from "../useCases/auth/sns/publishCreateUser.useCase.js";
 
 //Repositories
 import { cognitoRepository } from "../../infrastructure/auth/cognito.repository.js";
 import { tokenRepository } from "../../infrastructure/auth/token.repository.js";
+import { AuthEventsRepository } from "../../infrastructure/auth/auth-events.repository.js";
 
 export class AuthService {
   constructor() {
     this.cognitoRepository = cognitoRepository;
     this.tokenRepository = tokenRepository;
+
+    this.createUserTopicArn = process.env.CREATE_USER_TOPIC_SNS_ARN;
+
+    this.authEventsRepository = new AuthEventsRepository(createUserTopicArn);
   }
 
   async login(username, password) {
@@ -67,6 +73,26 @@ export class AuthService {
     } else {
       return null;
     }
+  }
+
+  async createUser(username, password) {
+    const createUser = new CreateUserUseCase(this.cognitoRepository);
+
+    const newUserData = await createUser.execute(username, password);
+
+    const publishCreateUser = new PublishCreateUserUseCase(
+      this.authEventsRepository
+    );
+
+    console.log(newUserData.userId);
+
+    try {
+      await publishCreateUser.execute(username, newUserData.userId);
+    } catch (err) {
+      console.log("Error publishing message from created new user: ", err);
+    }
+
+    return newUserData;
   }
 
   async getUserData(accessToken) {

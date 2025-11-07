@@ -7,11 +7,6 @@ plugins:
   - serverless-offline
 
 custom:
-  scriptable:
-    hooks:
-      after:deploy:deploy: 
-        - #sls invoke -f poblarDynamo --data '{"accion":"poblar"}'
-        - #npx cross-env COGNITO_USERPOOL_ID=${cf:${self:service}-${sls:stage}.UserPoolId} COGNITO_USERPOOL_CLIENT_ID=${cf:${self:service}-${sls:stage}.UserPoolClientId} node src/createUser.js
   serverless-offline:
     httpPort: 3000
     lambdaPort: 3002
@@ -23,7 +18,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::905418069528:role/LabRole
+  role: arn:aws:iam::626218016489:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -60,6 +55,7 @@ provider:
       Action:
         - sts:AssumeRole
         - dynamodb:*
+        - sns:Publish
       Resource:
         - arn:aws:dynamodb:us-east-1:*:table/Paciente
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
@@ -85,8 +81,20 @@ functions:
       - httpApi:
           method: any
           path: /auth/{proxy+}
-      - authorizer: none
+    environment:
+      CREATE_USER_TOPIC_SNS_ARN: 
+        Ref: CreatedUserTopic
 
+  createUser:
+    handler: src/handlers/auth/cognito.createUser
+    events:
+      - httpApi:
+          method: post
+          path: /admin/createUser
+          authorizer: cognitoJwt
+    environment:
+      CREATE_USER_TOPIC_SNS_ARN: 
+        Ref: CreatedUserTopic
   ### APIS
 
   #preferencias
@@ -96,9 +104,21 @@ functions:
       - httpApi:
           path: /profile
           method: any
+          authorizer: cognitoJwt
       - httpApi:
           path: /profile/{proxy+}
           method: any
+          authorizer: cognitoJwt
+
+  onCreatedNewUser:
+    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.onCreatedNewUser
+    events:
+      - sns: 
+          topicName: CreatedUserTopic-${sls:stage}
+          arn:
+            Fn::GetAtt:
+              - CreatedUserTopic
+              - TopicArn
 
   ## Especialidades
   getEspecialidad:
@@ -107,6 +127,7 @@ functions:
       - httpApi:
           path: /especialidades
           method: get
+          authorizer: cognitoJwt
 
   ## Usuarios
   pacienteHandler:
@@ -115,9 +136,12 @@ functions:
       - httpApi:
           path: /usuario
           method: any
+          authorizer: cognitoJwt
+
       - httpApi:
           path: /usuario/{proxy+}
           method: any
+          authorizer: cognitoJwt
 
   ## Funcionarios
   funcionarioHandler:
@@ -126,10 +150,12 @@ functions:
       - httpApi:
           path: /funcionario
           method: any
+          authorizer: cognitoJwt
+          
       - httpApi:
           path: /funcionario/{proxy+}
           method: any
-
+          authorizer: cognitoJwt
 
   ## Boxes
   boxHandler:
@@ -138,10 +164,12 @@ functions:
       - httpApi:
           path: /box
           method: any
+          authorizer: cognitoJwt
 
       - httpApi:
           path: /box/{proxy+}
           method: any
+          authorizer: cognitoJwt
 
   ## Agendamiento
   ## General
@@ -152,19 +180,26 @@ functions:
       - httpApi:
           path: /agendamiento
           method: any
+          authorizer: cognitoJwt
 
       - httpApi:
           path: /agendamiento/{proxy+}
           method: any
+          authorizer: cognitoJwt
 
 package:
   individually: true
   patterns:
     - "!**/*.md"
     - "!**/*.test.*"
+    - "!terraform/**"
+    - "!**/terraform/**"
+    - "!.terraform/**"
 
 resources:
   Resources:
+  #Cognito
+    #Cognito User Pool
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -180,7 +215,7 @@ resources:
             RequireNumbers: true
             RequireSymbols: false
             RequireUppercase: true
-
+    #Cognito User Pool Client
     CognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
@@ -205,7 +240,13 @@ resources:
         GroupName: Administradores
         UserPoolId: !Ref CognitoUserPool
         Description: "Grupo de administradores del sistema"
-    
+
+    #SNS
+    CreatedUserTopic:
+        Type: AWS::SNS::Topic
+        Properties:
+          TopicName: CreatedUserTopic-${sls:stage}
+        
   Outputs:
     UserPoolId:
       Value: !Ref CognitoUserPool

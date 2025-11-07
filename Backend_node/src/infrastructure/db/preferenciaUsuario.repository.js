@@ -1,6 +1,4 @@
-import {
-  DynamoDBClient,
-} from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -21,7 +19,7 @@ export class UserPreferencesRepository {
 
   async createProfile(userId, profileType, preferences, isCurrent = false) {
     const now = new Date().toISOString();
-    
+
     const command = new PutCommand({
       TableName: this.tableName,
       Item: {
@@ -35,7 +33,14 @@ export class UserPreferencesRepository {
     });
 
     await this.dynamo.send(command);
-    return { userId, profileType, preferences, isCurrent, createdAt: now, updatedAt: now };
+    return {
+      userId,
+      profileType,
+      preferences,
+      isCurrent,
+      createdAt: now,
+      updatedAt: now,
+    };
   }
 
   async getProfile(userId, profileType) {
@@ -49,14 +54,14 @@ export class UserPreferencesRepository {
   }
 
   async getProfilesByUserId(userId) {
-    const command = new QueryCommand({ 
-      TableName: this.tableName, 
+    const command = new QueryCommand({
+      TableName: this.tableName,
       KeyConditionExpression: "userId = :pk",
       ExpressionAttributeValues: {
         ":pk": userId,
       },
     });
-    
+
     const result = await this.dynamo.send(command);
     return result.Items || [];
   }
@@ -105,10 +110,8 @@ export class UserPreferencesRepository {
   }
 
   async setCurrentProfile(userId, profileType) {
-    
     const profiles = await this.getProfilesByUserId(userId);
 
-    
     for (const profile of profiles) {
       await this.dynamo.send(
         new UpdateCommand({
@@ -120,7 +123,6 @@ export class UserPreferencesRepository {
       );
     }
 
-    
     await this.dynamo.send(
       new UpdateCommand({
         TableName: this.tableName,
@@ -147,7 +149,26 @@ export class UserPreferencesRepository {
     const result = await this.dynamo.send(command);
     return result.Attributes;
   }
+
+  async onCreatedNewUser(userId, username) {
+    const now = new Date().toISOString();
+    const cmd = new PutCommand({
+      TableName: this.tableName,
+      Item: {
+        userId: userId,
+        profileType: "default",
+        preferences: { email: username },
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    const result = await this.dynamo.send(cmd);
+
+    return result;
+  }
 }
 
-
-export const userPreferencesRepository = new UserPreferencesRepository(process.env.USER_PREFERENCES_TABLE);
+export const userPreferencesRepository = new UserPreferencesRepository(
+  process.env.USER_PREFERENCES_TABLE
+);
