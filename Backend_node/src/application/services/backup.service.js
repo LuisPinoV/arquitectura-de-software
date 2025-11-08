@@ -1,8 +1,8 @@
-import { BackupRepository } from "../../infrastructure/backup/backup.repository";
-import { GetDataForBackupUseCase } from "../useCases/backup/getDataForBackup.useCase";
-import { LogBackupUseCase } from "../useCases/backup/logBackup.useCase";
-import { SaveBackupToS3UseCase } from "../useCases/backup/saveDataOnS3.useCase";
-import { SendDataMessageUseCase } from "../useCases/backup/sendDataMessage.useCase";
+import { BackupRepository } from "../../infrastructure/backup/backup.repository.js";
+import { GetDataForBackupUseCase } from "../useCases/backup/getDataForBackup.useCase.js";
+import { LogBackupUseCase } from "../useCases/backup/logBackup.useCase.js";
+import { SaveBackupToS3UseCase } from "../useCases/backup/saveDataOnS3.useCase.js";
+import { SendDataMessageUseCase } from "../useCases/backup/sendDataMessage.useCase.js";
 
 export class BackupService {
   constructor() {
