@@ -1,4 +1,4 @@
-import { BackupService } from "../../application/services/backup.service";
+import { BackupService } from "../../application/services/backup.service.js";
 
 const backupService = new BackupService();
 
@@ -16,6 +16,7 @@ export async function getDataForBackup(_) {
         statusCode: 500,
         body: JSON.stringify({
           message: "Error getting data ready for backup",
+          err
         }),
       };
     }
@@ -31,7 +32,6 @@ export async function getDataForBackup(_) {
 }
 
 export async function saveDataToS3(event) {
-  console.log("Raw SNS event:", JSON.stringify(event, null, 2));
 
   for (const record of event.Records) {
     const snsMessage = record.Sns.Message;
@@ -64,7 +64,6 @@ export async function saveDataToS3(event) {
 }
 
 export async function logDataToS3(event) {
-  console.log("Raw SNS event:", JSON.stringify(event, null, 2));
 
   for (const record of event.Records) {
     const snsMessage = record.Sns.Message;

@@ -7,7 +7,7 @@ export class SaveBackupToS3UseCase
 
     async execute(tableName, data)
     {
-        const savedToS3 = await this.backupRepository.saveDataToS3(data, tableName);
+        const savedToS3 = await this.backupRepository.saveDataToS3(tableName, data);
 
         if(!savedToS3.success){
             console.error("Couldn't save data to the S3");

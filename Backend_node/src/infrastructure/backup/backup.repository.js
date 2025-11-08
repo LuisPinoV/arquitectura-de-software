@@ -3,31 +3,28 @@ import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
-
 export class BackupRepository {
   constructor() {
     this.bucketName = process.env.MONTHLY_BACKUP_BUCKET;
+    this.monthlyBackupArn = process.env.MONTHLY_BACKUP_TOPIC_SNS_ARN;
 
-    const client = new DynamoDBClient();
-    this.dynamo = DynamoDBDocumentClient.from(client);
+    this.dynamo = DynamoDBDocumentClient.from(new DynamoDBClient());
 
     this.s3Client = new S3Client();
     this.snsClient = new SNSClient({});
-
-    this.monthlyBackupArn = process.env.MONTHLY_BACKUP_TOPIC_SNS_ARN;
   }
-  async saveDataToS3(items, tableName) {
+  async saveDataToS3(tableName, data) {
     try {
       console.log(
-        `Se encontraron ${items.length} elementos en la tabla ${tableName}`
+        `Se encontraron ${data.length} elementos en la tabla ${tableName}`
       );
       const timestamp = this.generateTimestamp();
-      const s3Result = await this.saveToS3(items, timestamp, tableName);
+      const s3Result = await this.saveToS3(data, timestamp, tableName);
 
       return {
         success: true,
         tableName: tableName,
-        itemsCount: items.length,
+        itemsCount: data.length,
         backupFile: s3Result.key,
         timestamp: timestamp,
       };
@@ -36,32 +33,14 @@ export class BackupRepository {
 
       return {
         success: false,
-        tableName: this.tableName,
+        tableName: tableName,
         error: error.message,
       };
     }
   }
 
-  async getDataFromDynamo(tableName) {
-    let items = [];
-    let lastEvaluatedKey = undefined;
-
-    do {
-      const command = new ScanCommand({
-        TableName: tableName,
-        ExclusiveStartKey: lastEvaluatedKey,
-      });
-
-      const result = await this.dynamo.send(command);
-      items = items.concat(result.Items || []);
-      lastEvaluatedKey = result.LastEvaluatedKey;
-    } while (lastEvaluatedKey);
-
-    return items;
-  }
-
   async saveToS3(items, timestamp, tableName) {
-    const key = `${this.tableName}/snapshot-${timestamp}.json`;
+    const key = `${tableName}/snapshot-${timestamp}.json`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -84,8 +63,34 @@ export class BackupRepository {
     return { key };
   }
 
-  async sendSNSWithData(tableName, data)
-  {
+  async getDataFromDynamo(tableName) {
+    try {
+      let items = [];
+      let lastEvaluatedKey;
+
+      do {
+        const command = new ScanCommand({
+          TableName: tableName,
+          ExclusiveStartKey: lastEvaluatedKey,
+        });
+
+        const result = await this.dynamo.send(command);
+        console.log(result.Items);
+        items.push(...(result.Items || []));
+        lastEvaluatedKey = result.LastEvaluatedKey;
+      } while (lastEvaluatedKey);
+
+      console.log(`Fetched ${items.length} items from ${tableName}`);
+      return items;
+    } catch (err) {
+      console.error("Internal error trying to get data", err);
+      return null;
+    }
+  }
+
+  
+
+  async sendSNSWithData(tableName, data) {
     const params = {
       TopicArn: this.monthlyBackupArn,
       Message: JSON.stringify({
@@ -116,10 +121,16 @@ export class BackupRepository {
     }
   }
 
-  logBackup(tableName)
-  {
-    console.log(`Se hizo backup de la tabla: ${tableName},
-                \n en la fecha: ${this.generateTimestamp()}`);
+  logBackup(tableName) {
+    console.log(
+      JSON.stringify({
+        level: "info",
+        action: "backup-s3",
+        tableName,
+        itemCount: items.length,
+        timestamp,
+      })
+    );
   }
 
   generateTimestamp() {

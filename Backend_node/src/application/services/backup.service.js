@@ -9,17 +9,18 @@ export class BackupService {
     this.backupRepository = new BackupRepository();
   }
 
-  async getDataForBackup() {
-    tables = ["Agendamiento", "UserPreferences"];
-
+    async getDataForBackup() {
+    const tables = ["Agendamiento", "UserPreferences"];
     const getDataForBackup = new GetDataForBackupUseCase(this.backupRepository);
 
     try {
-      for (table in tables) {
+      for (const table of tables) {
         const data = await getDataForBackup.execute(table);
 
+        console.log(`Data for table ${table}:`, data);
+
         // Invoke SNS with data
-        this.sendDataBySNS(tableName, data);
+        await this.sendDataBySNS(table, data);
       }
 
       return true;
