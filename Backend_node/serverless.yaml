@@ -18,7 +18,7 @@ custom:
 
 provider:
   name: aws
-  role: arn:aws:iam::626218016489:role/LabRole
+  role: arn:aws:iam::${aws:accountId}:role/LabRole
   runtime: nodejs22.x
   region: us-east-1
   environment:
@@ -26,6 +26,7 @@ provider:
     USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
     USER_PREFERENCES_TABLE: UserPreferences
     USER_TOKEN_TABLE: UserCognitoToken
+    MONTHLY_BACKUP_BUCKET: backups-${aws:accountId}-${self:provider.region}
   logs:
     httpApi: true
   httpApi:
@@ -213,7 +214,7 @@ functions:
             Fn::GetAtt:
               - MonthlyBackupTopic
               - TopicArn
-              
+
 package:
   individually: true
   patterns:

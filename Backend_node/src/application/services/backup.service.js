@@ -1,3 +1,4 @@
+import { BackupRepository } from "../../infrastructure/backup/backup.repository";
 import { GetDataForBackupUseCase } from "../useCases/backup/getDataForBackup.useCase";
 import { LogBackupUseCase } from "../useCases/backup/logBackup.useCase";
 import { SaveBackupToS3UseCase } from "../useCases/backup/saveDataOnS3.useCase";
@@ -5,7 +6,7 @@ import { SendDataMessageUseCase } from "../useCases/backup/sendDataMessage.useCa
 
 export class BackupService {
   constructor() {
-    this.backupRepository = backupRepository;
+    this.backupRepository = new BackupRepository();
   }
 
   async getDataForBackup() {

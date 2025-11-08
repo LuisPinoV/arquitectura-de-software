@@ -7,7 +7,7 @@ export class LogBackupUseCase
 
     async execute(tableName)
     {
-        const loggedBackup = await this.backupRepository.logBackup(tableName);
+        const loggedBackup = this.backupRepository.logBackup(tableName);
 
         if(!loggedBackup){
             console.error("Couldn't log backup to the S3");
