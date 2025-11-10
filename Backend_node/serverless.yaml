@@ -281,27 +281,15 @@ resources:
       Properties:
         TopicName: MonthlyBackupTopic-${sls:stage}
 
-    # EventBridge Scheduler Role
-    SchedulerInvokeRole:
-      Type: AWS::IAM::Role
+    # EventBridge Scheduler Permissions
+    MonthlyBackupLambdaPermissionForScheduler:
+      Type: AWS::Lambda::Permission
       Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service: scheduler.amazonaws.com
-              Action: sts:AssumeRole
-        Policies:
-          - PolicyName: AllowInvokeLambda
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action: lambda:InvokeFunction
-                  Resource: !GetAtt MonthlyBackupLambdaFunction.Arn
+        FunctionName: !Ref MonthlyBackupLambdaFunction
+        Action: lambda:InvokeFunction
+        Principal: scheduler.amazonaws.com
 
-    # EventBridge Scheduler (monthly)
+    # EventBridge Scheduler
     ScheduledDynamoBackup:
       Type: AWS::Scheduler::Schedule
       Properties:
@@ -312,8 +300,8 @@ resources:
         ScheduleExpression: "cron(0 0 1 * ? *)"
         Target:
           Arn: !GetAtt MonthlyBackupLambdaFunction.Arn
-          RoleArn: !GetAtt SchedulerInvokeRole.Arn
           Input: '{"source":"eventbridge-scheduler"}'
+
 
   Outputs:
     UserPoolId:
