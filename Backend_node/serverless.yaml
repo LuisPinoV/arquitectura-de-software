@@ -37,7 +37,7 @@ provider:
         issuerUrl:
           Fn::Sub: "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
         audience:
-          - !Ref CognitoUserPoolClient
+          - { Ref: CognitoUserPoolClient }
     cors:
       allowedOrigins:
         - "*"
@@ -96,7 +96,9 @@ functions:
       CREATE_USER_TOPIC_SNS_ARN:
         Ref: CreatedUserTopic
 
-  ### Preferencias de usuario
+  ### APIS
+
+  # Preferencias
   preferenciaUsuarioHandler:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.preferenciaUsuarioHandler
     events:
@@ -218,7 +220,7 @@ package:
 
 resources:
   Resources:
-    # Cognito
+    # Cognito User Pool
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -235,6 +237,7 @@ resources:
             RequireSymbols: false
             RequireUppercase: true
 
+    # Cognito User Pool Client
     CognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
@@ -260,12 +263,13 @@ resources:
         UserPoolId: !Ref CognitoUserPool
         Description: "Grupo de administradores del sistema"
 
-    # SNS
+    # SNS - User
     CreatedUserTopic:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: CreatedUserTopic-${sls:stage}
 
+    # SNS - Backup
     MonthlyBackupTopic:
       Type: AWS::SNS::Topic
       Properties:
@@ -275,7 +279,7 @@ resources:
     MonthlyBackupLambdaPermissionForScheduler:
       Type: AWS::Lambda::Permission
       Properties:
-        FunctionName: !GetAtt monthlyBackup.Arn
+        FunctionName: !GetAtt monthlyBackupLambdaFunction.Arn
         Action: lambda:InvokeFunction
         Principal: scheduler.amazonaws.com
 
@@ -289,7 +293,7 @@ resources:
           Mode: "OFF"
         ScheduleExpression: "cron(0 0 1 * ? *)"
         Target:
-          Arn: !GetAtt monthlyBackup.Arn
+          Arn: !GetAtt monthlyBackupLambdaFunction.Arn
           Input: '{"source":"eventbridge-scheduler"}'
 
   Outputs:
