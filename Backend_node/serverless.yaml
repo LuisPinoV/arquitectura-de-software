@@ -1,5 +1,6 @@
-app: arqui
 service: arquitectura-serverless
+app: arqui
+frameworkVersion: ^3.40.0
 
 plugins:
   - serverless-prune-plugin
@@ -97,8 +98,6 @@ functions:
         Ref: CreatedUserTopic
 
   ### APIS
-
-  # Preferencias
   preferenciaUsuarioHandler:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.preferenciaUsuarioHandler
     events:
@@ -121,7 +120,6 @@ functions:
               - CreatedUserTopic
               - TopicArn
 
-  ## Especialidades
   getEspecialidad:
     handler: src/handlers/getEspecialidad.main
     events:
@@ -130,7 +128,6 @@ functions:
           method: get
           authorizer: cognitoJwt
 
-  ## Usuarios
   pacienteHandler:
     handler: src/handlers/usuarios/usuario.pacienteHandler
     events:
@@ -143,7 +140,6 @@ functions:
           method: any
           authorizer: cognitoJwt
 
-  ## Funcionarios
   funcionarioHandler:
     handler: src/handlers/funcionarios/funcionario.funcionarioHandler
     events:
@@ -156,7 +152,6 @@ functions:
           method: any
           authorizer: cognitoJwt
 
-  ## Boxes
   boxHandler:
     handler: src/handlers/boxes/box.boxHandler
     events:
@@ -169,7 +164,6 @@ functions:
           method: any
           authorizer: cognitoJwt
 
-  ## Agendamiento
   agendamientoHandler:
     handler: src/handlers/agendamiento/agendamiento.agendamientoHandler
     events:
@@ -181,7 +175,7 @@ functions:
           path: /agendamiento/{proxy+}
           method: any
           authorizer: cognitoJwt
-  
+
   # Backup
   monthlyBackup:
     handler: src/handlers/backup/backup.getDataForBackup
@@ -263,13 +257,12 @@ resources:
         UserPoolId: !Ref CognitoUserPool
         Description: "Grupo de administradores del sistema"
 
-    # SNS - User
+    # SNS Topics
     CreatedUserTopic:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: CreatedUserTopic-${sls:stage}
 
-    # SNS - Backup
     MonthlyBackupTopic:
       Type: AWS::SNS::Topic
       Properties:
@@ -279,7 +272,7 @@ resources:
     MonthlyBackupLambdaPermissionForScheduler:
       Type: AWS::Lambda::Permission
       Properties:
-        FunctionName: !GetAtt monthlyBackupLambdaFunction.Arn
+        FunctionName: !Ref monthlyBackup
         Action: lambda:InvokeFunction
         Principal: scheduler.amazonaws.com
 
@@ -293,7 +286,7 @@ resources:
           Mode: "OFF"
         ScheduleExpression: "cron(0 0 1 * ? *)"
         Target:
-          Arn: !GetAtt monthlyBackupLambdaFunction.Arn
+          Arn: !GetAtt monthlyBackup.Arn
           Input: '{"source":"eventbridge-scheduler"}'
 
   Outputs:
