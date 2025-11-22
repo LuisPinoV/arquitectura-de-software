@@ -272,7 +272,10 @@ resources:
     MonthlyBackupLambdaPermissionForScheduler:
       Type: AWS::Lambda::Permission
       Properties:
-        FunctionName: !Ref monthlyBackup
+        FunctionName:
+          Fn::GetAtt:
+            - MonthlyBackupLambdaFunction
+            - Arn
         Action: lambda:InvokeFunction
         Principal: scheduler.amazonaws.com
 
