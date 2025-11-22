@@ -69,12 +69,13 @@ export async function logDataToS3(event) {
     const snsMessage = record.Sns.Message;
 
     try {
-      const { tableName } = JSON.parse(snsMessage);
+      const { tableName, data } = JSON.parse(snsMessage);
 
-      console.log("Received SNS message for monthly backup, logging backup:");
+      console.log("Received SNS message for monthly backup:");
       console.log("Table Name:", tableName);
+      console.log("data:", data);
 
-      await backupService.logBackup(tableName);
+      await backupService.logBackup(tableName, data);
     } catch (err) {
       console.error("Failed to process SNS message:", err);
       return {

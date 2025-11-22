@@ -83,6 +83,7 @@ export default function LoginPage() {
           router.push("/dashboard/general")
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
+          localStorage.setItem("refreshToken", resJson.refreshToken);
         } else {
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("idToken");
@@ -90,7 +91,6 @@ export default function LoginPage() {
         }
       } catch {
         localStorage.removeItem("refreshToken");
-        console.log("Nueva sesión necesaria");
       }
     }
 
@@ -100,8 +100,6 @@ export default function LoginPage() {
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_LOGIN_USER_URL;
-      console.log(apiUrl);
-      console.log("a");
       const res = await fetch(
         `${apiUrl}`,
         {
@@ -123,7 +121,6 @@ export default function LoginPage() {
         showAlert();
       }
     } catch {
-      console.log("Error fetching answer");
       showAlert();
     }
   }

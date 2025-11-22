@@ -5,14 +5,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import "./footerLogin.css";
 import { Youtube, Linkedin } from 'lucide-react';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 export function Footer() 
 {
     return (
         <header className = "footer-container">
             <div className = "footer-item name">
-                Benluto Co. © 2025. Derechos reservados
+                SuicITe Co. © 2025. Derechos reservados
             </div>
             <div className = "footer-item link-container">
                 <Link href = "/">

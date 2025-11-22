@@ -13,7 +13,7 @@ export function Header()
             <div className = "navbar-item">
                 <Link href = "/" style = {{display:"flex"}}>
                     <Box/>
-                    <h2>AIOSpace</h2>
+                    <h2 style = {{fontSize:"18px", marginLeft:"3px"}}>Agendín</h2>
                 </Link>
             </div>
         </header>

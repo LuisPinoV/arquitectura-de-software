@@ -36,10 +36,10 @@ export class BackupService {
     return await saveBackupToS3.execute(tableName, data);
   }
 
-  async logBackup(tableName) {
+  async logBackup(tableName, data) {
     const logBackup = new LogBackupUseCase(this.backupRepository);
 
-    return await logBackup.execute(tableName);
+    return await logBackup.execute(tableName, data);
   }
 
   async sendDataBySNS(tableName, data) 

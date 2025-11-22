@@ -121,7 +121,7 @@ export class BackupRepository {
     }
   }
 
-  logBackup(tableName) {
+  logBackup(tableName, items) {
     console.log(
       JSON.stringify({
         level: "info",
