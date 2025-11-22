@@ -2,7 +2,7 @@ name: Serverless
 
 on:
   workflow_dispatch:
-    
+
   push:
     branches: [main]
 
@@ -26,8 +26,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Serverless Framework
-        run: npm install -g serverless
+      - name: Install Serverless v3
+        run: npm install -g serverless@3
 
       - name: Deploy with Serverless
         run: serverless deploy --verbose
