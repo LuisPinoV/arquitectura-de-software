@@ -19,7 +19,7 @@ custom:
 provider:
   name: aws
   role: arn:aws:iam::${aws:accountId}:role/LabRole
-  runtime: nodejs22.x
+  runtime: nodejs20.x
   region: us-east-1
   environment:
     USER_POOL_ID: { Ref: CognitoUserPool }
