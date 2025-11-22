@@ -175,7 +175,7 @@ resource "aws_s3_bucket" "backups" {
 resource "aws_s3_bucket_public_access_block" "backups_block" {
   bucket                  = aws_s3_bucket.backups.id
   block_public_acls       = true
-  block_public_policy     = true
+  block_public_policy     = false
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
@@ -195,29 +195,6 @@ resource "aws_s3_bucket_versioning" "backups_versioning" {
 
   versioning_configuration {
     status = "Enabled"
-  }
-}
-
-# SERVERLESS
-
-resource "null_resource" "deploy_serverless" {
-  depends_on = [
-    aws_dynamodb_table.agendamiento,
-    aws_dynamodb_table.user_preferences,
-    aws_dynamodb_table.user_token_table
-  ]
-
-  provisioner "local-exec" {
-    interpreter = ["cmd", "/C"]
-
-    # Se ejecuta en la carpeta donde está terraform.tf y serverless.yaml
-    working_dir = "${path.module}"
-
-    command = <<-EOT
-      echo === Desplegando funciones Serverless ===
-      npx serverless deploy --config serverless.yaml --debug
-      echo terminó serverless
-    EOT
   }
 }
 
