@@ -1,2 +1,0 @@
-Requisitos:
-	- Agendar horas de disponibilidad
