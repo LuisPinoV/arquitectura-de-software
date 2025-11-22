@@ -1,6 +1,8 @@
 name: Terraform CD (deploy)
 
 on:
+  workflow_dispatch:
+    
   push:
     branches: [main]
 
