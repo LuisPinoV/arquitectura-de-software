@@ -2,7 +2,6 @@ provider "aws" {
   region = "us-east-1"
 }
 
-
 # DynamoDB
 
 resource "aws_dynamodb_table" "agendamiento" {
@@ -89,7 +88,7 @@ resource "aws_dynamodb_table" "user_preferences" {
     type = "S"
   }
 
-    tags = {
+  tags = {
     Environment = "Dev"
     Feature     = "BlueGreenDeploy"
   }
@@ -104,14 +103,14 @@ resource "aws_dynamodb_table" "user_token_table" {
     name = "userId"
     type = "S"
   }
-  
-    tags = {
+
+  tags = {
     Environment = "Dev"
     Feature     = "BlueGreenDeploy"
   }
 }
 
-# Buckets de S3
+
 
 variable "region" {
   default = "us-east-1"
@@ -123,7 +122,7 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-# Bucket publico para el frontend
+# S3 BUCKET (FRONTEND)
 
 resource "aws_s3_bucket" "frontend" {
   bucket = "frontend-${local.account_id}-${var.region}"
@@ -133,7 +132,7 @@ resource "aws_s3_bucket_website_configuration" "frontend_site" {
   bucket = aws_s3_bucket.frontend.bucket
 
   index_document {
-    suffix = "index.html"  #placeholder hasta que se termine el frontend
+    suffix = "index.html"
   }
 
   error_document {
@@ -149,24 +148,7 @@ resource "aws_s3_bucket_public_access_block" "frontend_block" {
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_policy" "frontend_policy" {
-  bucket = aws_s3_bucket.frontend.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.frontend.arn}/*"
-      }
-    ]
-  })
-}
-
-# Bucket privado para backup de base de datos
+# S3 BUCKET (BACKUPS)
 
 resource "aws_s3_bucket" "backups" {
   bucket = "backups-${local.account_id}-${var.region}"
@@ -197,4 +179,3 @@ resource "aws_s3_bucket_versioning" "backups_versioning" {
     status = "Enabled"
   }
 }
-
