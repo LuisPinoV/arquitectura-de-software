@@ -16,8 +16,10 @@ export async function POST(request: Request) {
 
     const data = await res.json();
 
-    return NextResponse.json(data);
+    const didWorked = data.error == undefined ? true : false;
+
+    return NextResponse.json({...data, ok: didWorked});
   } catch (e) {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid JSON", ok: false }, { status: 400 });
   }
 }
