@@ -5,9 +5,9 @@ export class CreateUserUseCase
         this.cognitoRepository = cognitoRepository;
     }
 
-    async execute(username, password)
+    async execute(username, password, name = null, companyName = null, spaceName = null)
     {
-        const newAccount = await this.cognitoRepository.createUser(username, password);
+        const newAccount = await this.cognitoRepository.createUser(username, password, name, companyName, spaceName);
 
         if(!newAccount) throw new Error("Couldn't create user");
 

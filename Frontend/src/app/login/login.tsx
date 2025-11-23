@@ -181,6 +181,14 @@ export default function LoginPage() {
                   <Button type="submit" className="w-full">
                     Iniciar Sesión
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => router.push("/register")}
+                  >
+                    Crear usuario
+                  </Button>
                 </CardFooter>
               </form>
             </Form>

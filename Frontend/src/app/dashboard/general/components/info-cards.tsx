@@ -39,7 +39,16 @@ export function InfoCards() {
             `/dashboard/general/api/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
           );
           const data1: any = await res1.json();
-          const usageData1: any = `${data1["dataArr"][1]["uso"].toFixed(2)}%`;
+          let usageData1 = "0%";
+          if (
+            data1 &&
+            Array.isArray(data1["dataArr"]) &&
+            data1["dataArr"].length > 1 &&
+            data1["dataArr"][1] &&
+            typeof data1["dataArr"][1]["uso"] === "number"
+          ) {
+            usageData1 = `${data1["dataArr"][1]["uso"].toFixed(2)}%`;
+          }
 
           setPercentageUsage(usageData1);
   

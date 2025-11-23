@@ -61,16 +61,22 @@ export class CognitoRepository {
     }
   }
 
-  async createUser(username, password) {
+  async createUser(username, password, name = null, companyName = null, spaceName = null) {
     try {
+      const userAttributes = [
+        { Name: "email", Value: username },
+        { Name: "email_verified", Value: "true" },
+      ];
+
+      if (name) userAttributes.push({ Name: "name", Value: name });
+      if (companyName) userAttributes.push({ Name: "custom:companyName", Value: companyName });
+      if (spaceName) userAttributes.push({ Name: "custom:spaceName", Value: spaceName });
+
       const createCmd = new AdminCreateUserCommand({
         UserPoolId: this.userPool,
         Username: username,
         TemporaryPassword: password,
-        UserAttributes: [
-          { Name: "email", Value: username },
-          { Name: "email_verified", Value: "true" },
-        ],
+        UserAttributes: userAttributes,
         MessageAction: "SUPPRESS",
         DesiredDeliveryMediums: [],
       });
@@ -85,8 +91,6 @@ export class CognitoRepository {
           Permanent: true,
         })
       );
-
-      
 
       return { userId: response.User.Username };
     } catch (err) {

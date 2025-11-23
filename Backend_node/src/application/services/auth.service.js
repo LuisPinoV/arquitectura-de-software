@@ -76,10 +76,10 @@ export class AuthService {
     }
   }
 
-  async createUser(username, password) {
+  async createUser(username, password, name = null, companyName = null, spaceName = null) {
     const createUser = new CreateUserUseCase(this.cognitoRepository);
 
-    const newUserData = await createUser.execute(username, password);
+    const newUserData = await createUser.execute(username, password, name, companyName, spaceName);
 
     const publishCreateUser = new PublishCreateUserUseCase(
       this.authEventsRepository

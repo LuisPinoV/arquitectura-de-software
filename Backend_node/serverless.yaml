@@ -61,6 +61,18 @@ provider:
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
         - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
+    - Effect: Allow
+      Action:
+        - cognito-idp:AdminCreateUser
+        - cognito-idp:AdminSetUserPassword
+        - cognito-idp:AdminUpdateUserAttributes
+        - cognito-idp:AdminGetUser
+        - cognito-idp:InitiateAuth
+        - cognito-idp:AdminInitiateAuth
+        - cognito-idp:GlobalSignOut
+        - cognito-idp:GetUser
+      Resource:
+        - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
 
 resources:
   Resources:
@@ -73,6 +85,15 @@ resources:
           - email
         AutoVerifiedAttributes:
           - email
+        Schema:
+          - Name: companyName
+            AttributeDataType: String
+            Mutable: true
+            DeveloperOnlyAttribute: false
+          - Name: spaceName
+            AttributeDataType: String
+            Mutable: true
+            DeveloperOnlyAttribute: false
         Policies:
           PasswordPolicy:
             MinimumLength: 8

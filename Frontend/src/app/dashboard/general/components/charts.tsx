@@ -480,7 +480,11 @@ export function BoxesSpeficicChart() {
       try {
         const res = await fetch(`/dashboard/general/api/get_specialties`);
         const data: any = await res.json();
-        setValue(data["data"][0]["especialidad"]);
+        if (data && Array.isArray(data["data"]) && data["data"].length > 0) {
+          setValue(data["data"][0]["especialidad"]);
+        } else {
+          setValue("");
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
