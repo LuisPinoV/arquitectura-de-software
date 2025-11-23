@@ -114,9 +114,9 @@ async function refreshUser(req) {
   }
 }
 
-// POST - /admin/createUser
-export async function createUser(event) {
-  const { username, password } = JSON.parse(event.body);
+// POST - /auth/createUser
+export async function createUser(req) {
+  const { username, password } = await req.json();
 
   if (!username || !password) {
     return {
