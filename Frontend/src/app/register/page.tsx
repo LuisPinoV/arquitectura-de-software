@@ -50,14 +50,8 @@ export default function RegisterPage() {
 
   async function onSubmit(data: z.infer<typeof RegisterSchema>) {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_CREATE_USER_URL;
-      if (!apiUrl) {
-        console.log("Crear usuario (simulado):", data);
-        router.replace("/");
-        return;
-      }
 
-      const res = await fetch(apiUrl, {
+      const res = await fetch("/login/api/createUser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -69,12 +63,13 @@ export default function RegisterPage() {
         }),
       });
 
-      if (res.ok) {
+      const resJson = await res.json();
+
+      if (resJson.ok) {
         alert("Usuario creado correctamente");
         router.replace("/");
       } else {
-        const json = await res.json();
-        alert(json?.message || "Error al crear el usuario");
+        alert(resJson.message || "Error al crear el usuario");
       }
     } catch (e) {
       console.error(e);

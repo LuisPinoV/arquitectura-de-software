@@ -44,39 +44,11 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const router = useRouter();
 
-  useEffect(() => {
-    async function GetClaims(accessToken: string) {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_AUTH_USER_URL;
-        const res = await fetch(
-          `${apiUrl}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }
-        );
-
-        const resJson = await res.json();
-
-        if (res.ok) {
-          console.log("Got claims");
-        } else {
-          console.log("Couldn't get claims");
-        }
-      } catch {
-        console.log("Couldn't get claims");
-      }
-    }
-    const accessToken = localStorage.getItem("accessToken");
-    if(accessToken)
-      GetClaims(accessToken);
-  }, []);
-
   const logout = () => {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("idToken");
     localStorage.removeItem("accessToken");
-    router.push("/");
+    router.replace("/");
   };
 
   return (
