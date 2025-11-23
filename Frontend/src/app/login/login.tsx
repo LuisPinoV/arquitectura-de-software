@@ -104,6 +104,8 @@ export default function LoginPage() {
 
       const resJson = await res.json();
 
+      console.log(resJson);
+
       if (resJson.ok) {
         localStorage.setItem("accessToken", resJson.accessToken);
         localStorage.setItem("idToken", resJson.idToken);
