@@ -19,6 +19,7 @@ import {
 } from "recharts";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUserProfile } from '@/hooks/use-user';
 import {
   Card,
   CardAction,
@@ -106,6 +107,9 @@ export function ChartChangeByMonths() {
 }
 
 export function ChartInfoCards() {
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Boxes';
+
   const [infoCardsData, setInfoCardsData] = useState<any>([
     {
       Nombre: "Uso de boxes",
@@ -161,7 +165,7 @@ export function ChartInfoCards() {
         const data1: any = await res1.json();
         const usageData1: any = data1["dataArr"][1]["uso"].toFixed(2);
         const dataChart1 = {
-          Nombre: "Uso Boxes hoy",
+          Nombre: `Uso ${space} hoy`,
           Descripcion: "Porcentaje",
           Valor: parseFloat(usageData1),
           MaxValue: 100,
@@ -224,7 +228,7 @@ export function ChartInfoCards() {
       label: "Cantidad",
     },
     boxes: {
-      label: "Boxes",
+      label: space,
       color: "var(--primary)",
     },
   } satisfies ChartConfig;

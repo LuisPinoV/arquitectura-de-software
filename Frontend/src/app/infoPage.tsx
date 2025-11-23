@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react";
+import { useUserProfile } from "@/hooks/use-user";
 import "animate.css";
 import { Row, Col } from "antd";
 
@@ -57,6 +58,8 @@ const BadgeChip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export default function InfoPage() {
   const router = useRouter();
+  const { spaceName } = useUserProfile() as any;
+  const displaySpace = spaceName ?? 'boxes';
 
   return (
     <div className="min-h-screen w-full bg-white text-neutral-900">
@@ -125,15 +128,15 @@ export default function InfoPage() {
             <Col xs={24} md = {12}>
               <Card className="rounded-2xl shadow-sm animate__animated animate__fadeInRight">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-semibold text-neutral-800">
-                    Uso de boxes
+                    <CardTitle className="text-base font-semibold text-neutral-800">
+                    Uso de {displaySpace}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
                   <DonutGauge value={30.4} />
                   <div className="space-y-1">
                     <div className="text-sm text-neutral-500">
-                      Uso de boxes (hoy)
+                      Uso de {displaySpace} (hoy)
                     </div>
                     <BadgeChip>30.4%</BadgeChip>
                   </div>
@@ -165,8 +168,8 @@ export default function InfoPage() {
             <Col span={24}>
               <Card className="rounded-2xl shadow-sm animate__animated animate__fadeInUp animate__delay-2s">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base font-semibold text-neutral-800">
-                    Gestión de boxes
+                    <CardTitle className="text-base font-semibold text-neutral-800">
+                    Gestión de {displaySpace}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -216,7 +219,7 @@ export default function InfoPage() {
             <div className="w-9 h-9 rounded-full bg-neutral-200 grid place-items-center">
               🧩
             </div>
-            <span className="font-semibold">Gestión de boxes</span>
+            <span className="font-semibold">Gestión de {displaySpace}</span>
           </div>
         </Col>
       </Row>

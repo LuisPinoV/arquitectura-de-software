@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import DynamicSpaceLabel from '@/components/dynamic-space-label';
 import { useEffect, useState } from "react";
 
 export function InfoCards() {
@@ -71,8 +72,8 @@ export function InfoCards() {
     <Row justify="center" align="top">
       <Col className="general-col" xs={24} sm={12} md={12} lg={12} xl={12}>
         <Card className="@container/card info-card">
-          <CardHeader>
-            <CardDescription>Uso boxes hoy</CardDescription>
+            <CardHeader>
+            <CardDescription><DynamicSpaceLabel template="Uso boxes hoy" /></CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {percentageUsage}
             </CardTitle>

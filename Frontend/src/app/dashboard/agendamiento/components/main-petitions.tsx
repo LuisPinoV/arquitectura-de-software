@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUserProfile } from '@/hooks/use-user';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -52,6 +53,10 @@ type Box = {
 const PAGE_SIZE = 7;
 
 export default function ScheduleRequestsPage({ box = null, date = new Date() }: { box?: string | null; date?: Date }) {
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Box';
+  const spaceUpper = space.toUpperCase();
+  const spaceLower = space.toLowerCase();
   const [open, setOpen] = React.useState(false);
   const [selectedBoxId, setSelectedBoxId] = React.useState<number | null>(box ? parseInt(box) : null);
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
@@ -146,7 +151,7 @@ export default function ScheduleRequestsPage({ box = null, date = new Date() }: 
       {/* Box Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>Selecciona un Box</CardTitle>
+          <CardTitle>{`Selecciona un ${space}`}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row gap-4">
           <Popover open={open} onOpenChange={setOpen}>
@@ -157,14 +162,14 @@ export default function ScheduleRequestsPage({ box = null, date = new Date() }: 
                 aria-expanded={open}
                 className="w-[250px] justify-between"
               >
-                {selectedBoxId ? `BOX - ${selectedBoxId}` : "Elige un box..."}
+                {selectedBoxId ? `${spaceUpper} - ${selectedBoxId}` : `Elige un ${spaceLower}...`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[250px] p-0">
               <Command>
-                <CommandInput placeholder="Buscar box..." />
-                <CommandEmpty>No se encontró box.</CommandEmpty>
+                <CommandInput placeholder={`Buscar ${spaceLower}...`} />
+                <CommandEmpty>{`No se encontró ${spaceLower}.`}</CommandEmpty>
                 <CommandGroup
                   className="max-h-[150px]"
                   style={{ overflowY: "scroll" }}
@@ -186,7 +191,7 @@ export default function ScheduleRequestsPage({ box = null, date = new Date() }: 
                             : "opacity-0"
                         )}
                       />
-                      {`BOX - ${box}`}
+                      {`${spaceUpper} - ${box}`}
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -208,7 +213,7 @@ export default function ScheduleRequestsPage({ box = null, date = new Date() }: 
       {selectedBox && (
         <Card>
           <CardHeader>
-            <CardTitle>Solicitudes de {`BOX - ${selectedBox.idBox}`}</CardTitle>
+            <CardTitle>{`Solicitudes de ${spaceUpper} - ${selectedBox.idBox}`}</CardTitle>
           </CardHeader>
           <CardContent>
             {requests.length > 0 ? (
@@ -324,9 +329,9 @@ export default function ScheduleRequestsPage({ box = null, date = new Date() }: 
                   </Button>
                 </div>
               </>
-            ) : (
+              ) : (
               <p className="text-muted-foreground">
-                No hay solicitudes para este box.
+                {`No hay solicitudes para este ${spaceLower}.`}
               </p>
             )}
           </CardContent>

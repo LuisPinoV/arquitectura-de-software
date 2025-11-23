@@ -3,6 +3,7 @@
 import { Row, Col } from "antd";
 
 import { SearchCard } from "@/components/custom/search-card";
+import { useUserProfile } from '@/hooks/use-user';
 
 import "./dropdown-boxes.css";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,9 @@ export function BoxSearchMain() {
     fetchData();
   }, []);
 
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Box';
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -110,6 +114,8 @@ export function BoxSearchMain() {
 
     toFilterData = toFilterData.filter((box) => {
       const boxName = `BOX - ${box["box"]}`;
+        const boxName = `${space.toUpperCase()} - ${box["box"]}`;
+                            {`${space.toUpperCase()} - ${box}`}
       const boxEspecialidad = box["especialidad"];
       const boxEstado = box["estado"];
       const boxOcupancia = parseFloat(box["ocupancia"]);

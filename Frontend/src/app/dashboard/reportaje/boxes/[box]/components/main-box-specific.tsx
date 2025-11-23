@@ -6,6 +6,7 @@ import { ChartBoxAcrossTime, BoxSchedule } from "./charts";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
+import { useUserProfile } from '@/hooks/use-user';
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
 
@@ -35,11 +36,14 @@ export default function MainBoxSpecific({ box }: { box: any }) {
       }`;
     }
   }
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Box';
+
   return (
     <div>
       <div className="text-bold">
         <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
-          Reporte Box - {box}
+          Reporte {space} - {box}
         </h1>
       </div>
       <Row justify={"center"} align={"middle"}>

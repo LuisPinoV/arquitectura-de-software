@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useUserProfile } from '@/hooks/use-user';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -51,6 +52,10 @@ type Box = {
 const PAGE_SIZE = 7;
 
 export default function BoxSchedulePage() {
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Box';
+  const spaceUpper = space.toUpperCase();
+  const spaceLower = space.toLowerCase();
   const [open, setOpen] = React.useState(false);
   const [selectedBoxId, setSelectedBoxId] = React.useState<number | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
@@ -135,7 +140,7 @@ export default function BoxSchedulePage() {
     <div className="container mx-auto py-10 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Selecciona un Box</CardTitle>
+          <CardTitle>{`Selecciona un ${space}`}</CardTitle>
         </CardHeader>
         <CardContent>
           <Popover open={open} onOpenChange={setOpen}>
@@ -146,14 +151,14 @@ export default function BoxSchedulePage() {
                 aria-expanded={open}
                 className="w-[250px] justify-between"
               >
-                {selectedBoxId ? `BOX - ${selectedBoxId}` : "Elige un box..."}
+                {selectedBoxId ? `${spaceUpper} - ${selectedBoxId}` : `Elige un ${spaceLower}...`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[250px] p-0">
               <Command>
-                <CommandInput placeholder="Buscar box..." />
-                <CommandEmpty>No se encontró box.</CommandEmpty>
+                <CommandInput placeholder={`Buscar ${spaceLower}...`} />
+                <CommandEmpty>{`No se encontró ${spaceLower}.`}</CommandEmpty>
                 <CommandGroup className = "max-h-[150px]" style = {{overflowY:"scroll"}}>
                   {allBoxes.map((box) => (
                     <CommandItem
@@ -172,7 +177,7 @@ export default function BoxSchedulePage() {
                             : "opacity-0"
                         )}
                       />
-                      {`BOX - ${box}`}
+                      {`${spaceUpper} - ${box}`}
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -185,7 +190,7 @@ export default function BoxSchedulePage() {
       {selectedBox && (
         <Card>
           <CardHeader>
-            <CardTitle>Calendario de {`BOX - ${selectedBox.idBox}`}</CardTitle>
+            <CardTitle>{`Calendario de ${spaceUpper} - ${selectedBox.idBox}`}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row gap-6 w-full">
             <Row className="w-full" align={"middle"} justify={"center"}>
@@ -250,7 +255,7 @@ export default function BoxSchedulePage() {
                                     </DialogHeader>
                                     <div className="flex items-center gap-2">
                                       <div className="grid flex-1 gap-2">
-                                        <div>Box - {selectedBox?.idBox}</div>
+                                        <div>{`${spaceUpper} - ${selectedBox?.idBox}`}</div>
                                         <div>Hora - {sch.time}</div>
                                       </div>
                                     </div>

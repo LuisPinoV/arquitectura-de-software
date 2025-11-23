@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname, useParams } from "next/navigation";
 import React from "react";
+import { useUserProfile } from '@/hooks/use-user';
 
 const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
   "/": [{ label: "Inicio" }],
@@ -82,13 +83,23 @@ export function SiteHeader() {
   const params = useParams();
   const items = breadcrumbMap[pathname] || [];
 
+  // Use centralized hook so header updates when profile is fetched
+  const profile = useUserProfile() as any;
+  const spaceName = profile?.spaceName ?? null;
+  const displaySpace = spaceName ?? 'Boxes';
+
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.debug('[SiteHeader] spaceName', spaceName);
+  }
+
   if (pathname.startsWith("/dashboard/reportaje/boxes/") && params?.box) {
     items.push(
       { label: "Inicio", href: "/" },
       { label: "Dashboard", href: "/dashboard/general" },
       { label: "Reportaje", href: "/dashboard/reportaje" },
-      { label: "Boxes", href: "/dashboard/reportaje/boxes"  },
-      { label: `Box ${params.box}` }
+      { label: displaySpace, href: "/dashboard/reportaje/boxes"  },
+      { label: `${displaySpace} - ${params.box}` }
     );
   }
 
@@ -106,16 +117,27 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb className="hidden sm:flex w-full justify-between">
           <BreadcrumbList>
-            {items.map((item, i) => (
+                    {items.map((item, i) => (
               <React.Fragment key={i}>
                 <BreadcrumbItem>
                   {item.href ? (
-                    <BreadcrumbLink href={item.href}>
-                      {item.label}
-                    </BreadcrumbLink>
-                  ) : (
-                    <BreadcrumbPage>{item.label}</BreadcrumbPage>
-                  )}
+                      <BreadcrumbLink href={item.href}>
+                        {/* replace static 'Boxes' occurrences */}
+                        {item.label === 'Boxes'
+                          ? displaySpace
+                          : item.label?.startsWith('Busqueda Boxes')
+                          ? item.label.replace('Boxes', displaySpace)
+                          : item.label}
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbPage>
+                        {item.label === 'Boxes'
+                          ? displaySpace
+                          : item.label?.startsWith('Busqueda Boxes')
+                          ? item.label.replace('Boxes', displaySpace)
+                          : item.label}
+                      </BreadcrumbPage>
+                    )}
                 </BreadcrumbItem>
                 {i < items.length - 1 && <BreadcrumbSeparator />}
               </React.Fragment>
