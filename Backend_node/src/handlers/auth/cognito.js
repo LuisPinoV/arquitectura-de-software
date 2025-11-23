@@ -10,21 +10,22 @@ const router = AutoRouter();
 
 router
   .post("/auth/login", loginUser)
-  .get("/auth/me", getMe)
   .post("/auth/logout", logoutUser)
   .post("/auth/refresh", refreshUser)
   .post("/auth/createUser", createUser);
 
 // Reply to preflight requests for any route handled here
-router.options("*", () =>
-  new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type,Authorization",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    },
-  })
+router.options(
+  "*",
+  () =>
+    new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type,Authorization",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      },
+    })
 );
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
@@ -55,7 +56,8 @@ export const cognitoHandler = async (event) => {
       responseHeaders["Access-Control-Allow-Origin"] = "*";
     }
     if (!responseHeaders["access-control-allow-headers"]) {
-      responseHeaders["Access-Control-Allow-Headers"] = "Content-Type,Authorization";
+      responseHeaders["Access-Control-Allow-Headers"] =
+        "Content-Type,Authorization";
     }
     if (!responseHeaders["access-control-allow-methods"]) {
       responseHeaders["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
@@ -94,7 +96,6 @@ async function parseRequestBody(req) {
       }
       return JSON.parse(candidate);
     } catch (err2) {
-      console.error('Failed to parse request body as JSON:', err2, err);
       throw err2;
     }
   }
@@ -118,11 +119,16 @@ async function loginUser(req) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Error login user:", err);
-    return new Response(JSON.stringify({ error: "Error interno", message: err?.message ?? String(err) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Error interno",
+        message: err?.message ?? String(err),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }
 
@@ -138,9 +144,11 @@ async function logoutUser(req) {
 
   try {
     const res = await authService.logout(accessToken);
-    return new Response(JSON.stringify(res), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(res), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error("Error on logout: ", err);
     return new Response(JSON.stringify({ error: "Error interno" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -160,9 +168,11 @@ async function refreshUser(req) {
 
   try {
     const res = await authService.refresh(refreshToken);
-    return new Response(JSON.stringify(res), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(res), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error("Error on refresh: ", err);
     return new Response(JSON.stringify({ error: "Error interno" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -173,7 +183,6 @@ async function refreshUser(req) {
 // POST - /auth/createUser
 export async function createUser(req) {
   const body = await parseRequestBody(req);
-  console.log("createUser called with body:", JSON.stringify(body));
 
   // Support both payload shapes: { username, password } or { email, password, name, companyName, spaceName }
   const username = body.username ?? body.email ?? null;
@@ -183,7 +192,6 @@ export async function createUser(req) {
   const spaceName = body.spaceName ?? null;
 
   if (!username || !password) {
-    console.error("createUser missing username or password", body);
     return {
       statusCode: 400,
       body: JSON.stringify({ error: "Missing data" }),
@@ -191,54 +199,24 @@ export async function createUser(req) {
   }
 
   try {
-    console.log("Calling authService.createUser with:", { username, name, companyName, spaceName });
-    const res = await authService.createUser(username, password, name, companyName, spaceName);
-    console.log("createUser result:", JSON.stringify(res));
-    return { statusCode: 200, body: JSON.stringify(res) };
-  } catch (err) {
-    console.error("Error creating user: ", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno", message: err?.message ?? String(err) }),
-    };
-  }
-}
-
-// GET - /auth/me - return user attributes using AccessToken
-async function getMe(req) {
-  try {
-    // `req` is a Request built in the router.fetch call; read Authorization
-    const authHeader = typeof req.headers.get === 'function'
-      ? req.headers.get('authorization')
-      : req.headers['authorization'] || req.headers['Authorization'];
-
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-
-    const userData = await authService.getUserData(token);
-
-    if (!userData) {
-      return new Response(JSON.stringify({ error: "Couldn't get user data" }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    return new Response(JSON.stringify(userData), {
+    const res = await authService.createUser(
+      username,
+      password,
+      name,
+      companyName,
+      spaceName
+    );
+    return new Response(JSON.stringify(res), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error('Error getting user data: ', err);
-    return new Response(JSON.stringify({ error: 'Error interno', message: err?.message ?? String(err) }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Error interno",
+        message: err?.message ?? String(err),
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 }

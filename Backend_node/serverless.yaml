@@ -61,21 +61,51 @@ provider:
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
         - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
-    - Effect: Allow
-      Action:
-        - cognito-idp:AdminCreateUser
-        - cognito-idp:AdminSetUserPassword
-        - cognito-idp:AdminUpdateUserAttributes
-        - cognito-idp:AdminGetUser
-        - cognito-idp:InitiateAuth
-        - cognito-idp:AdminInitiateAuth
-        - cognito-idp:GlobalSignOut
-        - cognito-idp:GetUser
-      Resource:
-        - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
 
 resources:
   Resources:
+    # Cognito IAM
+    CognitoMinimumRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: cognito-custom-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: CognitoAndDynamoAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:GetItem
+                    - dynamodb:PutItem
+                    - dynamodb:Query
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Scan
+                  Resource:
+                    - arn:aws:dynamodb:${self:provider.region}:*:table/UserPreferences
+
+                - Effect: Allow
+                  Action:
+                    - cognito-idp:AdminCreateUser
+                    - cognito-idp:AdminSetUserPassword
+                    - cognito-idp:AdminUpdateUserAttributes
+                    - cognito-idp:AdminGetUser
+                    - cognito-idp:InitiateAuth
+                    - cognito-idp:AdminInitiateAuth
+                    - cognito-idp:GlobalSignOut
+                    - cognito-idp:GetUser
+                  Resource:
+                    - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
     # Cognito User Pool
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
@@ -158,7 +188,7 @@ resources:
                 - Effect: Allow
                   Action: lambda:InvokeFunction
                   Resource: !GetAtt MonthlyBackupLambdaFunction.Arn
-                  
+
     # EventBridge Scheduler
     ScheduledDynamoBackup:
       Type: AWS::Scheduler::Schedule
@@ -189,6 +219,7 @@ functions:
   ### Cognito
   cognitoHandler:
     handler: src/handlers/auth/cognito.cognitoHandler
+    role: CognitoMinimumRole
     events:
       - httpApi:
           method: any
@@ -311,8 +342,6 @@ package:
     - "!terraform/**"
     - "!**/terraform/**"
     - "!.terraform/**"
-
-
 
   Outputs:
     UserPoolId:
