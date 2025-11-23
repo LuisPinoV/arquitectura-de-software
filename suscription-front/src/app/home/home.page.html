@@ -1,0 +1,37 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Gestor Servicios
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="6" size-lg="4" *ngFor="let cliente of clientes">
+
+        <ion-card>
+          <div class="img-wrapper">
+            <img [src]="cliente.imagen" alt="" />
+          </div>
+
+          <ion-card-header>
+            <ion-card-title>{{ cliente.nombre }}</ion-card-title>
+          </ion-card-header>
+
+          <ion-card-content>
+            <ion-toggle [checked]="cliente.Servicio1" aria-label="Enable Notifications">Servicio 1</ion-toggle>
+            <ion-toggle [checked]="cliente.Servicio2" aria-label="Enable Notifications">Servicio 2</ion-toggle>
+            <ion-toggle [checked]="cliente.Servicio3" aria-label="Enable Notifications">Servicio 3</ion-toggle>
+            <ion-toggle [checked]="cliente.Servicio4" aria-label="Enable Notifications">Servicio 4</ion-toggle>
+            <ion-toggle [checked]="cliente.Servicio5" aria-label="Enable Notifications">Servicio 5</ion-toggle>
+          </ion-card-content>
+        </ion-card>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>

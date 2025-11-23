@@ -1,0 +1,7 @@
+{
+  "name": "suscription-front",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
