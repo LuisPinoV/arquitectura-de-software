@@ -20,13 +20,12 @@ export default function DashboardLayout({
         const res = await fetch(`/login/api/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken: refreshToken }),
+          body: JSON.stringify({ refreshToken }),
         });
 
         const resJson = await res.json();
-
+        
         if (resJson.ok) {
-          localStorage.setItem("refreshToken", resJson.refreshToken);
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
         } else {
@@ -43,6 +42,7 @@ export default function DashboardLayout({
       }
     }
     const refreshToken = localStorage.getItem("refreshToken");
+    
     if (refreshToken) RefreshSession(refreshToken);
     else router.replace("/");
   }, []);

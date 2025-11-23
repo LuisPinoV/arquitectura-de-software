@@ -173,7 +173,7 @@ async function refreshUser(req) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Error interno" }), {
+    return new Response(JSON.stringify({ error: "Error interno", err }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
