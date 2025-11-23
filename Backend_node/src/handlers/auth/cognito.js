@@ -118,28 +118,6 @@ async function refreshUser(req) {
 export async function createUser(event) {
   const { username, password } = JSON.parse(event.body);
 
-  const claims = event.requestContext?.authorizer?.jwt.claims;
-
-  console.log(claims);
-
-  if (!claims) {
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ message: "Unauthorized: no token claims" }),
-    };
-  }
-
-  const groups = claims["cognito:groups"] || [];
-
-  if (!groups.includes("Administradores")) {
-    return {
-      statusCode: 403,
-      body: JSON.stringify({ message: "Forbidden: admin access required" }),
-    };
-  }
-
-  console.log(username, password);
-
   if (!username || !password) {
     return {
       statusCode: 400,
