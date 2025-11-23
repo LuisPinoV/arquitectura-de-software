@@ -1,6 +1,6 @@
 service: arquitectura-serverless
 app: arqui
-frameworkVersion: ^3.40.0
+frameworkVersion: ^4.25.0
 
 plugins:
   - serverless-prune-plugin
@@ -61,6 +61,96 @@ provider:
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
         - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
+
+resources:
+  Resources:
+    # Cognito User Pool
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${sls:stage}-pool
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+            RequireUppercase: true
+
+    # Cognito User Pool Client
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-${sls:stage}-app
+        GenerateSecret: false
+        UserPoolId: !Ref CognitoUserPool
+        PreventUserExistenceErrors: ENABLED
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        AccessTokenValidity: 60
+        IdTokenValidity: 60
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+
+    CognitoUserPoolGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: Administradores
+        UserPoolId: !Ref CognitoUserPool
+        Description: "Grupo de administradores del sistema"
+
+    # SNS Topics
+    CreatedUserTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: CreatedUserTopic-${sls:stage}
+
+    MonthlyBackupTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: MonthlyBackupTopic-${sls:stage}
+
+    # EventBridge Scheduler Role
+    SchedulerInvokeRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: scheduler.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: AllowInvokeLambda
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action: lambda:InvokeFunction
+                  Resource: !GetAtt MonthlyBackupLambdaFunction.Arn
+                  
+    # EventBridge Scheduler
+    ScheduledDynamoBackup:
+      Type: AWS::Scheduler::Schedule
+      Properties:
+        Name: scheduled-dynamo-backup
+        Description: "Runs monthly backup for DynamoDB tables"
+        FlexibleTimeWindow:
+          Mode: "OFF"
+        ScheduleExpression: "cron(0 0 1 * ? *)"
+        Target:
+          Arn: !GetAtt MonthlyBackupLambdaFunction.Arn
+          RoleArn: !GetAtt SchedulerInvokeRole.Arn
+          Input: '{"source":"eventbridge-scheduler"}'
 
 functions:
   ### Simulador de base de datos
@@ -212,85 +302,7 @@ package:
     - "!**/terraform/**"
     - "!.terraform/**"
 
-resources:
-  Resources:
-    # Cognito User Pool
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: ${self:service}-${sls:stage}-pool
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 8
-            RequireLowercase: true
-            RequireNumbers: true
-            RequireSymbols: false
-            RequireUppercase: true
 
-    # Cognito User Pool Client
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: ${self:service}-${sls:stage}-app
-        GenerateSecret: false
-        UserPoolId: !Ref CognitoUserPool
-        PreventUserExistenceErrors: ENABLED
-        ExplicitAuthFlows:
-          - ALLOW_USER_PASSWORD_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-        AccessTokenValidity: 60
-        IdTokenValidity: 60
-        RefreshTokenValidity: 30
-        TokenValidityUnits:
-          AccessToken: minutes
-          IdToken: minutes
-          RefreshToken: days
-
-    CognitoUserPoolGroup:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: Administradores
-        UserPoolId: !Ref CognitoUserPool
-        Description: "Grupo de administradores del sistema"
-
-    # SNS Topics
-    CreatedUserTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-        TopicName: CreatedUserTopic-${sls:stage}
-
-    MonthlyBackupTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-        TopicName: MonthlyBackupTopic-${sls:stage}
-
-    # EventBridge Scheduler Permissions
-    MonthlyBackupLambdaPermissionForScheduler:
-      Type: AWS::Lambda::Permission
-      Properties:
-        FunctionName:
-          Fn::GetAtt:
-            - MonthlyBackupLambdaFunction
-            - Arn
-        Action: lambda:InvokeFunction
-        Principal: scheduler.amazonaws.com
-
-    # EventBridge Scheduler
-    ScheduledDynamoBackup:
-      Type: AWS::Scheduler::Schedule
-      Properties:
-        Name: scheduled-dynamo-backup
-        Description: "Runs monthly backup for DynamoDB tables"
-        FlexibleTimeWindow:
-          Mode: "OFF"
-        ScheduleExpression: "cron(0 0 1 * ? *)"
-        Target:
-          Arn: !GetAtt monthlyBackup.Arn
-          Input: '{"source":"eventbridge-scheduler"}'
 
   Outputs:
     UserPoolId:
