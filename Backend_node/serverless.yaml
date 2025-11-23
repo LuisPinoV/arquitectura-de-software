@@ -176,17 +176,6 @@ functions:
       CREATE_USER_TOPIC_SNS_ARN:
         Ref: CreatedUserTopic
 
-  createUser:
-    handler: src/handlers/auth/cognito.createUser
-    events:
-      - httpApi:
-          method: post
-          path: /admin/createUser
-          authorizer: cognitoJwt
-    environment:
-      CREATE_USER_TOPIC_SNS_ARN:
-        Ref: CreatedUserTopic
-
   ### APIS
   preferenciaUsuarioHandler:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.preferenciaUsuarioHandler

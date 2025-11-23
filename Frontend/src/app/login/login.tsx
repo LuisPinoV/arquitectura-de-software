@@ -80,7 +80,7 @@ export default function LoginPage() {
         const resJson = await res.json();
 
         if (res.ok) {
-          router.push("/dashboard/general")
+          router.replace("/dashboard/general");
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
           localStorage.setItem("refreshToken", resJson.refreshToken);
@@ -116,7 +116,7 @@ export default function LoginPage() {
         localStorage.setItem("accessToken", resJson.accessToken);
         localStorage.setItem("idToken", resJson.idToken);
         localStorage.setItem("refreshToken", resJson.refreshToken);
-        router.push("/dashboard/general");
+        router.replace("/dashboard/general");
       } else {
         showAlert();
       }

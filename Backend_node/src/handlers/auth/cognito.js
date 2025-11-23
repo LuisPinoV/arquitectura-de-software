@@ -11,7 +11,8 @@ const router = AutoRouter();
 router
   .post("/auth/login", loginUser)
   .post("/auth/logout", logoutUser)
-  .post("/auth/refresh", refreshUser);
+  .post("/auth/refresh", refreshUser)
+  .post("/auth/createUser", createUser);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 

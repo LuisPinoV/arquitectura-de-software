@@ -34,18 +34,18 @@ export default function DashboardLayout({
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("idToken");
           localStorage.removeItem("accessToken");
-          router.push("/");
+          router.replace("/");
         }
       } catch {
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("idToken");
         localStorage.removeItem("accessToken");
-        router.push("/");
+        router.replace("/");
       }
     }
     const refreshToken = localStorage.getItem("refreshToken");
     if (refreshToken) RefreshSession(refreshToken);
-    else router.push("/");
+    else router.replace("/");
   }, []);
 
   //Gets colors
