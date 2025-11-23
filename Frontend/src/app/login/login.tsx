@@ -79,7 +79,6 @@ export default function LoginPage() {
           router.replace("/dashboard/general");
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
-          localStorage.setItem("refreshToken", resJson.refreshToken);
         } else {
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("idToken");
