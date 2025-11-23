@@ -85,8 +85,6 @@ export class AuthService {
       this.authEventsRepository
     );
 
-    console.log(newUserData.userId);
-
     try {
       await publishCreateUser.execute(username, newUserData.userId);
     } catch (err) {

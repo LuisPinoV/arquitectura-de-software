@@ -62,13 +62,15 @@ async function loginUser(req) {
 
   try {
     const res = await authService.login(username, password);
-    return { statusCode: 200, body: JSON.stringify(res) };
+    return new Response(JSON.stringify(res), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
-    console.error("Error login user: ", err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -136,4 +138,3 @@ export async function createUser(req) {
     };
   }
 }
-

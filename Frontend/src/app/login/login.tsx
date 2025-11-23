@@ -67,19 +67,15 @@ export default function LoginPage() {
       if (!refreshToken) return;
 
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_REFRESH_USER_URL;
-        const res = await fetch(
-          `${apiUrl}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken: refreshToken }),
-          }
-        );
+        const res = await fetch(`/login/api/refresh`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: refreshToken }),
+        });
 
         const resJson = await res.json();
 
-        if (res.ok) {
+        if (resJson.ok) {
           router.replace("/dashboard/general");
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
@@ -99,23 +95,20 @@ export default function LoginPage() {
 
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_LOGIN_USER_URL;
-      const res = await fetch(
-        `${apiUrl}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data, null, 2),
-        }
-      );
+
+      const res = await fetch(`/login/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
       const resJson = await res.json();
 
-      if (res.ok) {
-
+      if (resJson.ok) {
         localStorage.setItem("accessToken", resJson.accessToken);
         localStorage.setItem("idToken", resJson.idToken);
         localStorage.setItem("refreshToken", resJson.refreshToken);
+
         router.replace("/dashboard/general");
       } else {
         showAlert();
