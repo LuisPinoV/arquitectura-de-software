@@ -32,6 +32,8 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import React from "react";
+import DynamicSpaceLabel from '@/components/dynamic-space-label';
+import { useUserProfile } from '@/hooks/use-user';
 
 import { Check, ChevronsUpDown } from "lucide-react";
 
@@ -163,7 +165,7 @@ export function GraficoConcentracionPorEspecialidad() {
   return (
     <Card className="@container/card chart-card">
       <CardHeader>
-        <CardDescription>Uso boxes por especialidad</CardDescription>
+        <CardDescription><DynamicSpaceLabel template="Uso boxes por especialidad" /></CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
             type="single"
@@ -329,7 +331,7 @@ export function GraficoUsoSemanal() {
   return (
     <Card className="@container/card chart-card">
       <CardHeader>
-        <CardDescription>Uso porcentual de boxes</CardDescription>
+        <CardDescription><DynamicSpaceLabel template="Uso porcentual de boxes" /></CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
             type="single"
@@ -439,6 +441,9 @@ export function GraficoUsoSemanal() {
 }
 
 export function BoxesSpeficicChart() {
+  const profile = useUserProfile ? useUserProfile() as any : null;
+  const space = profile?.spaceName ?? 'Boxes';
+
   const chartConfig = {
     libre: {
       label: "Libre",
@@ -447,6 +452,10 @@ export function BoxesSpeficicChart() {
     ocupado: {
       label: "Ocupado",
       color: "var(--chart-2)",
+    },
+    ocupancia: {
+      label: `Ocupancia ${space}`,
+      color: "var(--chart-specialties)",
     },
   } satisfies ChartConfig;
 

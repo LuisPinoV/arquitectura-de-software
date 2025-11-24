@@ -75,8 +75,9 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [companyName, setCompanyName] = React.useState("AIOHospital");
-  const [userName, setUserName] = React.useState("Usuario");
+  const [companyName, setCompanyName] = React.useState<string | null>(null);
+  const [userName, setUserName] = React.useState<string | null>(null);
+  const [spaceName, setSpaceName] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     function parseJwt(token: string | null) {
@@ -93,17 +94,80 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
 
     const idToken = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const claims = parseJwt(idToken);
     if (claims) {
-      const nameClaim = claims.name || claims['cognito:username'] || claims['username'] || claims.email;
+      // Prefer a friendly display name for UI (preferred_username, nickname, name, email)
+      const displayNameClaim = claims['preferred_username'] || claims['nickname'] || claims.name || claims.email || null;
+      // Keep a technical username as fallback (cognito:username / username)
+      const usernameClaim = claims['cognito:username'] || claims['username'] || null;
       const companyClaim = claims['custom:companyName'] || claims.companyName || claims.org || claims['cognito:groups'];
-      if (nameClaim) setUserName(nameClaim);
+      const spaceClaim = claims['custom:spaceName'] || claims.spaceName || null;
+
+      if (displayNameClaim) setUserName(displayNameClaim);
+      else if (usernameClaim) setUserName(usernameClaim);
+
       if (companyClaim) setCompanyName(companyClaim);
+      if (spaceClaim) setSpaceName(spaceClaim);
+    }
+
+    // fallback to API /auth/me if claims missing
+    if ((!companyName || !spaceName) && accessToken) {
+      const browserUrl = typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL ? (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL : null;
+      const url = browserUrl || process.env.NEXT_PUBLIC_AUTH_USER_URL || 'https://1u3djkukn3.execute-api.us-east-1.amazonaws.com/auth/me';
+      // debug: mostrar URL y token presence
+      if (typeof window !== 'undefined') {
+        // eslint-disable-next-line no-console
+        console.debug('[AppSidebar] fetching profile from', url, 'hasAccessToken', !!accessToken);
+      }
+      fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (!data) return;
+          const attrs = data.UserAttributes ?? [];
+          const map: any = {};
+          attrs.forEach((a: any) => (map[a.Name] = a.Value));
+          // Prefer friendly API attributes first (preferred_username, nickname, name, email), fallback to data.Username
+          const nameFromApi = map['preferred_username'] || map.nickname || map.name || map.email || data.Username;
+          const companyFromApi = map['custom:companyName'] || map.companyName;
+          const spaceFromApi = map['custom:spaceName'] || map.spaceName;
+          if (typeof window !== 'undefined') {
+            // eslint-disable-next-line no-console
+            console.debug('[AppSidebar] profile from api', { nameFromApi, companyFromApi, spaceFromApi });
+          }
+          if (nameFromApi) setUserName(nameFromApi);
+          if (companyFromApi) setCompanyName(companyFromApi);
+          if (spaceFromApi) setSpaceName(spaceFromApi);
+        })
+        .catch(() => {});
     }
     
   }, []);
 
-  const userProp = { name: userName };
+  const userProp = { name: userName ?? "Usuario" };
+
+  // build navMain replacing Boxes title with spaceName when available
+  const navMain = React.useMemo(() => {
+    const replacement = spaceName ?? "Boxes";
+    return data.navMain.map((item) => {
+      // shallow copy to preserve icon (functions cannot be JSON.stringified)
+      const newItem: any = { ...item };
+      if (newItem.items && newItem.items.length) {
+        newItem.items = newItem.items.map((si: any) => {
+          if (si.title === "Boxes") return { ...si, title: replacement };
+          if (si.title === "Busqueda Boxes") return { ...si, title: `Busqueda ${replacement}` };
+          return si;
+        });
+      }
+      return newItem;
+    });
+  }, [spaceName]);
+
+  // debug: show values on each render to verify UI receives updates
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.log('[AppSidebar] render', { userName, companyName, spaceName });
+  }
 
   return (
     <Sidebar
@@ -119,7 +183,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Image src="/images/bag-plus.svg" alt={"Bolsa con un más"} height={20} width={20} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate text-lg font-medium">{companyName}</span>
+                  <span className="truncate text-lg font-medium">{companyName ?? "AIOHospital"}</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -127,7 +191,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userProp} />

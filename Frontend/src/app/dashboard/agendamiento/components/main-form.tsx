@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import React, { useEffect, useMemo, useState } from "react";
+import { useUserProfile } from '@/hooks/use-user';
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -64,6 +65,10 @@ async function saveBooking(payload: {
 }
 
 export function MainFormScheduling({ box = null, newDate = new Date(),  selectedHour = null}: { box?: string | null; newDate?: Date |undefined, selectedHour?: string |null }) {
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Box';
+  const spaceUpper = space.toUpperCase();
+  const spaceLower = space.toLowerCase();
   const [date, setDate] = useState<Date | undefined>(newDate);
   const [selectedBox, setSelectedBox] = useState<string | null>(box);
   const [selectedHours, setSelectedHours] = useState<string[]>(selectedHour ? [selectedHour] : []);
@@ -165,9 +170,9 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
   //BoxSearch
   if (searchBoxInput !== "") {
     boxes = boxesArr.filter((box) => {
-      const boxArr = `BOX - ${box}`;
+      const boxArr = `${spaceUpper} - ${box}`;
       const input = searchBoxInput.toLowerCase();
-      if (boxArr.includes(input)) return box;
+      if (boxArr.toLowerCase().includes(input)) return box;
     });
   }
 
@@ -301,7 +306,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
     ) {
       toast("Faltan requerimientos", {
         description:
-          "Por favor selecciona fecha, box, funcionario y al menos un horario.",
+          `Por favor selecciona fecha, ${spaceLower}, funcionario y al menos un horario.`,
         action: {
           label: "Descartar",
           onClick: () => console.log("Descartar"),
@@ -385,11 +390,11 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
           <Card className="max-w-[450px] h-[550px]">
             <CardHeader>
               <CardTitle>
-                <h2>Elige una box</h2>
+                <h2>{`Elige una ${spaceLower}`}</h2>
               </CardTitle>
               <Input
                 className="mt-2"
-                placeholder="Buscar box..."
+                placeholder={`Buscar ${spaceLower}...`}
                 onChange={(e) => handleSearchBoxChange(e.target.value)}
               />
             </CardHeader>
@@ -414,7 +419,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
                           className="m-2 flex-1"
                           data-orientation="vertical"
                         >
-                          <div className="text-md font-semibold">{`BOX - ${box}`}</div>
+                          <div className="text-md font-semibold">{`${spaceUpper} - ${box}`}</div>
                         </ToggleGroupItem>
                       </div>
                     ))}
@@ -590,7 +595,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
                 Horas - {selectedHours ? selectedHours.map((hour) => `${hour} / `) : "Desconocido"}
               </div>
               <div className="grid flex-1 gap-2">
-                Box - {selectedBox ? selectedBox : "Desconocido"}
+                {`${spaceUpper} - ${selectedBox ? selectedBox : "Desconocido"}`}
               </div>
             </div>
             <DialogFooter className="sm:justify-start">

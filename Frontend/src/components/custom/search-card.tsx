@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/chart";
 
 import { useRouter } from "next/navigation";
+import { useUserProfile } from '@/hooks/use-user';
 
 import { Separator } from "@/components/ui/separator";
 
@@ -73,11 +74,14 @@ export function SearchCard({ data }: any) {
     router.push(`/dashboard/reportaje/boxes/${data["box"]}`);
   };
 
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? 'Box';
+
   return (
     <Card className="search-card" style={{ marginTop: "20px" }}>
       <CardHeader>
         <CardTitle className="text-center font-bold search-card-title">
-          Box - {data["box"]}
+          {`${space} - ${data["box"]}`}
         </CardTitle>
       </CardHeader>
       <CardContent

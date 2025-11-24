@@ -10,10 +10,12 @@ export async function GET(req: NextRequest) {
   });
   const data = await res.json();
 
-  const personal = data.map((person: any) => {
+  // Defensive handling: ensure we have an array before mapping
+  const source = Array.isArray(data) ? data : Array.isArray(data?.funcionarios) ? data.funcionarios : [];
+
+  const personal = source.map((person: any) => {
     return { id: person["idfuncionario"], name: person["nombre"] };
   });
-
 
   return NextResponse.json(personal);
 }

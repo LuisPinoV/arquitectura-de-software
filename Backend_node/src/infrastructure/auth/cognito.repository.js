@@ -69,6 +69,11 @@ export class CognitoRepository {
       ];
 
       if (name) userAttributes.push({ Name: "name", Value: name });
+      // also set preferred_username and nickname to the friendly name when provided
+      if (name) {
+        userAttributes.push({ Name: "preferred_username", Value: name });
+        userAttributes.push({ Name: "nickname", Value: name });
+      }
       if (companyName) userAttributes.push({ Name: "custom:companyName", Value: companyName });
       if (spaceName) userAttributes.push({ Name: "custom:spaceName", Value: spaceName });
 

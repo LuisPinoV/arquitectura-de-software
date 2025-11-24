@@ -1,4 +1,7 @@
+"use client";
+
 import { FileUser, Box } from "lucide-react";
+import { useUserProfile } from "@/hooks/use-user";
 import { Row, Col } from "antd";
 import {
   Card,
@@ -13,6 +16,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Page() {
+  const { spaceName } = useUserProfile() as any;
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.debug('[reportaje page] spaceName', spaceName);
+  }
+  const displaySpace = spaceName ?? 'Boxes';
   return (
     <Row justify="center" align="middle" className="w-full h-full">
       <Col
@@ -24,9 +33,9 @@ export default function Page() {
       >
         <Card className="w-full max-sm text-center">
           <CardHeader>
-            <CardTitle>Boxes</CardTitle>
+            <CardTitle>{displaySpace}</CardTitle>
             <CardDescription>
-              Reportes y herramientas para la gestión de boxes
+              Reportes y herramientas para la gestión de {displaySpace.toLowerCase()}
             </CardDescription>
           </CardHeader>
           <CardContent style={{ display: "flex", justifyContent: "center" }}>
