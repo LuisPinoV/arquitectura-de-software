@@ -26,7 +26,6 @@ export default function DashboardLayout({
         const resJson = await res.json();
 
         if (resJson.ok) {
-          localStorage.setItem("refreshToken", resJson.refreshToken);
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
         } else {
