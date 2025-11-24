@@ -22,9 +22,9 @@ export class PreferenciasUsuarioService
 
     async createProfile(userId, profileType, preferences)
     {
-        const createProfile = new CreateProfileUseCase(userId, profileType, preferences);
+        const createProfile = new CreateProfileUseCase(this.preferencesRepository);
 
-        return await createProfile.execute();
+        return await createProfile.execute(userId, profileType, preferences);
     }
 
     async getProfile(userId, profileType)

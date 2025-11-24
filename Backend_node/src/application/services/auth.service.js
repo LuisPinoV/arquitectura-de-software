@@ -97,6 +97,17 @@ export class AuthService {
     return newUserData;
   }
 
+  async updateUser(accessToken, attrs = {}) {
+    // Resolve username from accessToken -> GetUser
+    const userData = await this.getUserData(accessToken);
+    if (!userData) return { ok: false, message: 'Could not resolve user' };
+    const username = userData.Username || userData.username || null;
+    if (!username) return { ok: false, message: 'Could not determine username' };
+
+    const res = await this.cognitoRepository.updateUserAttributes(username, attrs);
+    return res;
+  }
+
   async getUserData(accessToken) {
     const getUserData = new GetUserDataUseCase(this.cognitoRepository);
 

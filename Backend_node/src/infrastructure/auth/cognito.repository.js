@@ -2,6 +2,7 @@ import {
   InitiateAuthCommand,
   AdminCreateUserCommand,
   AdminSetUserPasswordCommand,
+  AdminUpdateUserAttributesCommand,
   GlobalSignOutCommand,
   GetUserCommand,
   CognitoIdentityProviderClient,
@@ -147,6 +148,37 @@ export class CognitoRepository {
     } catch (err) {
       console.error(err);
       return null;
+    }
+  }
+
+  async updateUserAttributes(username, attrs = {}) {
+    try {
+      const userAttributes = [];
+      if (attrs.name) {
+        userAttributes.push({ Name: "name", Value: String(attrs.name) });
+        userAttributes.push({ Name: "preferred_username", Value: String(attrs.name) });
+        userAttributes.push({ Name: "nickname", Value: String(attrs.name) });
+      }
+      if (attrs.companyName) {
+        userAttributes.push({ Name: "custom:companyName", Value: String(attrs.companyName) });
+      }
+      if (attrs.spaceName) {
+        userAttributes.push({ Name: "custom:spaceName", Value: String(attrs.spaceName) });
+      }
+
+      if (userAttributes.length === 0) return { ok: false, message: 'No attributes to update' };
+
+      const cmd = new AdminUpdateUserAttributesCommand({
+        UserPoolId: this.userPool,
+        Username: username,
+        UserAttributes: userAttributes,
+      });
+
+      const res = await this.cognitoClient.send(cmd);
+      return { ok: true, res };
+    } catch (err) {
+      console.error('Error updating user attributes', err);
+      return { ok: false, error: err };
     }
   }
 
