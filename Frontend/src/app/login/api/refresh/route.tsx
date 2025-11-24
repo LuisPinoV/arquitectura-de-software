@@ -14,11 +14,12 @@ export async function POST(request: Request) {
       },
     });
 
+    console.log(res);
+
     const data = await res.json();
 
-    const didWorked = data.error == undefined ? true : false;
 
-    return NextResponse.json({...data, ok: didWorked});
+    return NextResponse.json({...data, ok: res.ok});
   } catch (e) {
     return NextResponse.json({ error: "Invalid JSON", ok: false }, { status: 400 });
   }

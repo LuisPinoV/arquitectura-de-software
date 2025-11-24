@@ -70,7 +70,10 @@ export class AuthService {
         newData.expiresIn
       );
 
-      return newData;
+      return ({
+        accessToken: newData.accessToken,
+        idToken: newData.idToken
+      });
     } else {
       return null;
     }

@@ -141,47 +141,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         })
         .catch(() => {});
     }
-
-    // If we don't have useful claims, try to fetch profile from backend using accessToken
-    async function fetchProfileFromApi() {
-      try {
-        const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-        const apiUrl = process.env.NEXT_PUBLIC_AUTH_USER_URL;
-        if (!accessToken || !apiUrl) return;
-
-        const res = await fetch(apiUrl, {
-          method: 'GET',
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!res.ok) return;
-        const json = await res.json();
-
-        // AWS GetUser response contains UserAttributes array
-        const attrs = json.UserAttributes || json.UserAttributes || json.Attributes || json.attributes || null;
-        if (Array.isArray(attrs)) {
-          const attrMap: any = {};
-          attrs.forEach((a: any) => {
-            const n = a.Name || a.name;
-            const v = a.Value || a.value;
-            if (n) attrMap[n] = v;
-          });
-
-          const nameAttr = attrMap.name || attrMap.email || attrMap.preferred_username || attrMap['cognito:username'];
-          const companyAttr = attrMap['custom:companyName'] || attrMap.companyName || attrMap.org;
-          if (nameAttr) setUserName(nameAttr);
-          if (companyAttr) setCompanyName(companyAttr);
-        } else if (json.username || json.Username) {
-          if (json.username) setUserName(json.username);
-          if (json.Username) setUserName(json.Username);
-        }
-      } catch (err) {
-        // ignore fetch errors silently
-      }
-    }
-
-    if (!claims || !(claims.name || claims['custom:companyName'])) {
-      fetchProfileFromApi();
-    }
+    
   }, []);
 
   const userProp = { name: userName ?? "Usuario" };

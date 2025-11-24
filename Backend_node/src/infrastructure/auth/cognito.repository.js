@@ -116,6 +116,7 @@ export class CognitoRepository {
     try {
       const out = await this.cognitoClient.send(cmd);
       const auth = out.AuthenticationResult;
+      console.log(out.AuthenticationResult);
 
       if (auth) {
         const userData = this.getUserFromIdToken(auth.IdToken);
@@ -125,7 +126,6 @@ export class CognitoRepository {
           sub: userData.sub,
           idToken: auth.IdToken,
           accessToken: auth.AccessToken,
-          refreshToken: auth.RefreshToken,
           expiresIn: auth.ExpiresIn,
         };
       } else return null;

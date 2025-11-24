@@ -6,7 +6,7 @@ export async function POST(request: Request) {
 
     const apiUrl = process.env.BACKEND_ADDRESS;
 
-    const res = await fetch(`${apiUrl}/auth/login`, {
+    const res = await fetch(`${apiUrl}/auth/createUser`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {

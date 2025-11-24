@@ -93,6 +93,7 @@ resources:
                     - dynamodb:Scan
                   Resource:
                     - arn:aws:dynamodb:${self:provider.region}:*:table/UserPreferences
+                    - arn:aws:dynamodb:us-east-1:*:table/UserCognitoToken
 
                 - Effect: Allow
                   Action:
