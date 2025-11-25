@@ -12,7 +12,9 @@ router
   .post("/auth/login", loginUser)
   .post("/auth/logout", logoutUser)
   .post("/auth/refresh", refreshUser)
-  .post("/auth/createUser", createUser);
+  .post("/auth/createUser", createUser)
+  .get("/auth/me", getMe)
+  .post("/auth/updateUser", updateUser);
 
 // Reply to preflight requests for any route handled here
 router.options(
@@ -177,6 +179,48 @@ async function refreshUser(req) {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
+  }
+}
+
+// POST - /auth/updateUser
+async function updateUser(req) {
+  const body = await parseRequestBody(req);
+
+  // Expect Authorization header with access token
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "Missing Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const accessToken = authHeader.replace(/^[Bb]earer\s+/i, "");
+
+  try {
+    const res = await authService.updateUser(accessToken, body || {});
+    return new Response(JSON.stringify(res), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "Error interno", message: err?.message ?? String(err) }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+// GET - /auth/me
+async function getMe(req) {
+  // Expect Authorization header with access token
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: "Missing Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
+  }
+  const accessToken = authHeader.replace(/^[Bb]earer\s+/i, "");
+
+  try {
+    const userData = await authService.getUserData(accessToken);
+    return new Response(JSON.stringify(userData), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: "Error interno", message: err?.message ?? String(err) }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 

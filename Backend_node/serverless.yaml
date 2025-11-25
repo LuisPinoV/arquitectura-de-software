@@ -204,6 +204,17 @@ resources:
           RoleArn: !GetAtt SchedulerInvokeRole.Arn
           Input: '{"source":"eventbridge-scheduler"}'
 
+  Outputs:
+    UserPoolId:
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolId
+
+    UserPoolClientId:
+      Value: !Ref CognitoUserPoolClient
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolClientId
+
 functions:
   ### Simulador de base de datos
   poblarDynamo:
@@ -241,6 +252,16 @@ functions:
           path: /profile/{proxy+}
           method: any
           authorizer: cognitoJwt
+      # Allow CORS preflight (OPTIONS) without authorizer so browser preflight is not blocked
+      - httpApi:
+          path: /profile
+          method: options
+      - httpApi:
+          path: /profile/{proxy+}
+          method: options
+      - httpApi:
+          path: /profile/ping
+          method: get
 
   onCreatedNewUser:
     handler: src/handlers/preferenciasUsuario/preferenciasUsuario.onCreatedNewUser
@@ -335,6 +356,7 @@ functions:
               - MonthlyBackupTopic
               - TopicArn
 
+
 package:
   individually: true
   patterns:
@@ -344,13 +366,3 @@ package:
     - "!**/terraform/**"
     - "!.terraform/**"
 
-  Outputs:
-    UserPoolId:
-      Value: !Ref CognitoUserPool
-      Export:
-        Name: ${self:service}-${sls:stage}-UserPoolId
-
-    UserPoolClientId:
-      Value: !Ref CognitoUserPoolClient
-      Export:
-        Name: ${self:service}-${sls:stage}-UserPoolClientId

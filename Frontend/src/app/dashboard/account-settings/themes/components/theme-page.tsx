@@ -34,6 +34,7 @@ import convert from "color-convert";
 import { useTheme } from "next-themes";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
+import { useUserProfile } from '@/hooks/use-user';
 
 const iconsStyle: React.CSSProperties = {
   height: "30px",
@@ -325,6 +326,10 @@ export function ExistingThemesCarousel({
 
 export function ThemePage() {
   const { setTheme } = useTheme();
+  const profile = useUserProfile() as any;
+  const [editableName, setEditableName] = useState<string>(profile?.name ?? "");
+  const [editableCompany, setEditableCompany] = useState<string>(profile?.companyName ?? "");
+  const [editableSpace, setEditableSpace] = useState<string>(profile?.spaceName ?? "");
   const [curColors, setCurColors] = useState<
     { name: string; colorHex: string }[]
   >([]);
@@ -351,6 +356,89 @@ export function ThemePage() {
   useEffect(() => {
     GetThemes();
   }, []);
+
+  // sync when profile loads
+  useEffect(() => {
+    setEditableName(profile?.name ?? "");
+    setEditableCompany(profile?.companyName ?? "");
+    setEditableSpace(profile?.spaceName ?? "");
+  }, [profile?.name, profile?.companyName, profile?.spaceName]);
+
+  const handleSaveIdentity = async () => {
+    try {
+      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (!accessToken) {
+        toast.error('No autorizado');
+        return;
+      }
+      // Build API URL: allow env var to be either the full path (e.g. 'https://.../auth/me')
+      // or a base URL. Normalize to point to '/auth/updateUser'.
+      const rawEnv = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL) || process.env.NEXT_PUBLIC_AUTH_USER_URL || '';
+      let apiUrl = '';
+      if (rawEnv) {
+        try {
+          const parsed = new URL(rawEnv);
+          // If path contains '/auth', replace following segments with '/auth/updateUser'
+          const authIndex = parsed.pathname.indexOf('/auth');
+          if (authIndex >= 0) {
+            parsed.pathname = parsed.pathname.substring(0, authIndex) + '/auth/updateUser';
+          } else {
+            parsed.pathname = (parsed.pathname.endsWith('/') ? parsed.pathname.slice(0, -1) : parsed.pathname) + '/auth/updateUser';
+          }
+          apiUrl = parsed.toString();
+        } catch (e) {
+          // rawEnv might be a relative path like '/auth/me' or just a hostless string
+          if (rawEnv.startsWith('/')) {
+            apiUrl = rawEnv.replace(/\/auth.*$/i, '/auth/updateUser');
+          } else {
+            // fallback: append
+            apiUrl = rawEnv.replace(/\/auth.*$/i, '') + '/auth/updateUser';
+          }
+        }
+      } else {
+        apiUrl = 'https://1u3djkukn3.execute-api.us-east-1.amazonaws.com/auth/updateUser';
+      }
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ name: editableName, companyName: editableCompany, spaceName: editableSpace }),
+      });
+
+      // Defensive handling: the endpoint may return non-JSON (e.g. 404 Not Found text)
+      const contentType = res.headers.get('content-type') || '';
+      let payload: any = null;
+      if (contentType.includes('application/json')) {
+        try {
+          payload = await res.json();
+        } catch (e) {
+          // invalid json
+          payload = { _raw: await res.text() };
+        }
+      } else {
+        // read as text for debugging
+        payload = { _raw: await res.text() };
+      }
+
+      console.debug('[handleSaveIdentity] POST', apiUrl, 'status', res.status, 'payload', payload);
+
+      if (res.ok) {
+        toast.success('Datos guardados');
+        setTimeout(() => {
+          if (typeof window !== 'undefined') window.location.reload();
+        }, 800);
+      } else {
+        // show server message when possible
+        const serverMessage = payload && (payload.message || payload.Message || payload._raw) ? (payload.message || payload.Message || payload._raw) : 'Error al guardar';
+        toast.error(serverMessage);
+      }
+    } catch (err) {
+      console.error('[handleSaveIdentity] error', err);
+      toast.error('Error al guardar');
+    }
+  };
 
   const onSelectedProfile = (
     idTheme: string,
@@ -399,25 +487,62 @@ export function ThemePage() {
 
   async function GetThemes() {
     const claims = await AutohrizeAndGetClaims();
-    const userId = claims.sub;
+
+    // Derive userId similarly to addNewTheme: accept JWT claims, or /auth/me response shapes
+    let userId: string | null = null;
+    if (claims && typeof claims === 'object') {
+      if ((claims as any).sub) userId = (claims as any).sub;
+      else if ((claims as any).Username) userId = (claims as any).Username;
+      else if (Array.isArray((claims as any).UserAttributes)) {
+        const attrs = (claims as any).UserAttributes;
+        const subAttr = attrs.find((a: any) => a.Name === 'sub' || a.Name === 'custom:sub');
+        if (subAttr && subAttr.Value) userId = subAttr.Value;
+      }
+    }
+
+    if (!userId) {
+      console.warn('[GetThemes] no usable userId available, aborting GetThemes', claims);
+      return;
+    }
     const profiles = await getCustomThemesFromDB(userId);
 
     if (!profiles) return;
 
     const profilesArr = [];
 
+    console.debug('[GetThemes] raw profiles from API', profiles);
+
     for (let i = 0; i < profiles.length; i++) {
       const curProfile = profiles[i];
-      if (!curProfile.preferences.name) continue;
+
+      // Support different shapes where name may live
+      const profileName = curProfile?.preferences?.name || curProfile?.name || curProfile?.profileName;
+      if (!profileName) continue;
 
       const colors: string[] = [];
-      for (let i = 0; i < curProfile.preferences.colors.length; i++) {
-        const curColor = curProfile.preferences.colors[i];
-        colors.push(curColor.colorHex);
+      const rawColors = curProfile?.preferences?.colors || [];
+
+      for (let j = 0; j < rawColors.length; j++) {
+        const curColor = rawColors[j];
+        if (!curColor) continue;
+
+        // color may be a string hex, or an object like { colorHex } or { hex } or { value }
+        if (typeof curColor === 'string') {
+          colors.push(curColor);
+        } else if (curColor.colorHex) {
+          colors.push(curColor.colorHex);
+        } else if (curColor.hex) {
+          colors.push(curColor.hex);
+        } else if (curColor.value) {
+          colors.push(curColor.value);
+        } else {
+          // fallback: try JSON stringify
+          colors.push(JSON.stringify(curColor));
+        }
       }
 
       const profileParams = {
-        name: curProfile.preferences.name,
+        name: profileName,
         icon: <Paintbrush style={iconsStyle} />,
         id: curProfile.profileType,
         colors: colors,
@@ -566,14 +691,28 @@ export function ThemePage() {
   };
 
   const addNewTheme = async () => {
-    let userId = "";
     const claims = await AutohrizeAndGetClaims();
-
-    if (claims) {
-      userId = claims.sub;
+    // Derive a usable userId from multiple possible shapes:
+    // - JWT claims: { sub }
+    // - /auth/me response: { Username, UserAttributes: [{ Name, Value }, ...] }
+    let userId: string | null = null;
+    if (claims && typeof claims === 'object') {
+      if ((claims as any).sub) {
+        userId = (claims as any).sub;
+      } else if ((claims as any).Username) {
+        userId = (claims as any).Username;
+      } else if (Array.isArray((claims as any).UserAttributes)) {
+        const attrs = (claims as any).UserAttributes;
+        const subAttr = attrs.find((a: any) => a.Name === 'sub' || a.Name === 'custom:sub');
+        if (subAttr && subAttr.Value) userId = subAttr.Value;
+      }
     }
 
-    if (userId === "") return;
+    if (!userId) {
+      console.warn('[addNewTheme] missing usable userId in claims', claims);
+      toast.error('No se pudo obtener información del usuario. Vuelve a iniciar sesión.');
+      return;
+    }
 
     const profileId = uuidv4();
     const name = profileName !== "" ? profileName : "Nuevo perfil";
@@ -586,29 +725,60 @@ export function ThemePage() {
     };
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_THEME_PROFILE;
-      const res = await fetch(`${apiUrl}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Resolve API URL: prefer runtime env on window, then build from env variable, else default to /profile
+      const raw = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_THEME_PROFILE) || process.env.NEXT_PUBLIC_THEME_PROFILE || '';
+      let apiUrl = '';
+      if (raw) {
+        try {
+          const parsed = new URL(raw);
+          apiUrl = parsed.toString();
+        } catch (e) {
+          // raw may be a relative path
+          if (raw.startsWith('/')) {
+            apiUrl = (typeof window !== 'undefined' ? window.location.origin : '') + raw;
+          } else {
+            apiUrl = raw;
+          }
+        }
+      } else {
+        apiUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/profile';
+      }
+
+      console.debug('[addNewTheme] POST', apiUrl, body);
+
+      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers,
         body: JSON.stringify(body),
       });
 
+      const ct = res.headers.get('content-type') || '';
+      let payload: any = null;
+      if (ct.includes('application/json')) {
+        try { payload = await res.json(); } catch(e) { payload = { _raw: await res.text() }; }
+      } else {
+        payload = { _raw: await res.text() };
+      }
+
       if (res.ok) {
-        console.log("Perfil creado correctamente");
+        console.log('Perfil creado correctamente', payload);
         onCancelAddTheme();
         await GetThemes();
-        toast("Se ha creado nuevo tema", {
+        toast('Se ha creado nuevo tema', {
           description: new Date().toLocaleString(),
-          action: {
-            label: "Descartar",
-            onClick: () => console.log("Descartar"),
-          },
+          action: { label: 'Descartar', onClick: () => console.log('Descartar') },
         });
       } else {
-        console.log("Perfil no pudo ser creado");
+        console.error('Perfil no pudo ser creado', res.status, payload);
+        toast.error(payload?.message || payload?._raw || 'Perfil no pudo ser creado');
       }
-    } catch {
-      console.log("Perfil no pudo ser creado");
+    } catch (err) {
+      console.error('addNewTheme error', err);
+      toast.error('Perfil no pudo ser creado');
     }
   };
 
@@ -707,6 +877,72 @@ export function ThemePage() {
             showDeleteButton={showDeleteButton}
             onDeleted={() => deleteProfile(profileId)}
           />
+        </Col>
+        <Col
+          xs={24}
+          md={12}
+          lg={12}
+          style={{ display: "flex", marginBottom: "20px" }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{ width: "100%" }}
+          >
+            <Card className="px-4">
+              <CardHeader>
+                <CardTitle className="text-left text-lg font-semibold">Personalizar</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Row>
+                  <Col xs={24} style={{ marginBottom: 12 }}>
+                    <span className="text-sm font-semibold">Nombre</span>
+                    <Input
+                      className="mt-1"
+                      type="text"
+                      placeholder="Nombre"
+                      value={editableName}
+                      onChange={(e) => setEditableName(e.currentTarget.value)}
+                    />
+                  </Col>
+                  <Col xs={24} style={{ marginBottom: 12 }}>
+                    <span className="text-sm font-semibold">Nombre de la empresa</span>
+                    <Input
+                      className="mt-1"
+                      type="text"
+                      placeholder="Empresa"
+                      value={editableCompany}
+                      onChange={(e) => setEditableCompany(e.currentTarget.value)}
+                    />
+                  </Col>
+                  <Col xs={24} style={{ marginBottom: 12 }}>
+                    <span className="text-sm font-semibold">Nombre del espacio</span>
+                    <Input
+                      className="mt-1"
+                      type="text"
+                      placeholder="Espacio"
+                      value={editableSpace}
+                      onChange={(e) => setEditableSpace(e.currentTarget.value)}
+                    />
+                  </Col>
+                </Row>
+              </CardContent>
+              <CardFooter style={{ display: "flex", justifyContent: "flex-end" }}>
+                <Button variant="outline" className="me-2" onClick={() => {
+                  // reset to current profile
+                  setEditableName(profile?.name ?? "");
+                  setEditableCompany(profile?.companyName ?? "");
+                  setEditableSpace(profile?.spaceName ?? "");
+                  toast('Restaurado');
+                }}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveIdentity}>Guardar</Button>
+              </CardFooter>
+            </Card>
+          </motion.div>
         </Col>
       </section>
       <AnimatePresence initial={false}>
@@ -846,21 +1082,46 @@ function getThemeVariable(variable: string, theme: "light" | "dark") {
 
 async function getCustomThemesFromDB(id: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_THEME_PROFILE;
+    const raw = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_THEME_PROFILE) || process.env.NEXT_PUBLIC_THEME_PROFILE || '';
+    let apiUrl = '';
+    if (raw) {
+      try { apiUrl = new URL(raw).toString(); } catch (e) { apiUrl = raw.startsWith('/') ? (typeof window !== 'undefined' ? window.location.origin : '') + raw : raw; }
+    } else {
+      apiUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/profile';
+    }
+
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const headers: Record<string,string> = {};
+    if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+
     const res = await fetch(`${apiUrl}/${id}`, {
       method: "GET",
+      headers,
     });
 
     if (res.ok) {
       console.log("Got profiles");
-      const resJson = await res.json();
+      let resJson: any = null;
+      try { resJson = await res.json(); } catch (e) { const txt = await res.text(); try { resJson = JSON.parse(txt); } catch { resJson = txt; } }
+
+      // Some backend wrappers return an API Gateway-style envelope: { statusCode, body }
+      if (resJson && typeof resJson === 'object' && typeof resJson.body === 'string') {
+        try {
+          const parsed = JSON.parse(resJson.body);
+          return parsed;
+        } catch (e) {
+          // body is not a JSON array, return as-is
+          return resJson.body;
+        }
+      }
+
       return resJson;
     } else {
-      console.log("Couldn't get profiles");
+      console.log("Couldn't get profiles", res.status);
       return null;
     }
-  } catch {
-    console.log("Couldn't get profiles");
+  } catch (err) {
+    console.log("Couldn't get profiles", err?.message || err);
     return null;
   }
 }

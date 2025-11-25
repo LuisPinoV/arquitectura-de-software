@@ -11,6 +11,7 @@ const router = AutoRouter();
 
 router
   .post("/profile", createProfile)
+  .get("/profile/ping", ping)
   .get("/profile/:userId/:profileType", getProfile)
   .get("/profile/:userId", getProfiles)
   .put("/profile/:userId/:profileType", updateProfile)
@@ -19,6 +20,14 @@ router
   .put("/profile/current/:userId/:profileType", setCurrentProfile);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
+
+// Simple ping for diagnostics
+async function ping(req) {
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ ok: true, message: 'profile service alive' }),
+  };
+}
 
 // Router handler
 export const preferenciaUsuarioHandler = async (event) => {
@@ -34,14 +43,39 @@ export const preferenciaUsuarioHandler = async (event) => {
   };
 
   try {
+    // Quick reply to preflight
+    if (method === 'OPTIONS') {
+      return {
+        statusCode: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+        },
+        body: '',
+      };
+    }
+
     const request = new Request(url, init);
     request.event = event;
 
     const response = await router.fetch(request);
 
+    // Ensure CORS headers are present on every response
+    const responseHeaders = Object.fromEntries(response.headers.entries());
+    if (!responseHeaders['access-control-allow-origin']) {
+      responseHeaders['Access-Control-Allow-Origin'] = '*';
+    }
+    if (!responseHeaders['access-control-allow-headers']) {
+      responseHeaders['Access-Control-Allow-Headers'] = 'Content-Type,Authorization';
+    }
+    if (!responseHeaders['access-control-allow-methods']) {
+      responseHeaders['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS';
+    }
+
     return {
       statusCode: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
+      headers: responseHeaders,
       body: await response.text(),
     };
   } catch (err) {
