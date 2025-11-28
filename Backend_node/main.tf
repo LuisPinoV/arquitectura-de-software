@@ -1,0 +1,19 @@
+data "aws_caller_identity" "current" {}
+
+locals {
+  account_id = data.aws_caller_identity.current.account_id
+}
+
+module "dynamo"{
+    source = "./terraform/tf_dynamo"
+}
+
+module "s3_bucket" {
+    source = "./terraform/tf_bucket"
+    account_id = local.account_id
+    region = var.region
+}
+
+module "lambda" {
+  source = "./terraform/tf_lambda"
+}
