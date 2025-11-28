@@ -14,6 +14,6 @@ module "s3_bucket" {
     region = var.region
 }
 
-module "lambda" {
-  source = "./terraform/tf_lambda"
+module "APIS" {
+  source = "./terraform/tf_apis"
 }
