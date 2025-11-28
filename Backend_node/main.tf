@@ -16,4 +16,5 @@ module "s3_bucket" {
 
 module "APIS" {
   source = "./terraform/tf_apis"
+  project_name = var.project_name
 }
