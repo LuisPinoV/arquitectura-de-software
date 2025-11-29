@@ -204,26 +204,6 @@ async function updateUser(req) {
   }
 }
 
-// GET - /auth/me
-async function getMe(req) {
-  // Expect Authorization header with access token
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "Missing Authorization header" }), { status: 401, headers: { "Content-Type": "application/json" } });
-  }
-  const accessToken = authHeader.replace(/^[Bb]earer\s+/i, "");
-
-  try {
-    const userData = await authService.getUserData(accessToken);
-    return new Response(JSON.stringify(userData), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: "Error interno", message: err?.message ?? String(err) }), { status: 500, headers: { "Content-Type": "application/json" } });
-  }
-}
-
 // POST - /auth/createUser
 export async function createUser(req) {
   const body = await parseRequestBody(req);
