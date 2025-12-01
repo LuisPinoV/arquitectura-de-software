@@ -61,6 +61,11 @@ provider:
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento
         - arn:aws:dynamodb:us-east-1:*:table/Agendamiento/index/*
         - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
+  vpc:
+    securityGroupIds:
+      - sg-02f35d844dd600441
+    subnetIds:
+      - subnet-030c87af111b6242c
 
 resources:
   Resources:
@@ -107,6 +112,16 @@ resources:
                     - cognito-idp:GetUser
                   Resource:
                     - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
+                - Effect: Allow
+                  Action:
+                    - ec2:CreateNetworkInterface
+                    - ec2:DescribeNetworkInterfaces
+                    - ec2:DeleteNetworkInterface
+                    - ec2:DescribeSecurityGroups
+                    - ec2:DescribeSubnets
+                    - ec2:AssignPrivateIpAddresses
+                    - ec2:UnassignPrivateIpAddresses
+                  Resource: "*"
     # Cognito User Pool
     CognitoUserPool:
       Type: AWS::Cognito::UserPool

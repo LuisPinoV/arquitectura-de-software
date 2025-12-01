@@ -11,9 +11,9 @@ output "private_subnet_id" {
 }
 
 output "lambda_private_sg_id" {
-  value = aws_security_group.lambda_private_sg.id
+  value = aws_security_group.lambda_private_security_group.id
 }
 
 output "public_sg_id" {
-  value = aws_security_group.public_sg.id
+  value = aws_security_group.public_service_security_group.id
 }

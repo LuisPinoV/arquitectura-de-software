@@ -14,12 +14,15 @@ module "s3_bucket" {
     region = var.region
 }
 
-module "APIS" {
-  source = "./terraform/tf_apis"
-  project_name = var.project_name
-}
-
 module "VPC" {
   source = "./terraform/tf_vpc"
   region = var.region
+}
+
+output "private_subnet_id" {
+  value = module.VPC.private_subnet_id
+}
+
+output "lambda_private_sg" {
+  value = module.VPC.lambda_private_sg_id
 }

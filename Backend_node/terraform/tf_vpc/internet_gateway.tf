@@ -7,8 +7,6 @@ resource "aws_internet_gateway" "internet_gateway" {
 }
 
 resource "aws_eip" "elastic_ip_nat" {
-  vpc = true
-
   tags = {
     Name = "elastic-ip-for-nat"
   }

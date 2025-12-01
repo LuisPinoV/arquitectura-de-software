@@ -7,6 +7,8 @@ resource "aws_network_acl" "public_nacl" {
     protocol   = "-1"
     action     = "allow"
     cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
   }
 
   egress {
@@ -14,6 +16,8 @@ resource "aws_network_acl" "public_nacl" {
     protocol   = "-1"
     action     = "allow"
     cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
   }
 
   subnet_ids = [aws_subnet.public_subnet.id]
@@ -28,6 +32,8 @@ resource "aws_network_acl" "private_nacl" {
     protocol   = "-1"
     action     = "allow"
     cidr_block = aws_vpc.main.cidr_block
+    from_port  = 0
+    to_port    = 0
   }
 
   egress {
@@ -35,6 +41,8 @@ resource "aws_network_acl" "private_nacl" {
     protocol   = "-1"
     action     = "allow"
     cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
   }
 
   subnet_ids = [aws_subnet.private_subnet.id]
