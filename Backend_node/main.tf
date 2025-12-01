@@ -18,3 +18,8 @@ module "APIS" {
   source = "./terraform/tf_apis"
   project_name = var.project_name
 }
+
+module "VPC" {
+  source = "./terraform/tf_vpc"
+  region = var.region
+}
