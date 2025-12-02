@@ -4,14 +4,18 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-module "dynamo"{
-    source = "./terraform/tf_dynamo"
+module "dynamo" {
+  source = "./terraform/tf_dynamo"
+
+  AgendamientoTable    = "Agendamiento"
+  UserPreferencesTable = "UserPreferences"
+  CognitoTokenTable    = "UserCognitoToken"
 }
 
 module "s3_bucket" {
-    source = "./terraform/tf_bucket"
-    account_id = local.account_id
-    region = var.region
+  source     = "./terraform/tf_bucket"
+  account_id = local.account_id
+  region     = var.region
 }
 
 module "VPC" {
@@ -19,10 +23,3 @@ module "VPC" {
   region = var.region
 }
 
-output "private_subnet_id" {
-  value = module.VPC.private_subnet_id
-}
-
-output "lambda_private_sg" {
-  value = module.VPC.lambda_private_sg_id
-}

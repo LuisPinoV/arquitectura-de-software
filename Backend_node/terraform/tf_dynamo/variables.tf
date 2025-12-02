@@ -1,11 +1,11 @@
-variable "AgendamientoTable"{
-    default = "Agendamiento"
+variable "AgendamientoTable" {
+  type = string
 }
 
-variable "UserPreferencesTable"{
-    default = "UserPreferences"
+variable "UserPreferencesTable" {
+  type = string
 }
 
-variable "CognitoTokenTable"{
-    default = "UserCognitoToken"
+variable "CognitoTokenTable" {
+  type = string
 }
