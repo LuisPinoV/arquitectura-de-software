@@ -51,6 +51,11 @@ provider:
         - OPTIONS
       allowedHeaders:
         - "*"
+  vpc:
+  securityGroupIds:
+    - ${self:custom.tf.VPC.value.lambda_sg_id}
+  subnetIds:
+    - ${self:custom.tf.VPC.value.private_subnet_id}
 
 
 resources:
