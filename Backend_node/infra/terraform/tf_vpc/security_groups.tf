@@ -11,6 +11,13 @@ resource "aws_security_group" "lambda_private_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    security_groups = [aws_security_group.public_service_security_group.id]
+  }
+
   tags = {
     Name = "lambda-private-security-group"
   }

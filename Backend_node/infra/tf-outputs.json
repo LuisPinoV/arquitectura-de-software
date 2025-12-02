@@ -1,0 +1,50 @@
+{
+  "VPC": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "lambda_public_sg_id": "string",
+        "lambda_sg_id": "string",
+        "private_subnet_id": "string",
+        "public_subnet_id": "string"
+      }
+    ],
+    "value": {
+      "lambda_public_sg_id": "sg-0458b29e894e492db",
+      "lambda_sg_id": "sg-0aae8a0f50d47bb62",
+      "private_subnet_id": "subnet-0c599851c5a8327b5",
+      "public_subnet_id": "subnet-0fced9fedccc22176"
+    }
+  },
+  "dynamo": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "agendamiento": "string",
+        "preferences": "string",
+        "tokens": "string"
+      }
+    ],
+    "value": {
+      "agendamiento": "Agendamiento",
+      "preferences": "UserPreferences",
+      "tokens": "UserCognitoToken"
+    }
+  },
+  "s3_bucket": {
+    "sensitive": false,
+    "type": [
+      "object",
+      {
+        "backup": "string",
+        "frontend": "string"
+      }
+    ],
+    "value": {
+      "backup": "frontend-626218016489-us-east-1",
+      "frontend": "backups-626218016489-us-east-1"
+    }
+  }
+}

@@ -13,7 +13,7 @@ custom:
     lambdaPort: 3002
     noPrependStageInUrl: true
 
-  tf: ${file(./tf-outputs.json)}
+  tf: ${file(../../infra/tf-outputs.json)}
 
   prune:
     automatic: true

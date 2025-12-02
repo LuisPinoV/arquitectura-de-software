@@ -1,7 +1,9 @@
 output "VPC" {
     value = {
         private_subnet_id = module.VPC.private_subnet_id
+        public_subnet_id = module.VPC.public_subnet_id
         lambda_sg_id = module.VPC.lambda_private_sg_id
+        lambda_public_sg_id = module.VPC.public_sg_id
     }
 }
 
