@@ -13,6 +13,8 @@ custom:
     lambdaPort: 3002
     noPrependStageInUrl: true
 
+  tf: ${file(./tf-outputs.json)}
+
   prune:
     automatic: true
     number: 5
@@ -25,9 +27,9 @@ provider:
   environment:
     USER_POOL_ID: !Ref CognitoUserPool
     USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
-    USER_PREFERENCES_TABLE: UserPreferences
-    USER_TOKEN_TABLE: UserCognitoToken
-    MONTHLY_BACKUP_BUCKET: backups-${aws:accountId}-${self:provider.region}
+    USER_PREFERENCES_TABLE: ${self:custom.tf.dynamo.value.preferences}
+    USER_TOKEN_TABLE: ${self:custom.tf.dynamo.value.tokens}
+    MONTHLY_BACKUP_BUCKET: ${self:custom.tf.s3_bucket.value.backup}
   logs:
     httpApi: true
   httpApi:
@@ -63,9 +65,9 @@ provider:
         - arn:aws:dynamodb:us-east-1:*:table/UserPreferences
   vpc:
     securityGroupIds:
-      - sg-02f35d844dd600441
+      - ${self:custom.tf.VPC.value.lambda_sg_id}
     subnetIds:
-      - subnet-030c87af111b6242c
+      - ${self:custom.tf.VPC.value.private_subnet_id}
 
 resources:
   Resources:
