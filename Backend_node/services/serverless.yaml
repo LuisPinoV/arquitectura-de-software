@@ -255,6 +255,11 @@ resources:
       Export:
         Name: ${self:service}-${sls:stage}-UserPoolClientId
 
+    CognitoHandlerArn:
+      Value: !GetAtt CognitoHandlerLambdaFunction.Arn
+      Export:
+        Name: ${self:service}-${sls:stage}-CognitoHandlerArn
+
 functions:
   ### Simulador de base de datos
   poblarDynamo:
