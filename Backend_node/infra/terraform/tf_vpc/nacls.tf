@@ -36,6 +36,15 @@ resource "aws_network_acl" "private_nacl" {
     to_port    = 0
   }
 
+  ingress {
+    rule_no    = 101
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
   egress {
     rule_no    = 200
     protocol   = "-1"
