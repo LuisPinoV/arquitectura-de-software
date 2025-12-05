@@ -1,0 +1,12 @@
+.nuevo-espacio-container {
+  padding: 1rem;
+}
+
+/* center card on small screens */
+.nuevo-espacio-container .ant-row {
+  margin-top: 1rem;
+}
+
+.nuevo-espacio-container .card {
+  width: 100%;
+}
