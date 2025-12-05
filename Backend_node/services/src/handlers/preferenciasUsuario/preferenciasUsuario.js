@@ -23,10 +23,7 @@ router.all("*", () => new Response("Not Found", { status: 404 }));
 
 // Simple ping for diagnostics
 async function ping(req) {
-  return {
-    statusCode: 200,
-    body: JSON.stringify({ ok: true, message: 'profile service alive' }),
-  };
+  return new Response(JSON.stringify({ ok: true, message: 'profile service alive' }));
 }
 
 // Router handler
@@ -80,20 +77,14 @@ export const preferenciaUsuarioHandler = async (event) => {
     };
   } catch (err) {
     console.error(err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 };
 
 // Handlers
 async function createProfile(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
@@ -106,18 +97,12 @@ async function createProfile(req) {
       preferences
     );
 
-    return {
-      statusCode: 201,
-      body: JSON.stringify({
-        message: "Perfil creado correctamente",
-        profile,
-      }),
-    };
+    return new Response(JSON.stringify({
+      message: "Perfil creado correctamente",
+      profile,
+    }), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -128,21 +113,12 @@ async function getProfile(req) {
     const profile = await preferenciasService.getProfile(userId, profileType);
 
     if (!profile) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Perfil no encontrado" }),
-      };
+      return new Response(JSON.stringify({ message: "Perfil no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(profile),
-    };
+    return new Response(JSON.stringify(profile), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -153,30 +129,18 @@ async function getProfiles(req) {
     const profiles = await preferenciasService.getProfiles(userId);
 
     if (profiles.length === 0) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Usuario no encontrado" }),
-      };
+      return new Response(JSON.stringify({ message: "Usuario no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(profiles),
-    };
+    return new Response(JSON.stringify(profiles), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function updateProfile(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
@@ -189,15 +153,9 @@ async function updateProfile(req) {
       body.preferences
     );
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(updatedProfile),
-    };
+    return new Response(JSON.stringify(updatedProfile), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -206,15 +164,9 @@ async function deleteProfile(req) {
     const { userId, profileType } = req.params;
     await preferenciasService.deleteProfile(userId, profileType);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Perfil eliminado correctamente" }),
-    };
+    return new Response(JSON.stringify({ message: "Perfil eliminado correctamente" }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -224,15 +176,9 @@ async function getCurrentProfile(req) {
   try {
     const currentProfile = await preferenciasService.getCurrentProfile(userId);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(currentProfile),
-    };
+    return new Response(JSON.stringify(currentProfile), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -241,15 +187,9 @@ async function setCurrentProfile(req) {
     const { userId, profileType } = req.params;
     await preferenciasService.setCurrentProfile(userId, profileType);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Perfil marcado como actual" }),
-    };
+    return new Response(JSON.stringify({ message: "Perfil marcado como actual" }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -272,10 +212,7 @@ export async function onCreatedNewUser(event) {
     }
   }
 
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "Created preference image for the new user",
-    }),
-  };
+  return new Response(JSON.stringify({
+    message: "Created preference image for the new user",
+  }), { status: 200, headers: { "Content-Type": "application/json" } });
 }

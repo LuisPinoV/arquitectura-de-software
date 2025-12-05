@@ -44,36 +44,24 @@ export const funcionarioHandler = async (event) => {
     };
   } catch (err) {
     console.error(err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return new Response(JSON.stringify({ error: err.message }));
   }
 };
 
 // Handlers
 async function createFuncionario(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const body = await req.json();
     const nuevo = await funcionarioService.createFuncionario(body);
 
-    return {
-      statusCode: 201,
-      body: JSON.stringify(nuevo),
-    };
+    return new Response(JSON.stringify(nuevo), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al crear funcionario:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error al crear funcionario' }),
-    };
+    return new Response(JSON.stringify({ message: 'Error al crear funcionario' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -84,31 +72,19 @@ async function getFuncionario(req) {
     const funcionario = await funcionarioService.getFuncionario(funcionarioId);
 
     if (!funcionario) {
-      return { 
-        statusCode: 404, 
-        body: JSON.stringify({ message: 'Funcionario no encontrado' }) 
-      };
+      return new Response(JSON.stringify({ message: 'Funcionario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(funcionario),
-    };
+    return new Response(JSON.stringify(funcionario), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener funcionario:', error);
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ message: 'Error interno del servidor' }) 
-    };
+    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function updateFuncionario(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
@@ -116,16 +92,10 @@ async function updateFuncionario(req) {
     const updates = await req.json();
     const updated = await funcionarioService.updateFuncionario(funcionarioId, updates);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(updated),
-    };
+    return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al actualizar funcionario:', error);
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ message: 'Error interno del servidor' }) 
-    };
+    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -134,16 +104,10 @@ async function deleteFuncionario(req) {
     const { funcionarioId } = req.params;
     const eliminado = await funcionarioService.deleteFuncionario(funcionarioId);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(eliminado),
-    };
+    return new Response(JSON.stringify(eliminado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al eliminar funcionario:', error);
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ message: 'Error interno del servidor' }) 
-    };
+    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -154,23 +118,14 @@ async function getFuncionarioAgendamientos(req) {
     const funcionario = await funcionarioService.getFuncionario(funcionarioId);
 
     if (!funcionario) {
-      return { 
-        statusCode: 404, 
-        body: JSON.stringify({ message: 'Funcionario no encontrado' }) 
-      };
+      return new Response(JSON.stringify({ message: 'Funcionario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
 
     const agendamientos = await funcionarioService.getFuncionarioAgendamientos(funcionarioId);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ funcionario, agendamientos }),
-    };
+    return new Response(JSON.stringify({ funcionario, agendamientos }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener agendamientos del funcionario:', error);
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ message: 'Error interno del servidor' }) 
-    };
+    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }

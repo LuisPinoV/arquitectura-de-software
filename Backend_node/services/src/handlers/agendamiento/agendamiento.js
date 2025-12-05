@@ -37,14 +37,14 @@ export const agendamientoHandler = async (event) => {
   const method = event.requestContext?.http.method;
 
   const init = {
-  method: method,
-  headers: event.headers,
-  body: event.body
-    ? (event.isBase64Encoded
+    method: method,
+    headers: event.headers,
+    body: event.body
+      ? (event.isBase64Encoded
         ? Buffer.from(event.body, "base64").toString("utf8")
         : event.body)
-    : undefined,
-};
+      : undefined,
+  };
 
 
   try {
@@ -60,35 +60,23 @@ export const agendamientoHandler = async (event) => {
     };
   } catch (err) {
     console.error(err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
-  }
+    return new Response(JSON.stringify({ error: err.message }));
+  };
 };
 
 // Handlers
 async function createAgendamiento(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const body = await req.json();
     const agendamiento = await agendamientoService.createAgendamiento(body);
-    return {
-      statusCode: 201,
-      body: JSON.stringify(agendamiento),
-    };
+    return new Response(JSON.stringify(agendamiento), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al crear agendamiento:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -98,31 +86,28 @@ async function getAgendamiento(req) {
   try {
     const agendamiento = await agendamientoService.getAgendamiento(idConsulta);
     if (!agendamiento) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Agendamiento no encontrado" }),
-      };
+      return new Response(JSON.stringify({ message: "Agendamiento no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
-    return { statusCode: 200, body: JSON.stringify(agendamiento) };
+    return new Response(JSON.stringify(agendamiento), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamiento:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getAllAgendamientos(_) {
   try {
     const agendamientos = await agendamientoService.getAllAgendamientos();
-    return { statusCode: 200, body: JSON.stringify(agendamientos) };
+    return new Response(JSON.stringify(agendamientos), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamientos:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -131,13 +116,13 @@ async function updateAgendamiento(req) {
     const { idConsulta } = req.params;
     const updates = await req.json();
     const updated = await agendamientoService.updateAgendamiento(idConsulta, updates);
-    return { statusCode: 200, body: JSON.stringify(updated) };
+    return new Response(JSON.stringify(updated), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al actualizar agendamiento:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -145,13 +130,13 @@ async function deleteAgendamiento(req) {
   try {
     const { idConsulta } = req.params;
     const deleted = await agendamientoService.deleteAgendamiento(idConsulta);
-    return { statusCode: 200, body: JSON.stringify(deleted) };
+    return new Response(JSON.stringify(deleted), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al eliminar agendamiento:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -159,21 +144,18 @@ async function getAgendamientosByPaciente(req) {
   const { idPaciente } = req.params;
 
   if (!idPaciente) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idPaciente requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idPaciente requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientos = await agendamientoService.getAgendamientosByPaciente(idPaciente);
-    return { statusCode: 200, body: JSON.stringify(agendamientos) };
+    return new Response(JSON.stringify(agendamientos), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamientos por paciente:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -181,21 +163,18 @@ async function getAgendamientosByFuncionario(req) {
   const { idFuncionario } = req.params;
 
   if (!idFuncionario) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idFuncionario requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idFuncionario requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientos = await agendamientoService.getAgendamientosByFuncionario(idFuncionario);
-    return { statusCode: 200, body: JSON.stringify(agendamientos) };
+    return new Response(JSON.stringify(agendamientos), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamientos por funcionario:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -203,21 +182,18 @@ async function getAgendamientosByBox(req) {
   const { idBox } = req.params;
 
   if (!idBox) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idBox requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idBox requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientos = await agendamientoService.getAgendamientosByBox(idBox);
-    return { statusCode: 200, body: JSON.stringify(agendamientos) };
+    return new Response(JSON.stringify(agendamientos), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamientos por box:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -225,21 +201,18 @@ async function getAgendamientosByFecha(req) {
   const { fecha } = req.params;
 
   if (!fecha) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "fecha requerida" }),
-    };
+    return new Response(JSON.stringify({ error: "fecha requerida" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientos = await agendamientoService.getAgendamientosByFecha(fecha);
-    return { statusCode: 200, body: JSON.stringify(agendamientos) };
+    return new Response(JSON.stringify(agendamientos), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamientos por fecha:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -248,109 +221,76 @@ async function getAgendamientosByEspecialidad(req) {
   const { especialidad } = req.params;
 
   if (!especialidad) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "especialidad requerida" }),
-    };
+    return new Response(JSON.stringify({ error: "especialidad requerida" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientos = await agendamientoService.getAgendamientosByEspecialidad(especialidad);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(agendamientos) 
-    };
+    return new Response(JSON.stringify(agendamientos), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener agendamientos por especialidad:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno del servidor" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno del servidor" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getCountAgendamientosPorEspecialidad(_) {
   try {
     const conteo = await agendamientoService.getCountAgendamientosPorEspecialidad();
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(conteo) 
-    };
+    return new Response(JSON.stringify(conteo), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener conteo por especialidad:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ 
-        error: "Error interno del servidor",
-        details: error.message 
-      }),
-    };
+    return new Response(JSON.stringify({
+      error: "Error interno del servidor",
+      details: error.message
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getCountAgendamientosPorEspecialidadRangoFechas(req) {
   try {
     const { fechaInicio, fechaFin } = req.params;
-    
+
     console.log("Parámetros recibidos:", { fechaInicio, fechaFin });
-    
+
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ 
-          error: "Formato de fecha inválido. Use YYYY-MM-DD" 
-        }),
-      };
+      return new Response(JSON.stringify({
+        error: "Formato de fecha inválido. Use YYYY-MM-DD"
+      }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
     const resultado = await agendamientoService.getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(resultado) 
-    };
+    return new Response(JSON.stringify(resultado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener conteo por especialidad en rango:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ 
-        error: "Error interno del servidor",
-        details: error.message 
-      }),
-    };
+    return new Response(JSON.stringify({
+      error: "Error interno del servidor",
+      details: error.message
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getPorcentajeOcupacionPorEspecialidad(req) {
   try {
     const { fechaInicio, fechaFin } = req.params;
-    
+
     console.log("Parámetros recibidos:", { fechaInicio, fechaFin });
-    
+
     const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ 
-          error: "Formato de fecha inválido. Use YYYY-MM-DD" 
-        }),
-      };
+      return new Response(JSON.stringify({
+        error: "Formato de fecha inválido. Use YYYY-MM-DD"
+      }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
     const resultado = await agendamientoService.getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(resultado) 
-    };
+    return new Response(JSON.stringify(resultado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener porcentaje de ocupación:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ 
-        error: "Error interno del servidor",
-        details: error.message 
-      }),
-    };
+    return new Response(JSON.stringify({
+      error: "Error interno del servidor",
+      details: error.message
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -358,27 +298,21 @@ async function getAgendamientoCompleto(req) {
   const { idConsulta } = req.params;
 
   if (!idConsulta) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idConsulta requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idConsulta requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientoCompleto = await agendamientoService.getAgendamientoCompleto(idConsulta);
     if (!agendamientoCompleto) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Agendamiento no encontrado" }),
-      };
+      return new Response(JSON.stringify({ message: "Agendamiento no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
-    return { statusCode: 200, body: JSON.stringify(agendamientoCompleto) };
+    return new Response(JSON.stringify(agendamientoCompleto), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener agendamiento completo:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -386,21 +320,18 @@ async function getEstadosAgendamiento(req) {
   const { idConsulta } = req.params;
 
   if (!idConsulta) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idConsulta requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idConsulta requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const estados = await agendamientoService.getEstadosAgendamiento(idConsulta);
-    return { statusCode: 200, body: JSON.stringify(estados) };
+    return new Response(JSON.stringify(estados), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener estados del agendamiento:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -408,41 +339,26 @@ async function addEstadoAgendamiento(req) {
   const { idConsulta } = req.params;
 
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   if (!idConsulta) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idConsulta requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idConsulta requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const body = await req.json();
     const { estado } = body;
-    
+
     if (!estado) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "estado requerido" }),
-      };
+      return new Response(JSON.stringify({ error: "estado requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
     const nuevoEstado = await agendamientoService.addEstadoAgendamiento(idConsulta, estado);
-    return {
-      statusCode: 201,
-      body: JSON.stringify(nuevoEstado),
-    };
+    return new Response(JSON.stringify(nuevoEstado), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al agregar estado al agendamiento:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -450,21 +366,18 @@ async function getResultadoConsulta(req) {
   const { idConsulta } = req.params;
 
   if (!idConsulta) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idConsulta requerido" }),
-    };
+    return new Response(JSON.stringify({ error: "idConsulta requerido" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const resultado = await agendamientoService.getResultadoConsulta(idConsulta);
-    return { statusCode: 200, body: JSON.stringify(resultado) };
+    return new Response(JSON.stringify(resultado), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener resultado de consulta:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -472,31 +385,19 @@ async function agendamientoTotalHoyBox(req) {
   const { idBox, fecha } = req.params;
 
   if (!idBox || !fecha) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "idBox y fecha requeridos" }),
-    };
+    return new Response(JSON.stringify({ error: "idBox y fecha requeridos" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
   const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!fechaRegex.test(fecha)) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }),
-    };
+    return new Response(JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const agendamientos = await agendamientoService.agendamientoTotalHoyBox(idBox, fecha);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(agendamientos) 
-    };
+    return new Response(JSON.stringify(agendamientos), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener agendamientos por box y fecha:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -504,36 +405,24 @@ async function cantidadAgendamientosEntreFechas(req) {
   const { fechaInicio, fechaFin } = req.params;
 
   if (!fechaInicio || !fechaFin) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "fechaInicio y fechaFin requeridos" }),
-    };
+    return new Response(JSON.stringify({ error: "fechaInicio y fechaFin requeridos" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }),
-    };
+    return new Response(JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const cantidad = await agendamientoService.cantidadAgendamientosEntreFechas(fechaInicio, fechaFin);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify({ 
-        fechaInicio, 
-        fechaFin, 
-        cantidad 
-      }) 
-    };
+    return new Response(JSON.stringify({
+      fechaInicio,
+      fechaFin,
+      cantidad
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener cantidad de agendamientos entre fechas:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 
 }
@@ -541,33 +430,21 @@ async function diferenciaOcupanciaMeses(req) {
   const { mes1, mes2 } = req.params;
 
   if (!mes1 || !mes2) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "mes1 y mes2 requeridos (formato: YYYY-MM)" }),
-    };
+    return new Response(JSON.stringify({ error: "mes1 y mes2 requeridos (formato: YYYY-MM)" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
 
   const mesRegex = /^\d{4}-\d{2}$/;
   if (!mesRegex.test(mes1) || !mesRegex.test(mes2)) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Formato de mes inválido. Use YYYY-MM" }),
-    };
+    return new Response(JSON.stringify({ error: "Formato de mes inválido. Use YYYY-MM" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const resultado = await agendamientoService.diferenciaOcupanciaMeses(mes1, mes2);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(resultado) 
-    };
+    return new Response(JSON.stringify(resultado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al calcular diferencia de ocupación:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -575,31 +452,19 @@ async function ocupacionTotalSegunDiaEntreFechas(req) {
   const { fechaInicio, fechaFin } = req.params;
 
   if (!fechaInicio || !fechaFin) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "fechaInicio y fechaFin requeridos" }),
-    };
+    return new Response(JSON.stringify({ error: "fechaInicio y fechaFin requeridos" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!fechaRegex.test(fechaInicio) || !fechaRegex.test(fechaFin)) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }),
-    };
+    return new Response(JSON.stringify({ error: "Formato de fecha inválido. Use YYYY-MM-DD" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const resultado = await agendamientoService.ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin);
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(resultado) 
-    };
+    return new Response(JSON.stringify(resultado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener ocupación por día:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ error: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }

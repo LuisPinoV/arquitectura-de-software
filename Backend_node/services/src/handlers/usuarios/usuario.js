@@ -44,35 +44,23 @@ export const usuarioHandler = async (event) => {
     };
   } catch (err) {
     console.error(err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    return new Response(JSON.stringify({ error: err.message }));
   }
 };
 
 // Handlers
 async function createUsuario(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const body = await req.json();
     const nuevoPaciente = await usuarioService.createUsuario(body);
-    return {
-      statusCode: 201,
-      body: JSON.stringify(nuevoPaciente),
-    };
+    return new Response(JSON.stringify(nuevoPaciente), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al crear usuario:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error al crear usuario' }),
-    };
+    return new Response(JSON.stringify({ message: 'Error al crear usuario' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -82,22 +70,13 @@ async function getUsuario(req) {
   try {
     const usuario = await usuarioService.getUsuario(usuarioId);
     if (!usuario) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Usuario no encontrado' }),
-      };
+      return new Response(JSON.stringify({ message: 'Usuario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(usuario),
-    };
+    return new Response(JSON.stringify(usuario), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener usuario:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error al obtener usuario' }),
-    };
+    return new Response(JSON.stringify({ message: 'Error al obtener usuario' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -107,33 +86,21 @@ async function getUsuarioAgendamientos(req) {
   try {
     const usuario = await usuarioService.getUsuario(usuarioId);
     if (!usuario) {
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: 'Usuario no encontrado' }),
-      };
+      return new Response(JSON.stringify({ message: 'Usuario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
 
     const agendamientos = await usuarioService.getUsuarioAgendamientos(usuarioId);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ usuario: usuario, agendamientos }),
-    };
+    return new Response(JSON.stringify({ usuario: usuario, agendamientos }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener usuario con agendamientos:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error interno del servidor' }),
-    };
+    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function updateUsuario(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
@@ -141,16 +108,10 @@ async function updateUsuario(req) {
     const updates = await req.json();
     const actualizado = await usuarioService.updateUsuario(usuarioId, updates);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(actualizado),
-    };
+    return new Response(JSON.stringify(actualizado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al actualizar paciente:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error al actualizar paciente' }),
-    };
+    return new Response(JSON.stringify({ message: 'Error al actualizar paciente' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -159,48 +120,30 @@ async function deleteUsuario(req) {
     const { usuarioId } = req.params;
 
     if (!usuarioId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Falta el parámetro pacienteId en la ruta" }),
-      };
+      return new Response(JSON.stringify({ message: "Falta el parámetro pacienteId en la ruta" }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
     const eliminado = await usuarioService.deleteUsuario(usuarioId);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(eliminado),
-    };
+    return new Response(JSON.stringify(eliminado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al eliminar paciente:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error al eliminar paciente" }),
-    };
+    return new Response(JSON.stringify({ message: "Error al eliminar paciente" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function createAgendamiento(req) {
   if (!req.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+    return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const body = await req.json();
     const nuevo = await usuarioService.createAgendamiento(body);
 
-    return {
-      statusCode: 201,
-      body: JSON.stringify(nuevo),
-    };
+    return new Response(JSON.stringify(nuevo), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al crear agendamiento:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: 'Error al crear agendamiento' }),
-    };
+    return new Response(JSON.stringify({ message: 'Error al crear agendamiento' }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }

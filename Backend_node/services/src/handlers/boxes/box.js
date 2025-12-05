@@ -15,7 +15,7 @@ router
   .get("/box/porcentaje-uso/:fecha/:hora", getPorcentajeUsoBoxes) // ejemploPro: /box/porcentaje-uso/2025-11-07/14:30
   .get("/box/ocupacion-especialidad/:fecha/:hora", getOcupacionPorEspecialidad) // ejemploPro: /box/ocupacion-especialidad/2025-11-07/14:30
   .get("/box/uso/:idBox/:fecha/:hora", getUsoBox) // ejemploPro: /box/uso/10/2025-11-07/14:00
-  .get("/box/:idBox", getBox)  
+  .get("/box/:idBox", getBox)
   .get("/box", getAllBoxes)
   .put("/box/:idBox", updateBox)
   .delete("/box/:idBox", deleteBox);
@@ -52,6 +52,7 @@ export const boxHandler = async (event) => {
     console.error(err);
     return {
       statusCode: 500,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ error: err.message }),
     };
   }
@@ -60,21 +61,24 @@ export const boxHandler = async (event) => {
 // Handlers
 
 async function getDisponibilidadBox(req) {
-  const { idBox, fecha } = req.params;  
+  const { idBox, fecha } = req.params;
 
   if (!idBox || !fecha) {
-    return { 
-      statusCode: 400, 
-      body: JSON.stringify({ error: "idBox y fecha requeridos" }) 
-    };
+    return new Response(JSON.stringify({ error: "idBox y fecha requeridos" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const result = await boxService.getDisponibilidadBox(idBox, fecha);
-    return { statusCode: 200, body: JSON.stringify(result) };
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error en getDisponibilidadBox:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -82,18 +86,21 @@ async function getPorcentajeUsoBoxes(req) {
   const { fecha, hora } = req.params;
 
   if (!fecha || !hora) {
-    return { 
-      statusCode: 400, 
-      body: JSON.stringify({ error: "fecha y hora requeridas" }) 
-    };
+    return new Response(JSON.stringify({ error: "fecha y hora requeridas" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const result = await boxService.getPorcentajeUsoBoxes(fecha, hora);
-    return { statusCode: 200, body: JSON.stringify(result) };
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error en getPorcentajeUsoBoxes:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -101,18 +108,21 @@ async function getOcupacionPorEspecialidad(req) {
   const { fecha, hora } = req.params;
 
   if (!fecha || !hora) {
-    return { 
-      statusCode: 400, 
-      body: JSON.stringify({ error: "fecha y hora requeridas" }) 
-    };
+    return new Response(JSON.stringify({ error: "fecha y hora requeridas" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const result = await boxService.getOcupacionPorEspecialidad(fecha, hora);
-    return { statusCode: 200, body: JSON.stringify(result) };
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error en getOcupacionPorEspecialidad:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -120,42 +130,42 @@ async function getUsoBox(req) {
   const { idBox, fecha, hora } = req.params;
 
   if (!idBox || !fecha || !hora) {
-    return { 
-      statusCode: 400, 
-      body: JSON.stringify({ error: "idBox, fecha y hora requeridos" }) 
-    };
+    return new Response(JSON.stringify({ error: "idBox, fecha y hora requeridos" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   try {
     const result = await boxService.getUsoBox(idBox, fecha, hora);
-    return { statusCode: 200, body: JSON.stringify(result) };
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error en getUsoBox:", error);
-    return { statusCode: 500, body: JSON.stringify({ error: "Error interno" }) };
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
 
 async function createBox(req) {
 
-  if(!req.body) return  {
-      statusCode: 500,
-      body: JSON.stringify({ message: "No hay body" }),
-    };
+  if (!req.body) return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
 
   try {
-    const body = req.json();
+    const body = await req.json();
+    console.log("Body recibido en createBox:", JSON.stringify(body));
     const box = await boxService.createBox(body);
-    return {
-      statusCode: 201,
-      body: JSON.stringify(box),
-    };
+    console.log("Box creado exitosamente:", JSON.stringify(box));
+    return new Response(JSON.stringify(box), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al crear box:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    console.error("Stack trace:", error.stack);
+    return new Response(JSON.stringify({
+      message: "Error interno",
+      error: error.message
+    }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -165,30 +175,27 @@ async function getBox(req) {
   try {
     const box = await boxService.getBox(idBox);
     if (!box)
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Box no encontrado" }),
-      };
-    return { statusCode: 200, body: JSON.stringify(box) };
+      return new Response(JSON.stringify({ message: "Box no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(box), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener box:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getAllBoxes(_) {
   try {
     const boxes = await boxService.getBoxes();
-    return { statusCode: 200, body: JSON.stringify(boxes) };
+    return new Response(JSON.stringify(boxes), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al obtener boxes:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -196,15 +203,15 @@ async function updateBox(req) {
 
   try {
     const { idBox } = req.params;
-    const updates = req.json();
+    const updates = await req.json();
     const updated = await boxService.updateBox(idBox, updates);
-    return { statusCode: 200, body: JSON.stringify(updated) };
+    return new Response(JSON.stringify(updated), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al actualizar box:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -213,13 +220,13 @@ async function deleteBox(req) {
   try {
     const { idBox } = req.params;
     const deleted = await boxService.deleteBox(idBox);
-    return { statusCode: 200, body: JSON.stringify(deleted) };
+    return new Response(JSON.stringify(deleted), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error al eliminar box:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -229,22 +236,13 @@ async function getBoxAgendamientos(req) {
     const box = await boxService.getBox(idBox);
 
     if (!box)
-      return {
-        statusCode: 404,
-        body: JSON.stringify({ message: "Box no encontrado" }),
-      };
+      return new Response(JSON.stringify({ message: "Box no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
 
     const agendamientos = await boxService.getAgendamientosByBox(idBox);
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ box, agendamientos }),
-    };
+    return new Response(JSON.stringify({ box, agendamientos }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener agendamientos del box:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "Error interno" }),
-    };
+    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 }
 
