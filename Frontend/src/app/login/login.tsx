@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardFooter,
   CardHeader,
@@ -33,17 +32,25 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
-  const [open, setOpen] = useState(false);
+  const [openAler, setOpenAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
 
-  const showAlert = () => {
-    setOpen(true);
+  const [loadingLogin, setLoadingLogin] = useState<boolean>(false);
+  
+
+  const showAlert = (msg: string) => {
+    setAlertMessage(msg);
+    setOpenAlert(true);
   };
 
   const closeAlert = () => {
-    setOpen(false);
+    setAlertMessage("");
+    setOpenAlert(false);
   };
+  
   const FormSchema = z.object({
     username: z.string().email({
       message: "Debes utilizar un correo electrónico.",
@@ -59,13 +66,25 @@ export default function LoginPage() {
     },
   });
 
+  const loginButton = (
+    <Button type="submit" className="w-full">
+                    Iniciar Sesión
+    </Button>
+  );
+
+  const loadingButton = (
+    <Button type="submit" className="w-full">
+      <Spinner>Cargando...</Spinner>
+    </Button>
+  );
+
   const router = useRouter();
 
   useEffect(() => {
     async function TryFirstLogin() {
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) return;
-
+      setLoadingLogin(true);
       try {
         const res = await fetch(`/login/api/refresh`, {
           method: "POST",
@@ -75,7 +94,10 @@ export default function LoginPage() {
 
         const resJson = await res.json();
 
+        setLoadingLogin(false);
+
         if (resJson.ok) {
+          showAlert("Sesión Iniciada!");
           router.replace("/dashboard/general");
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
@@ -94,7 +116,7 @@ export default function LoginPage() {
 
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
-
+      setLoadingLogin(true);
       const res = await fetch(`/login/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,18 +125,22 @@ export default function LoginPage() {
 
       const resJson = await res.json();
 
-
       if (resJson.ok) {
+        showAlert("Sesión Iniciada!");
         localStorage.setItem("accessToken", resJson.accessToken);
         localStorage.setItem("idToken", resJson.idToken);
         localStorage.setItem("refreshToken", resJson.refreshToken);
 
         router.replace("/dashboard/general");
       } else {
-        showAlert();
+        showAlert("Hubo un error de conexión \n aprete 'Entiendo' para cerrar esta pestaña");
       }
+
+      setLoadingLogin(false);
     } catch {
-      showAlert();
+
+      setLoadingLogin(false);
+      showAlert("Hubo un error de conexión \n aprete 'Entiendo' para cerrar esta pestaña");
     }
   }
 
@@ -178,9 +204,7 @@ export default function LoginPage() {
                   </a>
                 </FormDescription>
                 <CardFooter className="flex-col gap-2">
-                  <Button type="submit" className="w-full">
-                    Iniciar Sesión
-                  </Button>
+                  {loadingLogin ? loadingButton : loginButton}
                   <Button
                     type="button"
                     variant="outline"
@@ -195,15 +219,14 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
-      <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              No se pudo conectar, inténtalo nuevamente!
+              Inicio de Sesión
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Hubo un error de conexión, <br />
-              aprete "Entiendo" para cerrar esta pestaña
+              {alertMessage}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
