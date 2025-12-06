@@ -56,6 +56,17 @@ LambdaServiceRole:
               Resource:
                 - "*"
 
+      - PolicyName: CloudWatchLogs
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:us-east-1:*:*
+
 CognitoMinimumRole:
   Type: AWS::IAM::Role
   Properties:
@@ -128,6 +139,17 @@ CognitoMinimumRole:
                 - ec2:UnassignPrivateIpAddresses
               Resource:
                 - "*"
+
+      - PolicyName: CloudWatchLogs
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: arn:aws:logs:us-east-1:*:*
 
 CognitoUserPool:
   Type: AWS::Cognito::UserPool

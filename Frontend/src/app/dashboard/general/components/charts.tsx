@@ -165,7 +165,7 @@ export function GraficoConcentracionPorEspecialidad() {
   return (
     <Card className="@container/card chart-card">
       <CardHeader>
-        <CardDescription><DynamicSpaceLabel template="Uso boxes por especialidad" /></CardDescription>
+        <CardDescription><DynamicSpaceLabel template="Uso boxes por categoría" /></CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
             type="single"
@@ -605,14 +605,14 @@ export function BoxesSpeficicChart() {
               {value
                 ? specialtes_dict.find((framework) => framework.value === value)
                     ?.label
-                : "Elige especialidad"}
+                : "Elige categoría"}
               <ChevronsUpDown className="opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-1  ">
             <Command>
               <CommandInput
-                placeholder="Buscar especialidad..."
+                placeholder="Buscar categoría..."
                 className="h-9"
               />
               <CommandList>
