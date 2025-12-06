@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { apiFetch } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
 
 const boxes = [
@@ -26,19 +27,11 @@ export function BoxesTable() {
   
     useEffect(() => {
       async function fetchData() {
-        try {
-          const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-          if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-          
-          const res = await fetch(
-            `/api/general/table_box_data`, 
-            {
-              method:"GET",
-              headers,
-            }
+        try {          
+          const res = await apiFetch(
+            `/api/general/table_box_data`
           );
-          const data: any = await res.json();
+          const data: any = await res?.json();
           setData(data ?? []);
         } catch (error) {
           console.error("Error fetching data:", error);
