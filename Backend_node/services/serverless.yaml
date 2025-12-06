@@ -57,237 +57,9 @@ provider:
     subnetIds:
       - ${self:custom.tf.VPC.value.private_subnet_id}
 
+
 resources:
-  Resources:
-    # Lambda Service Role
-    LambdaServiceRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: lambda-service-role
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service:
-                  - lambda.amazonaws.com
-              Action:
-                - sts:AssumeRole
-        Policies:
-          - PolicyName: DynamoAccess
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - dynamodb:GetItem
-                    - dynamodb:PutItem
-                    - dynamodb:Query
-                    - dynamodb:UpdateItem
-                    - dynamodb:DeleteItem
-                    - dynamodb:Scan
-                  Resource:
-                    - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.agendamiento}
-                    - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.agendamiento}/index/*
-                    - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.preferences}
-                    - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.tokens}
-
-          - PolicyName: SNSPermissions
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - sns:publish
-                  Resource:
-                    - "*"
-
-          - PolicyName: EC2ENIPermissions
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - ec2:CreateNetworkInterface
-                    - ec2:DescribeNetworkInterfaces
-                    - ec2:DeleteNetworkInterface
-                    - ec2:DescribeSecurityGroups
-                    - ec2:DescribeSubnets
-                    - ec2:AssignPrivateIpAddresses
-                    - ec2:UnassignPrivateIpAddresses
-                  Resource:
-                    - "*"
-
-    # Cognito IAM
-    CognitoMinimumRole:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: cognito-custom-role
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service:
-                  - lambda.amazonaws.com
-              Action:
-                - sts:AssumeRole
-        Policies:
-          - PolicyName: CognitoAccess
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - cognito-idp:AdminCreateUser
-                    - cognito-idp:AdminSetUserPassword
-                    - cognito-idp:AdminUpdateUserAttributes
-                    - cognito-idp:AdminGetUser
-                    - cognito-idp:InitiateAuth
-                    - cognito-idp:AdminInitiateAuth
-                    - cognito-idp:GlobalSignOut
-                    - cognito-idp:GetUser
-                  Resource:
-                    - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
-
-          - PolicyName: DynamoAuthAccess
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - dynamodb:GetItem
-                    - dynamodb:PutItem
-                    - dynamodb:Query
-                    - dynamodb:UpdateItem
-                    - dynamodb:DeleteItem
-                    - dynamodb:Scan
-                  Resource:
-                    - arn:aws:dynamodb:${self:provider.region}:*:table/UserPreferences
-                    - arn:aws:dynamodb:us-east-1:*:table/UserCognitoToken
-
-          - PolicyName: SNSPermissions
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - sns:publish
-                  Resource:
-                    - "*"
-
-          - PolicyName: EC2ENIPermissions
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action:
-                    - ec2:CreateNetworkInterface
-                    - ec2:DescribeNetworkInterfaces
-                    - ec2:DeleteNetworkInterface
-                    - ec2:DescribeSecurityGroups
-                    - ec2:DescribeSubnets
-                    - ec2:AssignPrivateIpAddresses
-                    - ec2:UnassignPrivateIpAddresses
-                  Resource:
-                    - "*"
-
-    # Cognito User Pool
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        UserPoolName: ${self:service}-${sls:stage}-pool
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-        Schema:
-          - Name: companyName
-            AttributeDataType: String
-            Mutable: true
-            DeveloperOnlyAttribute: false
-          - Name: spaceName
-            AttributeDataType: String
-            Mutable: true
-            DeveloperOnlyAttribute: false
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 8
-            RequireLowercase: true
-            RequireNumbers: true
-            RequireSymbols: false
-            RequireUppercase: true
-
-    # Cognito User Pool Client
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: ${self:service}-${sls:stage}-app
-        GenerateSecret: false
-        UserPoolId: !Ref CognitoUserPool
-        PreventUserExistenceErrors: ENABLED
-        ExplicitAuthFlows:
-          - ALLOW_USER_PASSWORD_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-        AccessTokenValidity: 60
-        IdTokenValidity: 60
-        RefreshTokenValidity: 30
-        TokenValidityUnits:
-          AccessToken: minutes
-          IdToken: minutes
-          RefreshToken: days
-
-    CognitoUserPoolGroup:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: Administradores
-        UserPoolId: !Ref CognitoUserPool
-        Description: "Grupo de administradores del sistema"
-
-    # SNS Topics
-    CreatedUserTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-        TopicName: CreatedUserTopic-${sls:stage}
-
-    MonthlyBackupTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-        TopicName: MonthlyBackupTopic-${sls:stage}
-
-    # EventBridge Scheduler Role
-    SchedulerInvokeRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: Allow
-              Principal:
-                Service: scheduler.amazonaws.com
-              Action: sts:AssumeRole
-        Policies:
-          - PolicyName: AllowInvokeLambda
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: Allow
-                  Action: lambda:InvokeFunction
-                  Resource: !GetAtt MonthlyBackupLambdaFunction.Arn
-
-    # EventBridge Scheduler
-    ScheduledDynamoBackup:
-      Type: AWS::Scheduler::Schedule
-      Properties:
-        Name: scheduled-dynamo-backup
-        Description: "Runs monthly backup for DynamoDB tables"
-        FlexibleTimeWindow:
-          Mode: "OFF"
-        ScheduleExpression: "cron(0 0 1 * ? *)"
-        Target:
-          Arn: !GetAtt MonthlyBackupLambdaFunction.Arn
-          RoleArn: !GetAtt SchedulerInvokeRole.Arn
-          Input: '{"source":"eventbridge-scheduler"}'
+  Resources: ${file(./config/resources.yml)}
 
   Outputs:
     UserPoolId:
@@ -300,162 +72,35 @@ resources:
       Export:
         Name: ${self:service}-${sls:stage}-UserPoolClientId
 
-    CognitoHandlerArn:
-      Value: !GetAtt CognitoHandlerLambdaFunction.Arn
-      Export:
-        Name: ${self:service}-${sls:stage}-CognitoHandlerArn
-
 functions:
   ### Simulador de base de datos
-  poblarDynamo:
-    handler: src/simulador.poblarDynamo
-    role: LambdaServiceRole
-    timeout: 30
-    memorySize: 1024
-    environment:
-      TABLE: Agendamiento
-    events:
-      - httpApi:
-          path: /agendamiento
-          method: post
+  poblarDynamo: ${file(./config/functions/simulador.yml)}
 
   ### Cognito
-  cognitoHandler:
-    handler: src/handlers/auth/cognito.cognitoHandler
-    role: CognitoMinimumRole
-    events:
-      - httpApi:
-          method: any
-          path: /auth/{proxy+}
-    environment:
-      CREATE_USER_TOPIC_SNS_ARN:
-        Ref: CreatedUserTopic
+  cognitoHandler: ${file(./config/functions/cognito.yml)}
 
   ### APIS
-  preferenciaUsuarioHandler:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.preferenciaUsuarioHandler
-    role: LambdaServiceRole
-    events:
-      - httpApi:
-          path: /profile
-          method: any
-          authorizer: cognitoJwt
-      - httpApi:
-          path: /profile/{proxy+}
-          method: any
-          authorizer: cognitoJwt
-      # Allow CORS preflight (OPTIONS) without authorizer so browser preflight is not blocked
-      - httpApi:
-          path: /profile
-          method: options
-      - httpApi:
-          path: /profile/{proxy+}
-          method: options
-      - httpApi:
-          path: /profile/ping
-          method: get
+  preferenciaUsuarioHandler: ${file(./config/functions/apis.yml):preferenciaUsuario}
 
-  onCreatedNewUser:
-    handler: src/handlers/preferenciasUsuario/preferenciasUsuario.onCreatedNewUser
-    role: LambdaServiceRole
-    events:
-      - sns:
-          topicName: CreatedUserTopic-${sls:stage}
-          arn:
-            Fn::GetAtt:
-              - CreatedUserTopic
-              - TopicArn
+  onCreatedNewUser: ${file(./config/functions/apis.yml):onCreatedNewUser}
 
-  getEspecialidad:
-    handler: src/handlers/getEspecialidad.main
-    role: LambdaServiceRole
-    events:
-      - httpApi:
-          path: /especialidades
-          method: get
-          authorizer: cognitoJwt
+  getEspecialidad: ${file(./config/functions/apis.yml):getEspecialidad}
 
-  pacienteHandler:
-    handler: src/handlers/usuarios/usuario.pacienteHandler
-    role: LambdaServiceRole
-    events:
-      - httpApi:
-          path: /usuario
-          method: any
-          authorizer: cognitoJwt
-      - httpApi:
-          path: /usuario/{proxy+}
-          method: any
-          authorizer: cognitoJwt
+  pacienteHandler: ${file(./config/functions/apis.yml):paciente}
 
-  funcionarioHandler:
-    handler: src/handlers/funcionarios/funcionario.funcionarioHandler
-    role: LambdaServiceRole
-    events:
-      - httpApi:
-          path: /funcionario
-          method: any
-          authorizer: cognitoJwt
-      - httpApi:
-          path: /funcionario/{proxy+}
-          method: any
-          authorizer: cognitoJwt
+  funcionarioHandler: ${file(./config/functions/apis.yml):funcionario}
 
-  boxHandler:
-    handler: src/handlers/boxes/box.boxHandler
-    role: LambdaServiceRole
-    events:
-      - httpApi:
-          path: /box
-          method: any
-          authorizer: cognitoJwt
-      - httpApi:
-          path: /box/{proxy+}
-          method: any
-          authorizer: cognitoJwt
+  boxHandler: ${file(./config/functions/apis.yml):box}
 
-  agendamientoHandler:
-    handler: src/handlers/agendamiento/agendamiento.agendamientoHandler
-    role: LambdaServiceRole
-    events:
-      - httpApi:
-          path: /agendamiento
-          method: any
-          authorizer: cognitoJwt
-      - httpApi:
-          path: /agendamiento/{proxy+}
-          method: any
-          authorizer: cognitoJwt
+  agendamientoHandler: ${file(./config/functions/apis.yml):agendamiento}
 
   # Backup
-  monthlyBackup:
-    handler: src/handlers/backup/backup.getDataForBackup
-    role: LambdaServiceRole
-    environment:
-      MONTHLY_BACKUP_TOPIC_SNS_ARN:
-        Ref: MonthlyBackupTopic
+  monthlyBackup: ${file(./config/functions/backup.yml):monthlyBackup}
 
-  saveDataToS3:
-    handler: src/handlers/backup/backup.saveDataToS3
-    role: LambdaServiceRole
-    events:
-      - sns:
-          topicName: MonthlyBackupTopic-${sls:stage}
-          arn:
-            Fn::GetAtt:
-              - MonthlyBackupTopic
-              - TopicArn
+  saveDataToS3: ${file(./config/functions/backup.yml):saveDataToS3}
 
-  logDataToS3:
-    handler: src/handlers/backup/backup.logDataToS3
-    role: LambdaServiceRole
-    events:
-      - sns:
-          topicName: MonthlyBackupTopic-${sls:stage}
-          arn:
-            Fn::GetAtt:
-              - MonthlyBackupTopic
-              - TopicArn
+  logDataToS3: ${file(./config/functions/backup.yml):logDataToS3}
+
 
 package:
   individually: true

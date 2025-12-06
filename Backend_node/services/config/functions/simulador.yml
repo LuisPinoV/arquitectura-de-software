@@ -1,0 +1,10 @@
+handler: src/simulador.poblarDynamo
+role: LambdaServiceRole
+timeout: 30
+memorySize: 1024
+environment:
+  TABLE: Agendamiento
+events:
+  - httpApi:
+      path: /agendamiento
+      method: post

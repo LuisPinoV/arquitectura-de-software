@@ -1,0 +1,162 @@
+LambdaServiceRole:
+  Type: AWS::IAM::Role
+  Properties:
+    RoleName: lambda-service-role
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+    Policies:
+      - PolicyName: CognitoAndDynamoAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Scan
+              Resource:
+                - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.agendamiento}
+                - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.agendamiento}/index/*
+                - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.preferences}
+                - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.tokens}
+      - PolicyName: SNSPermissions
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - sns:publish
+              Resource:
+                - "*"
+
+CognitoMinimumRole:
+  Type: AWS::IAM::Role
+  Properties:
+    RoleName: cognito-custom-role
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+    Policies:
+      - PolicyName: CognitoAndDynamoAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Scan
+              Resource:
+                - arn:aws:dynamodb:${self:provider.region}:*:table/UserPreferences
+                - arn:aws:dynamodb:us-east-1:*:table/UserCognitoToken
+
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:AdminSetUserPassword
+                - cognito-idp:AdminUpdateUserAttributes
+                - cognito-idp:AdminGetUser
+                - cognito-idp:InitiateAuth
+                - cognito-idp:AdminInitiateAuth
+                - cognito-idp:GlobalSignOut
+                - cognito-idp:GetUser
+              Resource:
+                - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
+
+CognitoUserPool:
+  Type: AWS::Cognito::UserPool
+  Properties:
+    UserPoolName: ${self:service}-${sls:stage}-pool
+    UsernameAttributes:
+      - email
+    AutoVerifiedAttributes:
+      - email
+    Schema:
+      - Name: companyName
+        AttributeDataType: String
+        Mutable: true
+        DeveloperOnlyAttribute: false
+      - Name: spaceName
+        AttributeDataType: String
+        Mutable: true
+        DeveloperOnlyAttribute: false
+    Policies:
+      PasswordPolicy:
+        MinimumLength: 8
+        RequireLowercase: true
+        RequireNumbers: true
+        RequireSymbols: false
+        RequireUppercase: true
+
+CognitoUserPoolClient:
+  Type: AWS::Cognito::UserPoolClient
+  Properties:
+    ClientName: ${self:service}-${sls:stage}-app
+    GenerateSecret: false
+    UserPoolId: !Ref CognitoUserPool
+    PreventUserExistenceErrors: ENABLED
+    ExplicitAuthFlows:
+      - ALLOW_USER_PASSWORD_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
+    AccessTokenValidity: 60
+    IdTokenValidity: 60
+    RefreshTokenValidity: 30
+    TokenValidityUnits:
+      AccessToken: minutes
+      IdToken: minutes
+      RefreshToken: days
+
+CognitoUserPoolGroup:
+  Type: AWS::Cognito::UserPoolGroup
+  Properties:
+    GroupName: Administradores
+    UserPoolId: !Ref CognitoUserPool
+    Description: "Grupo de administradores del sistema"
+
+CreatedUserTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: CreatedUserTopic-${sls:stage}
+
+MonthlyBackupTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: MonthlyBackupTopic-${sls:stage}
+
+SchedulerInvokeRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: scheduler.amazonaws.com
+          Action: sts:AssumeRole
+    Policies:
+      - PolicyName: AllowInvokeLambda
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: lambda:InvokeFunction
+              Resource: !GetAtt MonthlyBackupLambdaFunction.Arn

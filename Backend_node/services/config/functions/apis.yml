@@ -1,0 +1,94 @@
+preferenciaUsuario:
+  handler: src/handlers/preferenciasUsuario/preferenciasUsuario.preferenciaUsuarioHandler
+  role: LambdaServiceRole
+  events:
+    - httpApi:
+        path: /profile
+        method: any
+        authorizer: cognitoJwt
+    - httpApi:
+        path: /profile/{proxy+}
+        method: any
+        authorizer: cognitoJwt
+      # Allow CORS preflight (OPTIONS) without authorizer so browser preflight is not blocked
+    - httpApi:
+        path: /profile
+        method: options
+    - httpApi:
+        path: /profile/{proxy+}
+        method: options
+    - httpApi:
+        path: /profile/ping
+        method: get
+
+onCreatedNewUser:
+  handler: src/handlers/preferenciasUsuario/preferenciasUsuario.onCreatedNewUser
+  role: LambdaServiceRole
+  events:
+    - sns:
+        topicName: CreatedUserTopic-${sls:stage}
+        arn:
+          Fn::GetAtt:
+            - CreatedUserTopic
+            - TopicArn
+
+getEspecialidad:
+  handler: src/handlers/getEspecialidad.main
+  role: LambdaServiceRole
+  events:
+    - httpApi:
+        path: /especialidades
+        method: get
+        authorizer: cognitoJwt
+
+paciente:
+  handler: src/handlers/usuarios/usuario.pacienteHandler
+  role: LambdaServiceRole
+  events:
+    - httpApi:
+        path: /usuario
+        method: any
+        authorizer: cognitoJwt
+    - httpApi:
+        path: /usuario/{proxy+}
+        method: any
+        authorizer: cognitoJwt
+        
+funcionario:
+  handler: src/handlers/funcionarios/funcionario.funcionarioHandler
+  role: LambdaServiceRole
+  events:
+    - httpApi:
+        path: /funcionario
+        method: any
+        authorizer: cognitoJwt
+    - httpApi:
+        path: /funcionario/{proxy+}
+        method: any
+        authorizer: cognitoJwt
+
+box:
+  handler: src/handlers/boxes/box.boxHandler
+  role: LambdaServiceRole
+  events:
+    - httpApi:
+        path: /box
+        method: any
+        authorizer: cognitoJwt
+    - httpApi:
+        path: /box/{proxy+}
+        method: any
+        authorizer: cognitoJwt
+
+agendamiento:
+  handler: src/handlers/agendamiento/agendamiento.agendamientoHandler
+  role: LambdaServiceRole
+  events:
+    - httpApi:
+        path: /agendamiento
+        method: any
+        authorizer: cognitoJwt
+    - httpApi:
+        path: /agendamiento/{proxy+}
+        method: any
+        authorizer: cognitoJwt
