@@ -44,7 +44,11 @@ export const usuarioHandler = async (event) => {
     };
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message }));
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "Internal Server Error", error: err.message }),
+    };
   }
 };
 

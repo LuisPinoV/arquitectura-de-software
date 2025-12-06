@@ -86,7 +86,7 @@ functions:
 
   getEspecialidad: ${file(./config/functions/apis.yml):getEspecialidad}
 
-  pacienteHandler: ${file(./config/functions/apis.yml):paciente}
+  usuarioHandler: ${file(./config/functions/apis.yml):usuario}
 
   funcionarioHandler: ${file(./config/functions/apis.yml):funcionario}
 

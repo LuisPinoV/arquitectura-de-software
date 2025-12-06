@@ -8,6 +8,8 @@ import { GetUsuarioAgendamientoUseCase } from "../useCases/usuario/getUsuarioAge
 import { GetUsuariosUseCase } from "../useCases/usuario/getUsuarios.useCase.js";
 import { UpdateUsuarioUseCase } from "../useCases/usuario/updateUsuario.useCase.js";
 
+
+
 export class UsuarioService {
   constructor(usuarioRepository) {
     this.usuarioRepository = usuarioRepository;

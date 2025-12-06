@@ -217,7 +217,6 @@ async getCountAgendamientosPorEspecialidad() {
   try {
     console.log("Obteniendo conteo de agendamientos por especialidad...");
     
-    // Obtener todas las especialidades únicas
     const boxesCommand = new ScanCommand({
       TableName: this.tableName,
       FilterExpression: "#tipo = :tipoBox",
@@ -230,7 +229,6 @@ async getCountAgendamientosPorEspecialidad() {
     
     console.log(`Especialidades encontradas: ${especialidadesUnicas.length}`);
     
-    // Contar agendamientos por cada especialidad
     const conteoPorEspecialidad = {};
     
     for (const especialidad of especialidadesUnicas) {
@@ -238,7 +236,6 @@ async getCountAgendamientosPorEspecialidad() {
       conteoPorEspecialidad[especialidad] = agendamientos.length;
     }
     
-    // Ordenar por cantidad descendente
     const resultadoOrdenado = Object.entries(conteoPorEspecialidad)
       .sort(([, a], [, b]) => b - a)
       .reduce((acc, [especialidad, count]) => {
@@ -325,7 +322,7 @@ async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
     
     const boxesResult = await this.dynamo.send(boxesCommand);
     
-    // Calcular capacidad máxima por especialidad
+
     const capacidadPorEspecialidad = {};
     const boxesPorEspecialidad = {};
     
@@ -338,36 +335,32 @@ async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
         boxesPorEspecialidad[especialidad] = 0;
       }
       
-      // Sumar capacidad del box (asumiendo que capacidad es el número máximo de pacientes por día)
       capacidadPorEspecialidad[especialidad] += box.capacidad || 1;
       boxesPorEspecialidad[especialidad]++;
     });
     
-    // Calcular porcentaje de ocupación
     const porcentajeOcupacion = {};
     
     Object.entries(conteoResultado.conteo).forEach(([especialidad, count]) => {
       const capacidad = capacidadPorEspecialidad[especialidad] || 1;
       
-      // Calcular días en el rango
+
       const diasRango = this.calcularDiasEntreFechas(fechaInicio, fechaFin);
       
-      // Capacidad total en el período = capacidad por día * número de días
+
       const capacidadTotal = capacidad * diasRango;
       
-      // Porcentaje de ocupación
       const porcentaje = capacidadTotal > 0 ? (count / capacidadTotal) * 100 : 0;
       
       porcentajeOcupacion[especialidad] = {
         agendamientos: count,
         capacidadDiaria: capacidad,
         capacidadTotalPeriodo: capacidadTotal,
-        porcentajeOcupacion: Math.round(porcentaje * 100) / 100, // Redondear a 2 decimales
+        porcentajeOcupacion: Math.round(porcentaje * 100) / 100,
         boxes: boxesPorEspecialidad[especialidad] || 0
       };
     });
     
-    // Ordenar por porcentaje de ocupación descendente
     const resultadoOrdenado = Object.entries(porcentajeOcupacion)
       .sort(([, a], [, b]) => b.porcentajeOcupacion - a.porcentajeOcupacion)
       .reduce((acc, [especialidad, datos]) => {
@@ -390,13 +383,12 @@ async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
   }
 }
 
-// Función auxiliar para calcular días entre fechas
 calcularDiasEntreFechas(fechaInicio, fechaFin) {
   const inicio = new Date(fechaInicio);
   const fin = new Date(fechaFin);
   const diferenciaTiempo = fin.getTime() - inicio.getTime();
-  const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24)) + 1; // +1 para incluir ambos extremos
-  return Math.max(diferenciaDias, 1); // Mínimo 1 día
+  const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24)) + 1;
+  return Math.max(diferenciaDias, 1);
 }
   
   async getEstadosAgendamiento(idConsulta) {
@@ -517,7 +509,7 @@ async agendamientoTotalHoyBox(idBox, fecha) {
     try {
       console.log(`Calculando diferencia de ocupación entre ${mes1} y ${mes2}`);
       
-      const meses30 = ["04", "06", "09", "11"]; // Abril, Junio, Septiembre, Noviembre
+      const meses30 = ["04", "06", "09", "11"];
 
       const calcularRangoMes = (mes) => {
         const [year, mm] = mes.split("-");
@@ -533,7 +525,7 @@ async agendamientoTotalHoyBox(idBox, fecha) {
       const { min: mes1Min, max: mes1Max, dias: dias1 } = calcularRangoMes(mes1);
       const { min: mes2Min, max: mes2Max, dias: dias2 } = calcularRangoMes(mes2);
 
-      // 1️⃣ Contar total de boxes
+
       const boxesResult = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
         FilterExpression: "#tipo = :tipoBox",
@@ -546,7 +538,7 @@ async agendamientoTotalHoyBox(idBox, fecha) {
         throw new Error("No se encontraron boxes en la base de datos");
       }
 
-      // 2️⃣ Contar agendamientos mes1
+
       const agendamientosMes1 = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
         FilterExpression: "#fecha BETWEEN :min AND :max AND #tipo = :tipoAgendamiento",
@@ -562,7 +554,6 @@ async agendamientoTotalHoyBox(idBox, fecha) {
         Select: "COUNT",
       }));
 
-      // 3️⃣ Contar agendamientos mes2
       const agendamientosMes2 = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
         FilterExpression: "#fecha BETWEEN :min AND :max AND #tipo = :tipoAgendamiento",
@@ -581,13 +572,10 @@ async agendamientoTotalHoyBox(idBox, fecha) {
       const countMes1 = agendamientosMes1.Count || 0;
       const countMes2 = agendamientosMes2.Count || 0;
 
-      // 4️⃣ Calcular diferencia de ocupación
-      // Capacidad total teórica: 930 minutos/día * días * totalBoxes
-      // (930 minutos = 15.5 horas de trabajo de 8:00 a 17:00)
+
       const capacidadTotalMes1 = 930 * dias1 * totalBoxes;
       const capacidadTotalMes2 = 930 * dias2 * totalBoxes;
 
-      // Tiempo ocupado real: cada agendamiento ocupa 30 minutos
       const minutosOcupadosMes1 = countMes1 * 30;
       const minutosOcupadosMes2 = countMes2 * 30;
 
@@ -625,15 +613,14 @@ async agendamientoTotalHoyBox(idBox, fecha) {
 
   /**
    * Calcula la ocupación total por día entre un rango de fechas
-   * @param {string} fechaInicio - Fecha inicio YYYY-MM-DD
-   * @param {string} fechaFin - Fecha fin YYYY-MM-DD
-   * @returns {Promise<Object>} - Ocupación por día
+   * @param {string} fechaInicio
+   * @param {string} fechaFin
+   * @returns {Promise<Object>}
    */
   async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin) {
     try {
       console.log(`Calculando ocupación por día entre ${fechaInicio} y ${fechaFin}`);
       
-      // Función para generar fechas entre rango
       const generarFechas = (fecha1, fecha2) => {
         const fechas = [];
         let current = new Date(fecha1);
@@ -645,7 +632,6 @@ async agendamientoTotalHoyBox(idBox, fecha) {
         return fechas;
       };
 
-      // Obtener total de boxes
       const boxesResult = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
         FilterExpression: "#tipo = :tipoBox",
@@ -658,7 +644,6 @@ async agendamientoTotalHoyBox(idBox, fecha) {
         throw new Error("No se encontraron boxes en la base de datos");
       }
 
-      // Inicializar fechas
       const fechas = generarFechas(fechaInicio, fechaFin);
       const ocupacionPorDia = {};
       fechas.forEach(f => {
@@ -669,7 +654,6 @@ async agendamientoTotalHoyBox(idBox, fecha) {
         };
       });
 
-      // Obtener agendamientos entre fechas
       const agendamientosResult = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
         FilterExpression: "#fecha BETWEEN :f1 AND :f2 AND #tipo = :tipoAgendamiento",
@@ -687,11 +671,9 @@ async agendamientoTotalHoyBox(idBox, fecha) {
 
       console.log(`Encontrados ${agendamientosResult.Items?.length || 0} agendamientos en el rango`);
 
-      // Calcular minutos ocupados por fecha
       agendamientosResult.Items?.forEach(item => {
         const fecha = item.fecha;
         if (ocupacionPorDia[fecha]) {
-          // Calcular duración en minutos
           const [hEntrada, mEntrada] = item.horaEntrada.split(":").map(Number);
           const [hSalida, mSalida] = item.horaSalida.split(":").map(Number);
           const minutos = (hSalida - hEntrada) * 60 + (mSalida - mEntrada);
@@ -701,21 +683,19 @@ async agendamientoTotalHoyBox(idBox, fecha) {
         }
       });
 
-      // Calcular porcentaje de ocupación para cada día
       fechas.forEach(fecha => {
-        const capacidadTotalDia = 930 * totalBoxes; // 930 minutos * número de boxes
+        const capacidadTotalDia = 930 * totalBoxes;
         const minutosOcupados = ocupacionPorDia[fecha].minutosOcupados;
         
         ocupacionPorDia[fecha].porcentajeOcupacion = capacidadTotalDia > 0 
           ? Math.round((minutosOcupados / capacidadTotalDia) * 100 * 100) / 100 
           : 0;
         
-        // Agregar información adicional
+
         ocupacionPorDia[fecha].capacidadTotalMinutos = capacidadTotalDia;
         ocupacionPorDia[fecha].totalBoxes = totalBoxes;
       });
 
-      // Calcular promedios
       const diasConDatos = fechas.filter(f => ocupacionPorDia[f].agendamientos > 0);
       const promedioOcupacion = diasConDatos.length > 0 
         ? diasConDatos.reduce((sum, fecha) => sum + ocupacionPorDia[fecha].porcentajeOcupacion, 0) / diasConDatos.length

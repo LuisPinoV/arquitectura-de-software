@@ -13,7 +13,7 @@ import {
 const client = new DynamoDBClient();
 const dynamo = DynamoDBDocumentClient.from(client);
 
-export class UsuarioRepisitory {
+export class usuarioRepository {
   constructor(tableName) {
     this.tableName = tableName;
     this.dynamo = dynamo;

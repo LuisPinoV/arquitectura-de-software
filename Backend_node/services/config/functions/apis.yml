@@ -41,8 +41,8 @@ getEspecialidad:
         method: get
         authorizer: cognitoJwt
 
-paciente:
-  handler: src/handlers/usuarios/usuario.pacienteHandler
+usuario:
+  handler: src/handlers/usuarios/usuario.usuarioHandler
   role: LambdaServiceRole
   events:
     - httpApi:

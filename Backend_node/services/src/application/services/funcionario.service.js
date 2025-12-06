@@ -9,7 +9,7 @@ import { DeleteFuncionarioUseCase } from "../useCases/funcionario/deleteFunciona
 import { GetFuncionarioAgendamientoUseCase } from "../useCases/funcionario/getFuncionarioAgendamiento.useCase.js";
 
 //Repositories
-import { funcionarioRepository } from "../../infrastructure/db/funcionario.repository";
+import { funcionarioRepository } from "../../infrastructure/db/funcionario.repository.js";
 
 export class FuncionarioService {
   constructor() {
