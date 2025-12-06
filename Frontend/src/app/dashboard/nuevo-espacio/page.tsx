@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Row, Col } from "antd";
-
+import { apiFetch } from "@/lib/apiClient";
 import './nuevo_espacio.css';
 
 const NuevoEspacioSchema = z.object({
@@ -43,24 +43,20 @@ export default function NuevoEspacioPage() {
 
   async function onSubmit(data: z.infer<typeof NuevoEspacioSchema>) {
     try {
-      // POST to existing API proxy (underscore folder)
-      // Include Authorization header from localStorage so backend authorizer receives the token
-      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
-      const res = await fetch('/api/spaces/create', {
+      const res = await apiFetch('/api/spaces/create', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
       });
 
-      const json = await res.json().catch(() => ({}));
+      const json = await res?.json().catch(() => ({}));
       // Log full response for easier debugging
       // eslint-disable-next-line no-console
-      console.debug('Create espacio response', { status: res.status, body: json });
+      console.debug('Create espacio response', { status: res?.status, body: json });
 
-      if (res.ok) {
+      if (res?.ok) {
         // Backend returns created item (has `idBox`). Show it to the user so they can confirm.
         const createdId = json.idBox || json.id || (typeof json === 'object' && json.idBox) || null;
         if (createdId) {
