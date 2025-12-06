@@ -9,7 +9,12 @@ export async function GET() {
       'Content-Type': 'application/json',
     },
   })
-  const data = await res.json()
+  const data = await res.json();
+
+  if(!data)
+  {
+    return NextResponse.json({});
+  }
  
-  return NextResponse.json({ data })
+  return NextResponse.json(data)
 }

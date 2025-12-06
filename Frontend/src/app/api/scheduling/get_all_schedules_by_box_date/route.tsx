@@ -23,15 +23,17 @@ export async function GET(req: NextRequest) {
 
   const apiUrl = process.env.BACKEND_ADDRESS;
 
-  const resSchedules = await fetch(
-    `${apiUrl}/agendamientosFecha/${date}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const resSchedules = await fetch(`${apiUrl}/agendamientosFecha/${date}`, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   const dataSchedules = await resSchedules.json();
+
+  if(!dataSchedules)
+  {
+    return NextResponse.json({ error: "Couldn't get Schedules" }, { status: 500 });
+  }
 
   const dataSchedulesArr = Object.values(dataSchedules);
 

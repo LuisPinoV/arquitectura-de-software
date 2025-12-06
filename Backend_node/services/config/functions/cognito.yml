@@ -1,9 +1,10 @@
-handler: src/handlers/auth/cognito.cognitoHandler
-role: CognitoMinimumRole
-events:
-  - httpApi:
-      method: any
-      path: /auth/{proxy+}
-environment:
-  CREATE_USER_TOPIC_SNS_ARN:
-    Ref: CreatedUserTopic
+cognitoHandler:
+  handler: src/handlers/auth/cognito.cognitoHandler
+  role: CognitoMinimumRole
+  events:
+    - httpApi:
+        method: any
+        path: /auth/{proxy+}
+  environment:
+    CREATE_USER_TOPIC_SNS_ARN:
+      Ref: CreatedUserTopic

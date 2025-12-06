@@ -106,10 +106,10 @@ export function GraficoConcentracionPorEspecialidad() {
     async function fetchData() {
       try {
         const res = await fetch(
-          `/dashboard/general/api/boxes_per_specialty?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
+          `/api/general/boxes_per_specialty?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
         const data: any = await res.json();
-        setData(data["final_data"]);
+        setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -316,10 +316,10 @@ export function GraficoUsoSemanal() {
     async function fetchData() {
       try {
         const res = await fetch(
-          `/dashboard/general/api/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
+          `/api/general/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
         const data: any = await res.json();
-        setData(data["dataArr"]);
+        setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -464,9 +464,9 @@ export function BoxesSpeficicChart() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(`/dashboard/general/api/get_specialties`);
+        const res = await fetch(`/api/general/get_specialties`);
         const data: any = await res.json();
-        setSpecialties(data["data"]);
+        setSpecialties(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -487,10 +487,10 @@ export function BoxesSpeficicChart() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(`/dashboard/general/api/get_specialties`);
+        const res = await fetch(`/api/general/get_specialties`);
         const data: any = await res.json();
-        if (data && Array.isArray(data["data"]) && data["data"].length > 0) {
-          setValue(data["data"][0]["especialidad"]);
+        if (data && data.length > 0) {
+          setValue(data[0]["especialidad"]);
         } else {
           setValue("");
         }
@@ -514,12 +514,12 @@ export function BoxesSpeficicChart() {
     async function fetchData() {
       try {
         const res = await fetch(
-          `/dashboard/general/api/use_by_specialty_and_date?specialty=${value}&date=${
+          `/api/general/use_by_specialty_and_date?specialty=${value}&date=${
             date?.toISOString().split("T")[0]
           }`
         );
         const data: any = await res.json();
-        setBusy(parseFloat(data["number"]));
+        setBusy(parseFloat(data["number"] ?? 0));
       } catch (error) {
         console.error("Error fetching data:", error);
       }

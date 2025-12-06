@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   );
   const data = await res.json();
 
-  const dataLength = Object.keys(data).length;
+  const dataLength = data ? Object.keys(data).length : 0;
   
   return NextResponse.json({dataLength});
 }

@@ -23,7 +23,12 @@ export async function GET(req: NextRequest) {
     }
   );
   const data = await res.json();
-  console.log(data);
+
+  if(!data)
+  {
+    return NextResponse.json({});
+  }
+  
   const keys = Object.keys(data);
   const values = Object.values(data);
 
@@ -36,5 +41,5 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  return NextResponse.json({ dataArr });
+  return NextResponse.json(dataArr);
 }

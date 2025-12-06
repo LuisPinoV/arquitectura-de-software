@@ -12,7 +12,7 @@ LambdaServiceRole:
           Action:
             - sts:AssumeRole
     Policies:
-      - PolicyName: CognitoAndDynamoAccess
+      - PolicyName: DynamoAccess
         PolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -29,6 +29,7 @@ LambdaServiceRole:
                 - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.agendamiento}/index/*
                 - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.preferences}
                 - arn:aws:dynamodb:us-east-1:*:table/${self:custom.tf.dynamo.value.tokens}
+
       - PolicyName: SNSPermissions
         PolicyDocument:
           Version: "2012-10-17"
@@ -36,6 +37,22 @@ LambdaServiceRole:
             - Effect: Allow
               Action:
                 - sns:publish
+              Resource:
+                - "*"
+
+      - PolicyName: EC2ENIPermissions
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+                - ec2:DescribeSecurityGroups
+                - ec2:DescribeSubnets
+                - ec2:AssignPrivateIpAddresses
+                - ec2:UnassignPrivateIpAddresses
               Resource:
                 - "*"
 
@@ -53,7 +70,24 @@ CognitoMinimumRole:
           Action:
             - sts:AssumeRole
     Policies:
-      - PolicyName: CognitoAndDynamoAccess
+      - PolicyName: CognitoAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:AdminSetUserPassword
+                - cognito-idp:AdminUpdateUserAttributes
+                - cognito-idp:AdminGetUser
+                - cognito-idp:InitiateAuth
+                - cognito-idp:AdminInitiateAuth
+                - cognito-idp:GlobalSignOut
+                - cognito-idp:GetUser
+              Resource:
+                - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
+
+      - PolicyName: DynamoAuthAccess
         PolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -69,18 +103,31 @@ CognitoMinimumRole:
                 - arn:aws:dynamodb:${self:provider.region}:*:table/UserPreferences
                 - arn:aws:dynamodb:us-east-1:*:table/UserCognitoToken
 
+      - PolicyName: SNSPermissions
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
             - Effect: Allow
               Action:
-                - cognito-idp:AdminCreateUser
-                - cognito-idp:AdminSetUserPassword
-                - cognito-idp:AdminUpdateUserAttributes
-                - cognito-idp:AdminGetUser
-                - cognito-idp:InitiateAuth
-                - cognito-idp:AdminInitiateAuth
-                - cognito-idp:GlobalSignOut
-                - cognito-idp:GetUser
+                - sns:publish
               Resource:
-                - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
+                - "*"
+
+      - PolicyName: EC2ENIPermissions
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+                - ec2:DescribeSecurityGroups
+                - ec2:DescribeSubnets
+                - ec2:AssignPrivateIpAddresses
+                - ec2:UnassignPrivateIpAddresses
+              Resource:
+                - "*"
 
 CognitoUserPool:
   Type: AWS::Cognito::UserPool
@@ -142,6 +189,7 @@ MonthlyBackupTopic:
   Properties:
     TopicName: MonthlyBackupTopic-${sls:stage}
 
+#Backup scheduler role
 SchedulerInvokeRole:
   Type: AWS::IAM::Role
   Properties:
@@ -160,3 +208,17 @@ SchedulerInvokeRole:
             - Effect: Allow
               Action: lambda:InvokeFunction
               Resource: !GetAtt MonthlyBackupLambdaFunction.Arn
+
+# EventBridge Scheduler
+ScheduledDynamoBackup:
+  Type: AWS::Scheduler::Schedule
+  Properties:
+    Name: scheduled-dynamo-backup
+    Description: "Runs monthly backup for DynamoDB tables"
+    FlexibleTimeWindow:
+      Mode: "OFF"
+    ScheduleExpression: "cron(0 0 1 * ? *)"
+    Target:
+      Arn: !GetAtt MonthlyBackupLambdaFunction.Arn
+      RoleArn: !GetAtt SchedulerInvokeRole.Arn
+      Input: '{"source":"eventbridge-scheduler"}'

@@ -18,6 +18,11 @@ export async function GET(req: NextRequest) {
   })
   const data = await res.json()
 
+  if(!data)
+  {
+    return NextResponse.json({});
+  }
+
   let total_scheduling = 0;
   for(let i = 0; i < data.length; i++)
   {
@@ -38,5 +43,5 @@ export async function GET(req: NextRequest) {
     );
   }
  
-  return NextResponse.json({ final_data })
+  return NextResponse.json(final_data);
 }

@@ -13,7 +13,6 @@ router
   .post("/auth/logout", logoutUser)
   .post("/auth/refresh", refreshUser)
   .post("/auth/createUser", createUser)
-  .get("/auth/me", getMe)
   .post("/auth/updateUser", updateUser);
 
 // Reply to preflight requests for any route handled here

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   );
   const data = await res.json();
 
-  const filtered_hours = data.map((hour:string) => hour.split(":")[0].concat(":", hour.split(":")[1]))
+  const filtered_hours = data.map((hour:string) => hour.split(":")[0].concat(":", hour.split(":")[1]));
 
   return NextResponse.json(filtered_hours);
 }

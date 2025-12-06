@@ -1,4 +1,3 @@
-// /app/api/agendamientos/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -23,7 +22,9 @@ export async function GET(request: Request) {
 
     const data = await res.json();
 
-    return NextResponse.json({ data });
+    const response = data ?? {};
+
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error("Error in /api/agendamientos:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

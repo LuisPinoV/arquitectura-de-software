@@ -1,5 +1,5 @@
-service: arquitectura-serverless
-app: arqui
+service: agendin-main
+app: agendin
 frameworkVersion: ^4.25.0
 
 plugins:
@@ -24,8 +24,8 @@ provider:
   runtime: nodejs20.x
   region: us-east-1
   environment:
-    USER_POOL_ID: !Ref CognitoUserPool
-    USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
+    USER_POOL_ID: { Ref: CognitoUserPool }
+    USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
     USER_PREFERENCES_TABLE: ${self:custom.tf.dynamo.value.preferences}
     USER_TOKEN_TABLE: ${self:custom.tf.dynamo.value.tokens}
     MONTHLY_BACKUP_BUCKET: ${self:custom.tf.s3_bucket.value.backup}
@@ -74,10 +74,10 @@ resources:
 
 functions:
   ### Simulador de base de datos
-  poblarDynamo: ${file(./config/functions/simulador.yml)}
+  poblarDynamo: ${file(./config/functions/simulador.yml):simulador}
 
   ### Cognito
-  cognitoHandler: ${file(./config/functions/cognito.yml)}
+  cognitoHandler: ${file(./config/functions/cognito.yml):cognitoHandler}
 
   ### APIS
   preferenciaUsuarioHandler: ${file(./config/functions/apis.yml):preferenciaUsuario}

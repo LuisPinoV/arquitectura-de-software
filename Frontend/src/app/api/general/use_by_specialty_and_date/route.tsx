@@ -21,6 +21,11 @@ export async function GET(req: NextRequest) {
 
   const data = await res.text();
 
+  if(!data)
+  {
+    return NextResponse.json({});
+  }
+
   const value = parseFloat(data);
   const finalValue = Number.isNaN(value) ? 0 : value;
 
