@@ -49,7 +49,7 @@ export default function NuevoEspacioPage() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
-      const res = await fetch('/dashboard/nuevo-espacio/api/create', {
+      const res = await fetch('/api/spaces/create', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),

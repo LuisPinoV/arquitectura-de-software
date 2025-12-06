@@ -72,16 +72,6 @@ export function NavMain({
                 ) : null}
               </SidebarMenuItem>
             </Collapsible>
-            {item.title === "Agendamiento" ? (
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Nuevo espacio">
-                  <a href="/dashboard/nuevo-espacio">
-                    <Plus />
-                    <span>Nuevo espacio</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ) : null}
           </div>
         ))}
       </SidebarMenu>

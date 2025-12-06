@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, House, Search, NotebookPen } from "lucide-react";
+import { BookOpen, House, Search, NotebookPen, Plus } from "lucide-react";
 
 import Image from "next/image";
 
@@ -36,6 +36,11 @@ const data = {
       icon: BookOpen,
     },
     {
+      title: "Añadir espacio",
+      url: "/dashboard/nuevo-espacio",
+      icon: Plus,
+    },
+    {
       title: "Agendamiento",
       url: "/dashboard/agendamiento",
       icon: NotebookPen,
@@ -61,6 +66,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [companyName, setCompanyName] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
   const [spaceName, setSpaceName] = React.useState<string | null>(null);
+
+  data.navMain[3].title = `Añadir ${spaceName}`;
 
   React.useEffect(() => {
     function parseJwt(token: string | null) {
