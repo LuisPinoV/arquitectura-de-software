@@ -78,7 +78,7 @@ export default function RegisterPage() {
   async function onSubmit(data: z.infer<typeof RegisterSchema>) {
     try {
       setLoadingRegister(true);
-      const res = await fetch("/login/api/createUser", {
+      const res = await fetch("/api/session/createUser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

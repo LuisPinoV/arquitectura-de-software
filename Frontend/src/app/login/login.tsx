@@ -86,7 +86,7 @@ export default function LoginPage() {
       if (!refreshToken) return;
       setLoadingLogin(true);
       try {
-        const res = await fetch(`/login/api/refresh`, {
+        const res = await fetch(`/api/session/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: refreshToken }),
@@ -117,7 +117,7 @@ export default function LoginPage() {
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
       setLoadingLogin(true);
-      const res = await fetch(`/login/api/login`, {
+      const res = await fetch(`/api/session/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

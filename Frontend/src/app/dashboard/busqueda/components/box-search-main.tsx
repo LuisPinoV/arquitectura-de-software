@@ -3,7 +3,7 @@
 import { Row, Col } from "antd";
 
 import { SearchCard } from "@/components/custom/search-card";
-import { useUserProfile } from '@/hooks/use-user';
+import { useUserProfile } from "@/hooks/use-user";
 
 import "./dropdown-boxes.css";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
 export function BoxSearchMain() {
-
   const pagesPerDisplay = {
     name: "20",
     categories: ["5", "10", "20", "25", "50", "100"],
@@ -64,7 +63,7 @@ export function BoxSearchMain() {
   }, []);
 
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Box';
+  const space = profile?.spaceName ?? "Box";
 
   useEffect(() => {
     async function fetchData() {
@@ -74,7 +73,9 @@ export function BoxSearchMain() {
         setPasillos(
           data["data"].map((especialidad: any) => especialidad["especialidad"])
         );
-        setPasillosAFiltrar(data["data"].map((especialidad: any) => especialidad["especialidad"]));
+        setPasillosAFiltrar(
+          data["data"].map((especialidad: any) => especialidad["especialidad"])
+        );
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -89,7 +90,7 @@ export function BoxSearchMain() {
     categories: pasillos,
     defaultAllSelected: false,
   };
-  
+
   let dataArr = changeableData;
 
   const [pasillosSeleccionados, setPasillosSeleccionados] = useState<
@@ -113,9 +114,10 @@ export function BoxSearchMain() {
     let toFilterData = searchData;
 
     toFilterData = toFilterData.filter((box) => {
-      const boxName = `BOX - ${box["box"]}`;
-        const boxName = `${space.toUpperCase()} - ${box["box"]}`;
-                            {`${space.toUpperCase()} - ${box}`}
+      const boxName = `${space.toUpperCase()} - ${box["box"]}`;
+      {
+        `${space.toUpperCase()} - ${box}`;
+      }
       const boxEspecialidad = box["especialidad"];
       const boxEstado = box["estado"];
       const boxOcupancia = parseFloat(box["ocupancia"]);

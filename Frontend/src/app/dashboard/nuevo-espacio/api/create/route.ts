@@ -20,12 +20,14 @@ export async function POST(request: Request) {
     };
 
     // Forward incoming Authorization header from the client (if present)
-    const incomingAuth = request.headers.get('authorization') || request.headers.get('Authorization');
+    const incomingAuth =
+      request.headers.get("authorization") ||
+      request.headers.get("Authorization");
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };
-    if (incomingAuth) headers['Authorization'] = incomingAuth;
+    if (incomingAuth) headers["Authorization"] = incomingAuth;
 
     const res = await fetch(`${apiUrl}/box`, {
       method: "POST",
@@ -37,6 +39,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ...data, ok: res.ok }, { status: res.status });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Invalid JSON", ok: false }, { status: 400 });
+    return NextResponse.json(
+      { error: e?.message || "Invalid JSON", ok: false },
+      { status: 400 }
+    );
   }
 }

@@ -38,7 +38,7 @@ export function NavMain({
       <SidebarGroupLabel>Sistema</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <>
+          <div key={item.title}>
             <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip={item.title}>
@@ -82,7 +82,7 @@ export function NavMain({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ) : null}
-          </>
+          </div>
         ))}
       </SidebarMenu>
     </SidebarGroup>

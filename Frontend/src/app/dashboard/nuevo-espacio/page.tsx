@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Row, Col } from "antd";
 
-import '../nuevo_espacio/nuevo_espacio.css';
+import './nuevo_espacio.css';
 
 const NuevoEspacioSchema = z.object({
   spaceName: z.string().min(1, "El nombre del espacio es requerido"),
@@ -49,7 +49,7 @@ export default function NuevoEspacioPage() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
-      const res = await fetch('/dashboard/nuevo_espacio/api/create', {
+      const res = await fetch('/dashboard/nuevo-espacio/api/create', {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
