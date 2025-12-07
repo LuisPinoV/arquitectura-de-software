@@ -23,7 +23,6 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/apiClient";
 
 import "../login/styles/loginPage.css";
 
@@ -51,8 +50,8 @@ export default function RegisterPage() {
 
   async function onSubmit(data: z.infer<typeof RegisterSchema>) {
     try {
-      setLoadingRegister(true);
-      const res = await apiFetch("/api/session/createUser", {
+
+      const res = await fetch("/login/api/createUser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

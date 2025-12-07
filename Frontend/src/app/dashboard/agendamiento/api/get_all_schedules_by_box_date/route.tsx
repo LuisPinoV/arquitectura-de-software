@@ -22,23 +22,18 @@ export async function GET(req: NextRequest) {
   }
 
   const apiUrl = process.env.BACKEND_ADDRESS;
-  const incomingToken = req.headers.get("authorization") || "";
 
-  const finalDate = date ? date : today;
-
-  const resSchedules = await fetch(`${apiUrl}/agendamiento/fecha/${finalDate}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": incomingToken,   // <-- Forward it to backend
-    },
-  });
-
-  if (!resSchedules.ok) {
-    return NextResponse.json({ error: "Couldn't get Schedules" }, { status: resSchedules.status });
-  }
-
+  const resSchedules = await fetch(
+    `${apiUrl}/agendamientosFecha/${date}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
   const dataSchedules = await resSchedules.json();
-  const dataSchedulesArr = Array.isArray(dataSchedules) ? dataSchedules : Object.values(dataSchedules || {});
+
+  const dataSchedulesArr = Object.values(dataSchedules);
 
   const dataBox: any = dataSchedulesArr.filter((data: any) => {
     const id = parseInt(data["idbox"]);
@@ -85,6 +80,8 @@ export async function GET(req: NextRequest) {
       return curSchedule;
     }
   });
+  const finalDate = date ? date : today;
+
   const finalData: Box = {
     idBox: parseInt(box),
     schedules: { [finalDate]: scheduleData },
