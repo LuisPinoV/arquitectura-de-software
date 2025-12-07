@@ -47,6 +47,7 @@ import {
   getCurrentWeekRange,
   getCurrentYearRange,
 } from "@/utils/get_current_dates";
+import { useUserProfile } from "@/hooks/use-user";
 
 export function ChartBoxAcrossTime({
   idbox,
@@ -67,6 +68,9 @@ export function ChartBoxAcrossTime({
   } satisfies ChartConfig;
 
   const isMobile = useIsMobile();
+
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? "Box";
 
   const [chartData, setData] = useState<any[]>(dataArr ?? []);
   const [dateRangeType, setDateRangeType] = useState("semanal");
@@ -124,7 +128,7 @@ export function ChartBoxAcrossTime({
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Uso de box a través del tiempo</CardTitle>
+        <CardTitle>Uso de {space} a través del tiempo</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">Total en el tiempo</span>
         </CardDescription>
@@ -262,10 +266,13 @@ export function BoxSchedule({ idbox }: { idbox: string }) {
       .then((data) => setChartData(data));
   }, [idbox]);
 
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? "Box";
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Agendamiento de Box en el año</CardTitle>
+        <CardTitle>Agendamiento de {space} en el año</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer

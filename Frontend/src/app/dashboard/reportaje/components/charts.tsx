@@ -68,10 +68,13 @@ export function ChartChangeByMonths() {
     },
   } satisfies ChartConfig;
 
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? "Box";
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cambio en el uso de boxes</CardTitle>
+        <CardTitle>Cambio en el uso de {space}</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent>
@@ -99,7 +102,7 @@ export function ChartChangeByMonths() {
       </CardContent>
       <CardFooter>
         <div className="text-muted-foreground leading-none">
-          Como cambió el uso de boxes a través del tiempo
+          Como cambió el uso de {space} a través del tiempo
         </div>
       </CardFooter>
     </Card>
@@ -108,38 +111,39 @@ export function ChartChangeByMonths() {
 
 export function ChartInfoCards() {
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Boxes';
+  const space = profile?.spaceName ?? 'espacio';
 
   const [infoCardsData, setInfoCardsData] = useState<any>([
     {
-      Nombre: "Uso de boxes",
+      Nombre: `Uso de ${space}`,
       Descripcion: "Cantidad",
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: "Uso de boxes",
+      Nombre: `Uso de ${space}`,
       Descripcion: "Cantidad",
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: "Uso de boxes",
+      Nombre: `Uso de ${space}`,
       Descripcion: "Cantidad",
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: "Uso de boxes",
+      Nombre: `Uso de ${space}`,
       Descripcion: "Cantidad",
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
   ]);
+  
 
   useEffect(() => {
     async function fetchData() {
@@ -236,7 +240,7 @@ export function ChartInfoCards() {
   return (
     <Card className="p-0 m-2 mb-4">
       <CardHeader className="mt-2 text-lg items-center text-center">
-        <CardTitle>Información sobre el uso de boxes</CardTitle>
+        <CardTitle>Información sobre el uso de {space}</CardTitle>
       </CardHeader>
       <Row justify={"center"} align="middle">
         {infoCardsData.map((data: any, i: number) => (
@@ -416,11 +420,13 @@ export function ChartBoxesAcrossTime() {
       libre: libre,
     };
   });
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? "espacio";
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Uso de boxes a través del tiempo</CardTitle>
+        <CardTitle>Uso de {space} a través del tiempo</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">Total en el tiempo</span>
         </CardDescription>

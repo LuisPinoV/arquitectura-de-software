@@ -218,15 +218,31 @@ export default function MainBoxSpecific({ box }: { box: any }) {
             </Col>
           </Row>
         </Col>
-        <Col xs={22}>
+        <Col xs={18} lg={18} style={{
+            margin: "10px 0px 10px 10px",
+          }}>
           <Card>
             <CardHeader className="mx-2">
               <div className="text-muted-foreground leading-none">
-                Tabla agendamiento de box
+                Tabla agendamiento de {space}
               </div>
             </CardHeader>
             <CardContent>
               <ScheduleTable box={box} />
+            </CardContent>
+          </Card>
+        </Col>
+        <Col xs={4} lg={4} style={{
+            margin: "10px 0px 10px 10px",
+          }}>
+          <Card>
+            <CardHeader>
+              <div>
+                Inventario {space} - {box}
+              </div>
+            </CardHeader>
+            <CardContent>
+              *Aca va el contenido*
             </CardContent>
           </Card>
         </Col>

@@ -1,3 +1,4 @@
+"use client";
 import { Col, Row } from "antd";
 import {
   ChartBoxesAcrossTime,
@@ -5,12 +6,15 @@ import {
 } from "./components/charts";
 import { Card, CardContent, CardHeader, } from "@/components/ui/card";
 import { BoxesDataTable } from "./components/table-boxes";
+import { useUserProfile } from "@/hooks/use-user";
 
 export default function Page() {
+  const profile = useUserProfile() as any;
+  const space = profile?.spaceName ?? "Box";
   return (
     <div className="boxes-dashboard-container">
       <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
-        Reporte Boxes
+        Reporte {space}
       </h1>
       <Row justify={"center"} align={"middle"}>
         <Col xs={24} lg = {24}>
@@ -23,7 +27,7 @@ export default function Page() {
           <Card>
             <CardHeader>
               <div className="text-muted-foreground leading-none">
-                Tabla de boxes
+                Tabla de {space}
               </div>
             </CardHeader>
             <CardContent>
