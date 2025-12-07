@@ -3,6 +3,8 @@
 import { Row, Col } from "antd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartBoxAcrossTime, BoxSchedule } from "./charts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { QRBox } from "./QR";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +15,8 @@ import { useRouter } from "next/navigation";
 export default function MainBoxSpecific({ box }: { box: any }) {
   const router = useRouter();
   const [boxCurrentData, setBoxCurrentData] = useState<any>();
+
+
   useEffect(() => {
     async function fetchDataTodayBox() {
       try {
@@ -114,6 +118,25 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                 >
                   <Button style={{ margin: "0px 5px" }} onClick={() => router.push(`/dashboard/agendamiento/peticiones/${box}`)}>Peticiones</Button>
                   <Button style={{ margin: "5px 5px" }} onClick={() => router.push(`/dashboard/agendamiento/${box}`)}>Agendar</Button>
+                  
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button style={{ margin: "5px 5px" }}>
+                        Agendamiento QR
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="flex flex-col items-center">
+                      <DialogHeader>
+                        <DialogTitle>Código QR del Box {box}</DialogTitle>
+                      </DialogHeader>
+
+                      <div className="mt-4 flex justify-center">
+                        <QRBox idbox={box} idPaciente="1" userId="1" />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
                 </CardContent>
               </Card>
             </Col>
