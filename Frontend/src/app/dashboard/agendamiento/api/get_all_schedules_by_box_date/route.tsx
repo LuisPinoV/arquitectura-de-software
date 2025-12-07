@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiFetch } from "@/lib/apiClient";
 
 type Schedule = {
   time: string;
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   const finalDate = date ? date : today;
 
-  const resSchedules = await fetch(`${apiUrl}/agendamiento/fecha/${finalDate}`, {
+  const resSchedules = await apiFetch(`${apiUrl}/agendamiento/fecha/${finalDate}`, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": incomingToken,   // <-- Forward it to backend

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
   const box = req.nextUrl.searchParams.get("idBox") || "0";
@@ -11,7 +12,7 @@ export async function GET(req: NextRequest) {
   const apiUrl = process.env.BACKEND_ADDRESS;
   const incomingToken = req.headers.get("authorization") ?? "";
 
-  const res = await fetch(
+  const res = await apiFetch(
     `${apiUrl}/box/uso/${box}/${todayDateISO}/${todayTimeISO}`,
     {
       headers: {
