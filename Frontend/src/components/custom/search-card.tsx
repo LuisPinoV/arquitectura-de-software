@@ -75,13 +75,13 @@ export function SearchCard({ data }: any) {
   };
 
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Box';
+  const space = profile?.spaceName ?? 'Espacio';
 
   return (
     <Card className="search-card" style={{ marginTop: "20px" }}>
       <CardHeader>
         <CardTitle className="text-center font-bold search-card-title">
-          {`${space} - ${data.idBox}`}
+          {`${space} - ${data.idBox ?? "N/A"}`}
         </CardTitle>
       </CardHeader>
       <CardContent
