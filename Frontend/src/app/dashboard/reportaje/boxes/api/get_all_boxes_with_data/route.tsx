@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 import { Box } from "../../components/table-boxes";
 
 export async function GET(req: NextRequest) {
@@ -11,7 +10,7 @@ export async function GET(req: NextRequest) {
     const apiUrl = process.env.BACKEND_ADDRESS;
     const incomingToken = req.headers.get("authorization") ?? "";
 
-  const resAll = await apiFetch(
+  const resAll = await fetch(
     `${apiUrl}/box`,
     {
       headers: {
@@ -29,7 +28,7 @@ export async function GET(req: NextRequest) {
   for(let i = 0; i < dataAll.length; i++)
   {
     const boxId = dataAll[i]["idBox"] ?? dataAll[i]["idbox"] ?? dataAll[i]["id"];
-    const resPerBox = await apiFetch(
+    const resPerBox = await fetch(
       `${apiUrl}/box/uso/${boxId}/${todayDateISO}/${todayTimeISO}`,
       {
         headers: {

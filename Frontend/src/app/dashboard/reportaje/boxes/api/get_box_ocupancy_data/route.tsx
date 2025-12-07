@@ -1,5 +1,4 @@
 import { NextResponse, NextRequest } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
   const idbox = req.nextUrl.searchParams.get("idBox") || "0";
@@ -18,7 +17,7 @@ export async function GET(req: NextRequest) {
       const fecha = `${year}-${String(month).padStart(2, "0")}-01`;
 
       try {
-        const res = await apiFetch(
+        const res = await fetch(
           `${apiUrl}/box/uso/${idbox}/${fecha}/08:00`,
           { cache: "no-store", headers: { "Content-Type": "application/json", "Authorization": incomingToken,   // <-- Forward it to backend
           } }

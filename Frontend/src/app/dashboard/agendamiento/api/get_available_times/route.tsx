@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
   const date : string | null = req.nextUrl.searchParams.get("date");
@@ -11,7 +10,7 @@ export async function GET(req: NextRequest) {
   // Fetch agendamientos for the box and compute free slots client-side.
   const incomingToken = req.headers.get("authorization") ?? "";
 
-  const res = await apiFetch(`${apiUrl}/agendamiento/box/${box}`, {
+  const res = await fetch(`${apiUrl}/agendamiento/box/${box}`, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": incomingToken,   // <-- Forward it to backend

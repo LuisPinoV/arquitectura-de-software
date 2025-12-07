@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function POST(request: Request) {
   try {
@@ -8,7 +7,7 @@ export async function POST(request: Request) {
     const apiUrl = process.env.BACKEND_ADDRESS;
     const incomingToken = request.headers.get("authorization") ?? "";
 
-    const res = await apiFetch(`${apiUrl}/auth/refresh`, {
+    const res = await fetch(`${apiUrl}/auth/refresh`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {

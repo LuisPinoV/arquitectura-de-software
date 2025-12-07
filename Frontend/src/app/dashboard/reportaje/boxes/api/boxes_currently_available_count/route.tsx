@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
   const today = new Date();
@@ -10,7 +9,7 @@ export async function GET(req: NextRequest) {
   const incomingToken = req.headers.get("authorization") ?? "";
 
   // Fallback: determine free boxes by querying each box usage at current time
-  const resAll = await apiFetch(`${apiUrl}/box`, {
+  const resAll = await fetch(`${apiUrl}/box`, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": incomingToken,   // <-- Forward it to backend
@@ -24,7 +23,7 @@ export async function GET(req: NextRequest) {
   for (const b of dataAll) {
     const boxId = b["idBox"] ?? b["idbox"] ?? b["id"];
       try {
-      const r = await apiFetch(`${apiUrl}/box/uso/${boxId}/${date}/${time}`, {
+      const r = await fetch(`${apiUrl}/box/uso/${boxId}/${date}/${time}`, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": incomingToken,   // <-- Forward it to backend

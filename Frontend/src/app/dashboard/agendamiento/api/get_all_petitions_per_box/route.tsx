@@ -1,6 +1,5 @@
 // /app/api/agendamientos/route.ts
 import { NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(request: Request) {
   try {
@@ -16,7 +15,7 @@ export async function GET(request: Request) {
 
     const incomingToken = request.headers.get("authorization") ?? "";
 
-    const res = await apiFetch(`${apiUrl}/agendamiento/box/${idBox}`, {
+    const res = await fetch(`${apiUrl}/agendamiento/box/${idBox}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

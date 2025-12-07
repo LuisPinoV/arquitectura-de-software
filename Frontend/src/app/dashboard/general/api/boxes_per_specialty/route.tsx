@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
 
@@ -13,7 +12,7 @@ export async function GET(req: NextRequest) {
   const apiUrl = process.env.BACKEND_ADDRESS;
   const incomingToken = req.headers.get("authorization") ?? "";
 
-  const res = await apiFetch(`${apiUrl}/agendamiento/estadisticas/especialidad/conteo-rango/${firstDate}/${lastDate}`, {
+  const res = await fetch(`${apiUrl}/agendamiento/estadisticas/especialidad/conteo-rango/${firstDate}/${lastDate}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': incomingToken,   // <-- Forward it to backend

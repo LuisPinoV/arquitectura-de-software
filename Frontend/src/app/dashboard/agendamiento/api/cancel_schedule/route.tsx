@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
   const idAgendamiento : string | null = req.nextUrl.searchParams.get("id") || "-1";
@@ -8,7 +7,7 @@ export async function GET(req: NextRequest) {
 
   const incomingToken = req.headers.get("authorization") ?? "";
 
-  const res = await apiFetch(`${apiUrl}/agendamiento/${idAgendamiento}`, {
+  const res = await fetch(`${apiUrl}/agendamiento/${idAgendamiento}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",

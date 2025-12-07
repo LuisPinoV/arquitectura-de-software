@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function POST(request: Request) {
   try {
@@ -9,7 +8,7 @@ export async function POST(request: Request) {
 
     const incomingToken = request.headers.get("authorization") ?? "";
 
-    const res = await apiFetch(`${apiUrl}/auth/createUser`, {
+    const res = await fetch(`${apiUrl}/auth/createUser`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {

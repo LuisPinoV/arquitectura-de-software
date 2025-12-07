@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
   const today = new Date();
@@ -25,7 +24,7 @@ export async function GET(req: NextRequest) {
   // Backend expects POST /agendamiento with JSON body
   const incomingToken = req.headers.get("authorization") ?? "";
 
-  const res = await apiFetch(`${apiUrl}/agendamiento`, {
+  const res = await fetch(`${apiUrl}/agendamiento`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

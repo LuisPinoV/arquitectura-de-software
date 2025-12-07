@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { apiFetch } from "@/lib/apiClient";
 
 export async function GET(req: NextRequest) {
 
   const apiUrl = process.env.BACKEND_ADDRESS;
   console.log(apiUrl);
 
-  const res = await apiFetch(
+  const res = await fetch(
     `${apiUrl}/box`,
     {
       headers: {
