@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/apiClient";
 import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 
 export default function LoginPage() {
@@ -68,7 +67,7 @@ export default function LoginPage() {
       if (!refreshToken) return;
 
       try {
-        const res = await apiFetch(`/api/session/refresh`, {
+        const res = await fetch(`/login/api/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: refreshToken }),
@@ -95,8 +94,8 @@ export default function LoginPage() {
 
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
-      setLoadingLogin(true);
-      const res = await apiFetch(`/api/session/login`, {
+
+      const res = await fetch(`/login/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

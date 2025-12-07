@@ -20,7 +20,6 @@ import {
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUserProfile } from '@/hooks/use-user';
-import { apiFetch } from "@/lib/apiClient";
 import {
   Card,
   CardAction,
@@ -154,13 +153,13 @@ export function ChartInfoCards() {
       const tomorrowISO = tomorrow.toISOString().split("T")[0];
 
       try {
-        const resBoxes = await apiFetch(
+        const resBoxes = await fetch(
           `/dashboard/reportaje/boxes/api/get_all_boxes_count`
         );
         const countBoxes: any = await resBoxes.json();
         const boxes: any = countBoxes["dataLength"];
 
-        const res1 = await apiFetch(
+        const res1 = await fetch(
           `/dashboard/general/api/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
         );
         const data1: any = await res1.json();
@@ -173,7 +172,7 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const res2 = await apiFetch(
+        const res2 = await fetch(
           `/dashboard/reportaje/boxes/api/get_all_scheduling_today_count`
         );
         const data2: any = await res2.json();
@@ -186,7 +185,7 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const res3 = await apiFetch(
+        const res3 = await fetch(
           `/dashboard/reportaje/boxes/api/get_all_pending_schedules`
         );
 
@@ -200,7 +199,7 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const res4 = await apiFetch(
+        const res4 = await fetch(
           `/dashboard/reportaje/boxes/api/boxes_currently_available_count`
         );
 
@@ -393,7 +392,7 @@ export function ChartBoxesAcrossTime() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await apiFetch(
+        const res = await fetch(
           `/dashboard/general/api/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
         const data: any = await res.json();

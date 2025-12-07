@@ -31,7 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { apiFetch } from "@/lib/apiClient";
 
 export type Schedule = {
   idAgendamiento: number;
@@ -106,7 +105,7 @@ export function ScheduleTable({ box }: { box: any }) {
   React.useEffect(() => {
     async function GetScheduleData() {
       try {
-        const res = await apiFetch(
+        const res = await fetch(
           `/dashboard/reportaje/boxes/api/get_data_schedules_box?idBox=${box}`
         );
         const data = await res.json();

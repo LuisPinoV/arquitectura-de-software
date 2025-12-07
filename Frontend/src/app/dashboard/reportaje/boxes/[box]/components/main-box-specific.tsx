@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { useUserProfile } from '@/hooks/use-user';
-import { apiFetch } from "@/lib/apiClient";
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
 
@@ -17,7 +16,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   useEffect(() => {
     async function fetchDataTodayBox() {
       try {
-        const res = await apiFetch(
+        const res = await fetch(
           `/dashboard/reportaje/boxes/api/get_data_today_box?idBox=${box}`
         );
         const data: any = await res.json();

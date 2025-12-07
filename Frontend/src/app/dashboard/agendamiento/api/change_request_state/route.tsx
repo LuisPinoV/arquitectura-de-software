@@ -13,15 +13,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Missing idBox or fecha" }, { status: 400 });
     }
 
-    const incomingToken = request.headers.get("authorization") ?? "";
-
-    const res = await fetch(`${apiUrl}/agendamiento/estado/${idAgendamiento}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": incomingToken,   // <-- Forward it to backend
-      },
-      body: JSON.stringify({ estado: state }),
+    const res = await fetch(`${apiUrl}/updateEstado/${idAgendamiento}/${state}`, {
+      method: "GET",
     });
 
     if (!res.ok) {

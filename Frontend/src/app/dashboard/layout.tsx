@@ -5,7 +5,6 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/shadcn-provider";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/apiClient";
 
 import "./layoutDashboard.css";
 import { useEffect } from "react";
@@ -18,7 +17,7 @@ export default function DashboardLayout({
   useEffect(() => {
     async function RefreshSession(refreshToken: string) {
       try {
-        const res = await apiFetch(`/api/session/refresh`, {
+        const res = await fetch(`/login/api/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken }),
