@@ -29,8 +29,8 @@ export function QRBox({
   const url = `https://p547c5u13d.execute-api.us-east-1.amazonaws.com/agendamiento/?${query.toString()}`;
 
   return (
-    <div>
+    <>
       {idbox && <QRCode value={url} size={256} />}
-    </div>
+    </>
   );
 }
