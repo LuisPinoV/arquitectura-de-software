@@ -3,19 +3,24 @@
 import { Row, Col } from "antd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartBoxAcrossTime, BoxSchedule } from "./charts";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { QRBox } from "./QR";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
-import { useUserProfile } from '@/hooks/use-user';
+import { useUserProfile } from "@/hooks/use-user";
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
 
 export default function MainBoxSpecific({ box }: { box: any }) {
   const router = useRouter();
   const [boxCurrentData, setBoxCurrentData] = useState<any>();
-
 
   useEffect(() => {
     async function fetchDataTodayBox() {
@@ -33,7 +38,6 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   }, []);
   let nextTime = "--:--";
   if (boxCurrentData) {
-
     if (boxCurrentData["proximoBloque"]) {
       nextTime = `${boxCurrentData["proximoBloque"].split(":")[0]}:${
         boxCurrentData["proximoBloque"].split(":")[1]
@@ -41,7 +45,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
     }
   }
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Box';
+  const space = profile?.spaceName ?? "Box";
 
   return (
     <div>
@@ -78,8 +82,8 @@ export default function MainBoxSpecific({ box }: { box: any }) {
         >
           <Row justify={"center"} align={"middle"}>
             <Col xs={24}>
-              <Card className="h-[205px]">
-                <CardHeader className="mt-2 text-lg items-center text-center">
+              <Card className="h-[160px]">
+                <CardHeader className="mt-1 text-lg items-center text-center">
                   <CardTitle>Siguiente Hora</CardTitle>
                 </CardHeader>
                 <Separator />
@@ -104,7 +108,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
               </Card>
             </Col>
             <Col xs={24} style={{ marginTop: "10px" }}>
-              <Card className="h-[205px]">
+              <Card className="h-[250px]">
                 <CardHeader className="mt-2 text-lg items-center text-center">
                   <CardTitle>Opciones</CardTitle>
                 </CardHeader>
@@ -116,19 +120,32 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                     flexDirection: "column",
                   }}
                 >
-                  <Button style={{ margin: "0px 5px" }} onClick={() => router.push(`/dashboard/agendamiento/peticiones/${box}`)}>Peticiones</Button>
-                  <Button style={{ margin: "5px 5px" }} onClick={() => router.push(`/dashboard/agendamiento/${box}`)}>Agendar</Button>
-                  
+                  <Button
+                    style={{ margin: "0px 5px" }}
+                    onClick={() =>
+                      router.push(`/dashboard/agendamiento/peticiones/${box}`)
+                    }
+                  >
+                    Peticiones
+                  </Button>
+                  <Button
+                    style={{ margin: "5px 5px" }}
+                    onClick={() =>
+                      router.push(`/dashboard/agendamiento/${box}`)
+                    }
+                  >
+                    Agendar
+                  </Button>
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button style={{ margin: "5px 5px" }}>
+                    <DialogTrigger asChild style={{ margin: "5px 5px" }}>
+                      <Button>
                         Agendamiento QR
                       </Button>
                     </DialogTrigger>
 
                     <DialogContent className="flex flex-col items-center">
                       <DialogHeader>
-                        <DialogTitle>Código QR del Box {box}</DialogTitle>
+                        <DialogTitle>QR - Box {box}</DialogTitle>
                       </DialogHeader>
 
                       <div className="mt-4 flex justify-center">
@@ -136,7 +153,6 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                       </div>
                     </DialogContent>
                   </Dialog>
-
                 </CardContent>
               </Card>
             </Col>
