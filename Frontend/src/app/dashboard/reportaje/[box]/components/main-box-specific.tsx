@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { QRBox } from "./QR";
 import { useRef } from "react";
+import { TablaInventario } from "./inventario";
+
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
@@ -200,7 +202,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
                     <DialogContent className="flex flex-col items-center">
                       <DialogHeader>
-                        <DialogTitle>Código QR del Box {box}</DialogTitle>
+                        <DialogTitle>Código QR del {space} {box}</DialogTitle>
                       </DialogHeader>
 
                       <div className="mt-4 flex justify-center">
@@ -240,9 +242,27 @@ export default function MainBoxSpecific({ box }: { box: any }) {
               <div>
                 Inventario {space} - {box}
               </div>
+              <Dialog>
+                <DialogTrigger asChild style={{ margin: "5px 5px" }} >
+                  <Button>
+                    Editar
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className="flex flex-col items-center" >
+                  <DialogHeader>
+                    <DialogTitle>Editar inventario del {space} {box} </DialogTitle>
+                  </DialogHeader>
+        
+                  <div>
+                    *Aca van los items del inventario*
+                  </div>
+
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
-              *Aca va el contenido*
+              <TablaInventario />
             </CardContent>
           </Card>
         </Col>
