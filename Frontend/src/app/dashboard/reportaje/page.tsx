@@ -10,7 +10,7 @@ import { useUserProfile } from "@/hooks/use-user";
 
 export default function Page() {
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  const space = profile?.spaceName ?? "Espacio";
   return (
     <div className="boxes-dashboard-container">
       <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
