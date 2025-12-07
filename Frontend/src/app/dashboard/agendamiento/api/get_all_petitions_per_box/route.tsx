@@ -13,17 +13,27 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Missing idBox or fecha" }, { status: 400 });
     }
 
-    const res = await fetch(`${apiUrl}/agendamientosPendientesBox/${idBox}/${fecha}`, {
+    const incomingToken = request.headers.get("authorization") ?? "";
+
+    const res = await fetch(`${apiUrl}/agendamiento/box/${idBox}`, {
       method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": incomingToken,   // <-- Forward it to backend
+      },
+    });
+    if (!res.ok) throw new Error(`Backend error: ${res.statusText}`);
+    const all = await res.json();
+
+    // filter by date and pending state
+    const filtered = (all || []).filter((a: any) => {
+      const sameDate = (a.fecha || a["fecha"]) === fecha;
+      const estado = a.estado || a["estado"] || null;
+      const pending = !estado || (estado !== "Completada" && estado !== "Cancelada");
+      return sameDate && pending;
     });
 
-    if (!res.ok) {
-      throw new Error(`Backend error: ${res.statusText}`);
-    }
-
-    const data = await res.json();
-
-    return NextResponse.json({ data });
+    return NextResponse.json(filtered);
   } catch (error: any) {
     console.error("Error in /api/agendamientos:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

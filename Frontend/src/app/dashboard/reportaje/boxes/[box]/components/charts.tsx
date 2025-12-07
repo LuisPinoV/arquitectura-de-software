@@ -17,6 +17,7 @@ import {
 } from "recharts";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { apiFetch } from "@/lib/apiClient";
 import {
   Card,
   CardAction,
@@ -96,7 +97,7 @@ export function ChartBoxAcrossTime({
 
     async function fetchData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_box_ocupancy_data_by_date?idBox=${idbox}&startDate=${firstDateISO}&endDate=${lastDateISO}`
         );
         const data: any = await res.json();
@@ -257,9 +258,16 @@ export function BoxSchedule({ idbox }: { idbox: string }) {
   >([]);
 
   useEffect(() => {
-    fetch(`/dashboard/reportaje/boxes/api/get_box_ocupancy_data?idBox=${idbox}`)
-      .then((res) => res.json())
-      .then((data) => setChartData(data));
+    async function loadBoxData() {
+      try {
+        const res = await apiFetch(`/dashboard/reportaje/boxes/api/get_box_ocupancy_data?idBox=${idbox}`);
+        const data = await res.json();
+        setChartData(data);
+      } catch (err) {
+        console.error("Error fetching box occupancy data:", err);
+      }
+    }
+    loadBoxData();
   }, [idbox]);
 
   return (

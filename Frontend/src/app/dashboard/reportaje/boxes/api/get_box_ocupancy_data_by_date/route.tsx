@@ -23,13 +23,20 @@ export async function GET(req: Request) {
   }
 
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
   // fetch data for each date from your NestJS backend
   const results = await Promise.all(
     dates.map(async (date) => {
-      const res = await fetch(
-        `${apiUrl}/usoBox/${idBox}/${date}/08:00:00`
-      );
+        const res = await fetch(
+          `${apiUrl}/box/uso/${idBox}/${date}/08:00`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": incomingToken,   // <-- Forward it to backend
+            },
+          }
+        );
       const data = await res.json();
       return {
         date,

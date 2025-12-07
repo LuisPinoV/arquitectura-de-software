@@ -5,12 +5,14 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const apiUrl = process.env.BACKEND_ADDRESS;
+    const incomingToken = request.headers.get("authorization") ?? "";
 
     const res = await fetch(`${apiUrl}/auth/refresh`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
+        "Authorization": incomingToken,   // <-- Forward it to backend
       },
     });
 

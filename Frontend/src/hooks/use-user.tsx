@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react";
+import { apiFetch } from "@/lib/apiClient";
 
 export function useUserProfile() {
   const [profile, setProfile] = React.useState({ name: null, companyName: null, spaceName: null });
@@ -23,8 +24,8 @@ export function useUserProfile() {
       try {
         const browserUrl = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL) || null;
         const url = browserUrl || process.env.NEXT_PUBLIC_AUTH_USER_URL || 'https://1u3djkukn3.execute-api.us-east-1.amazonaws.com/auth/me';
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
-        if (!res.ok) return null;
+        const res = await apiFetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+        if (!res || !res.ok) return null;
         const data = await res.json();
         // data is GetUser response; map attributes
         const attrs = data.UserAttributes ?? [];

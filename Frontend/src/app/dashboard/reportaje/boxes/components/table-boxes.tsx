@@ -39,6 +39,7 @@ export type Box = {
 };
 
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/apiClient";
 
 /*
 const data: Box[] = [
@@ -154,7 +155,7 @@ export function BoxesDataTable() {
   React.useEffect(() => {
     async function GetAllBoxesData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_all_boxes_with_data`
         );
         const data = await res.json();

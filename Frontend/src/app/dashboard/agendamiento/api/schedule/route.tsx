@@ -16,20 +16,22 @@ export async function GET(req: NextRequest) {
   const endDateTime = new Date(startDateTime);
   endDateTime.setMinutes(endDateTime.getMinutes() + 30);
 
-  const startTime = startDateTime.toISOString().split("T")[1];
-  const endTime = endDateTime.toISOString().split("T")[1];
+  const startTime = startDateTime.toISOString().split("T")[1].split(".")[0].slice(0,5);
+  const endTime = endDateTime.toISOString().split("T")[1].split(".")[0].slice(0,5);
 
   const apiUrl = process.env.BACKEND_ADDRESS;
 
+  // Backend expects POST /agendamiento with JSON body
+  const incomingToken = req.headers.get("authorization") ?? "";
 
-  const res = await fetch(
-    `${apiUrl}/tomah/posteoPersonalizado/${box}/${funcionario}/${paciente}/${date}/${startTime}/${endTime}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  const res = await fetch(`${apiUrl}/agendamiento`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": incomingToken,   // <-- Forward it to backend
+    },
+    body: JSON.stringify({ idBox: box, idFuncionario: funcionario, idPaciente: paciente, fecha: date, horaEntrada: startTime, horaSalida: endTime }),
+  });
   const data = await res.json();
 
   return NextResponse.json({ data });

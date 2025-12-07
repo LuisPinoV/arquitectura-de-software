@@ -3,43 +3,32 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
 
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
-  const resAll = await fetch(`${apiUrl}/agendamiento/`, {
+  const resAll = await fetch(`${apiUrl}/agendamiento`, {
     headers: {
       "Content-Type": "application/json",
+      "Authorization": incomingToken,   // <-- Forward it to backend
     },
   });
 
-  const resPending = await fetch(
-    `${apiUrl}/agendamientosPorConfirmar/`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
   const dataAll = await resAll.json();
-  const dataPending = await resPending.json();
 
   const today = new Date();
 
   const dataAllLater = dataAll.filter((data: any) => {
     const dataDate = new Date(data["fecha"]);
-    if (dataDate >= today) {
-      return data;
-    }
+    return dataDate >= today;
   });
 
-  const dataPendingLater = dataPending.filter((data: any) => {
-    const dataDate = new Date(data["fecha"]);
-    if (dataDate >= today) {
-      return data;
-    }
+  // Consider pending as any agendamiento that is not completed or canceled
+  const pending = dataAllLater.filter((data: any) => {
+    const estado = data["estado"] || data["Estado"] || null;
+    return !estado || (estado !== "Completada" && estado !== "Cancelada");
   });
 
   return NextResponse.json({
     allCount: dataAllLater.length,
-    pendingCount: dataPendingLater.length,
+    pendingCount: pending.length,
   });
 }

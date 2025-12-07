@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   // Prepare one request per month
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
   // ⚡ Call your NestJS backend for each month/day
   const results = await Promise.all(
     months.map(async (month) => {
@@ -17,8 +18,9 @@ export async function GET(req: NextRequest) {
 
       try {
         const res = await fetch(
-          `${apiUrl}/usoBox/${idbox}/${fecha}/08:00`, // 🔹 adapt to your NestJS route
-          { cache: "no-store" }
+          `${apiUrl}/box/uso/${idbox}/${fecha}/08:00`,
+          { cache: "no-store", headers: { "Content-Type": "application/json", "Authorization": incomingToken,   // <-- Forward it to backend
+          } }
         );
 
         if (!res.ok) throw new Error(`NestJS returned ${res.status}`);
