@@ -24,6 +24,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { apiFetch } from "@/lib/apiClient";
 
 export function BoxSearchMain() {
   const pagesPerDisplay = {
@@ -48,12 +49,13 @@ export function BoxSearchMain() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(
-          `/dashboard/busqueda_general/api/get_all_boxes`
+        const res = await apiFetch(
+          `/api/scheduling/get_boxes`
         );
-        const data: any = await res.json();
-        setSearchData(data["dataArr"]);
-        setChangeableData(data["dataArr"]);
+        const data: any = await res?.json();
+
+        setSearchData(data);
+        setChangeableData(data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -85,8 +87,8 @@ export function BoxSearchMain() {
   }, []);
 
   const filter_specialties = {
-    name: "Pasillo",
-    desc: "Elija pasillo de box...",
+    name: "Tipo",
+    desc: `Elija tipo de ${space}...`,
     categories: pasillos,
     defaultAllSelected: false,
   };
@@ -114,12 +116,12 @@ export function BoxSearchMain() {
     let toFilterData = searchData;
 
     toFilterData = toFilterData.filter((box) => {
-      const boxName = `${space.toUpperCase()} - ${box["box"]}`;
+      const boxName = `${space.toUpperCase()} - ${box["idBox"]}`;
       {
         `${space.toUpperCase()} - ${box}`;
       }
       const boxEspecialidad = box["especialidad"];
-      const boxEstado = box["estado"];
+      const boxEstado = box["disponible"];
       const boxOcupancia = parseFloat(box["ocupancia"]);
 
       if (

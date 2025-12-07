@@ -1,5 +1,3 @@
-import { useRouter } from "next/navigation";
-
 let isRefreshing = false;
 let refreshQueue: ((token: string) => void)[] = [];
 
@@ -55,8 +53,6 @@ async function refreshTokens() {
 
 export async function apiFetch(url: string, options: any = {}) {
 
-  const router = useRouter();
-
   const attempt = (token: string | null) =>
     fetch(url, {
       ...options,
@@ -77,7 +73,7 @@ export async function apiFetch(url: string, options: any = {}) {
     } catch (err) {
       console.error("Refresh failed → redirect to login");
       localStorage.clear();
-      router.replace("/")
+      window.location.href = "/";
       return;
     }
   }
