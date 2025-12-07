@@ -1,0 +1,28 @@
+monthlyBackup:
+  handler: src/handlers/backup/backup.getDataForBackup
+  role: LambdaServiceRole
+  environment:
+    MONTHLY_BACKUP_TOPIC_SNS_ARN:
+      Ref: MonthlyBackupTopic
+
+saveDataToS3:
+  handler: src/handlers/backup/backup.saveDataToS3
+  role: LambdaServiceRole
+  events:
+    - sns:
+        topicName: MonthlyBackupTopic-${sls:stage}
+        arn:
+          Fn::GetAtt:
+            - MonthlyBackupTopic
+            - TopicArn
+
+logDataToS3:
+  handler: src/handlers/backup/backup.logDataToS3
+  role: LambdaServiceRole
+  events:
+    - sns:
+        topicName: MonthlyBackupTopic-${sls:stage}
+        arn:
+          Fn::GetAtt:
+            - MonthlyBackupTopic
+            - TopicArn

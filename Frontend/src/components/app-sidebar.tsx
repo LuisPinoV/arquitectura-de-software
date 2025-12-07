@@ -1,17 +1,12 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import {
-  BookOpen,
-  House,
-  Search,
-  NotebookPen,
-} from "lucide-react"
+import * as React from "react";
+import { BookOpen, House, Search, NotebookPen, Plus } from "lucide-react";
 
 import Image from "next/image";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
   navMain: [
@@ -32,25 +27,18 @@ const data = {
     },
     {
       title: "Búsqueda",
-      url: "/dashboard/busqueda_general",
+      url: "/dashboard/busqueda",
       icon: Search,
-      items: [
-        {
-          title: "Boxes",
-          url: "/dashboard/busqueda_boxes",
-        },
-      ],
     },
     {
       title: "Reportaje",
       url: "/dashboard/reportaje",
       icon: BookOpen,
-      items: [
-        {
-          title: "Boxes",
-          url: "/dashboard/reportaje/boxes",
-        },
-      ],
+    },
+    {
+      title: "Añadir espacio",
+      url: "/dashboard/nuevo-espacio",
+      icon: Plus,
     },
     {
       title: "Agendamiento",
@@ -72,37 +60,50 @@ const data = {
       ],
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [companyName, setCompanyName] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
   const [spaceName, setSpaceName] = React.useState<string | null>(null);
 
+  data.navMain[3].title = `Añadir ${spaceName}`;
+
   React.useEffect(() => {
     function parseJwt(token: string | null) {
       if (!token) return null;
       try {
-        const parts = token.split('.');
+        const parts = token.split(".");
         if (parts.length < 2) return null;
         const payload = parts[1];
-        const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+        const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
         return JSON.parse(decodeURIComponent(escape(decoded)));
       } catch {
         return null;
       }
     }
 
-    const idToken = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const idToken =
+      typeof window !== "undefined" ? localStorage.getItem("idToken") : null;
     const claims = parseJwt(idToken);
     if (claims) {
       // Prefer a friendly display name for UI (preferred_username, nickname, name, email)
-      const displayNameClaim = claims['preferred_username'] || claims['nickname'] || claims.name || claims.email || null;
+      const displayNameClaim =
+        claims["preferred_username"] ||
+        claims["nickname"] ||
+        claims.name ||
+        claims.email ||
+        null;
       // Keep a technical username as fallback (cognito:username / username)
-      const usernameClaim = claims['cognito:username'] || claims['username'] || null;
-      const companyClaim = claims['custom:companyName'] || claims.companyName || claims.org || claims['cognito:groups'];
-      const spaceClaim = claims['custom:spaceName'] || claims.spaceName || null;
+      const usernameClaim =
+        claims["cognito:username"] || claims["username"] || "";
+      const companyClaim =
+        claims["custom:companyName"] ||
+        claims.companyName ||
+        claims.org ||
+        claims["cognito:groups"] ||
+        "";
+      const spaceClaim = claims["custom:spaceName"] || claims.spaceName || "";
 
       if (displayNameClaim) setUserName(displayNameClaim);
       else if (usernameClaim) setUserName(usernameClaim);
@@ -110,38 +111,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       if (companyClaim) setCompanyName(companyClaim);
       if (spaceClaim) setSpaceName(spaceClaim);
     }
-
-    // fallback to API /auth/me if claims missing
-    if ((!companyName || !spaceName) && accessToken) {
-      const browserUrl = typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL ? (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL : null;
-      const url = browserUrl || process.env.NEXT_PUBLIC_AUTH_USER_URL || 'https://1u3djkukn3.execute-api.us-east-1.amazonaws.com/auth/me';
-      // debug: mostrar URL y token presence
-      if (typeof window !== 'undefined') {
-        // eslint-disable-next-line no-console
-        console.debug('[AppSidebar] fetching profile from', url, 'hasAccessToken', !!accessToken);
-      }
-      fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
-        .then((r) => r.ok ? r.json() : null)
-        .then((data) => {
-          if (!data) return;
-          const attrs = data.UserAttributes ?? [];
-          const map: any = {};
-          attrs.forEach((a: any) => (map[a.Name] = a.Value));
-          // Prefer friendly API attributes first (preferred_username, nickname, name, email), fallback to data.Username
-          const nameFromApi = map['preferred_username'] || map.nickname || map.name || map.email || data.Username;
-          const companyFromApi = map['custom:companyName'] || map.companyName;
-          const spaceFromApi = map['custom:spaceName'] || map.spaceName;
-          if (typeof window !== 'undefined') {
-            // eslint-disable-next-line no-console
-            console.debug('[AppSidebar] profile from api', { nameFromApi, companyFromApi, spaceFromApi });
-          }
-          if (nameFromApi) setUserName(nameFromApi);
-          if (companyFromApi) setCompanyName(companyFromApi);
-          if (spaceFromApi) setSpaceName(spaceFromApi);
-        })
-        .catch(() => {});
-    }
-    
   }, []);
 
   const userProp = { name: userName ?? "Usuario" };
@@ -155,7 +124,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       if (newItem.items && newItem.items.length) {
         newItem.items = newItem.items.map((si: any) => {
           if (si.title === "Boxes") return { ...si, title: replacement };
-          if (si.title === "Busqueda Boxes") return { ...si, title: `Busqueda ${replacement}` };
+          if (si.title === "Busqueda Boxes")
+            return { ...si, title: `Busqueda ${replacement}` };
           return si;
         });
       }
@@ -163,10 +133,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     });
   }, [spaceName]);
 
-  // debug: show values on each render to verify UI receives updates
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line no-console
-    console.log('[AppSidebar] render', { userName, companyName, spaceName });
+  if (typeof window !== "undefined") {
+    console.log("[AppSidebar] render", { userName, companyName, spaceName });
   }
 
   return (
@@ -180,10 +148,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Image src="/images/bag-plus.svg" alt={"Bolsa con un más"} height={20} width={20} />
+                  <Image
+                    src="/asd.svg"
+                    alt={"ICO"}
+                    height={20}
+                    width={20}
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate text-lg font-medium">{companyName ?? "AIOHospital"}</span>
+                  <span className="truncate text-lg font-medium">
+                    {companyName ?? "Agendín"}
+                  </span>
                 </div>
               </a>
             </SidebarMenuButton>

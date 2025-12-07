@@ -8,3 +8,7 @@ PruebaLoginCognito/
 # Lock file local
 .terraform.lock.hcl
 .terraform/
+Backend_node/tf-outputs.json
+
+Backend_node/node_modules
+*node_modules/*

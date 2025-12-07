@@ -71,17 +71,17 @@ export function SearchCard({ data }: any) {
   const router = useRouter();
 
   const handleVisit = () => {
-    router.push(`/dashboard/reportaje/boxes/${data["box"]}`);
+    router.push(`/dashboard/reportaje/${data.idBox}`);
   };
 
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Box';
+  const space = profile?.spaceName ?? 'Espacio';
 
   return (
     <Card className="search-card" style={{ marginTop: "20px" }}>
       <CardHeader>
         <CardTitle className="text-center font-bold search-card-title">
-          {`${space} - ${data["box"]}`}
+          {`${space} - ${data.idBox ?? "N/A"}`}
         </CardTitle>
       </CardHeader>
       <CardContent
@@ -178,7 +178,7 @@ export function SearchCardPersonal({ data }: any) {
   const router = useRouter();
 
   const handleVisit = () => {
-    router.push(`/dashboard/reportaje/personal/${data["name"]}`);
+    router.push(`/dashboard/reportaje/${data["name"]}`);
   };
 
   return (

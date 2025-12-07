@@ -1,0 +1,78 @@
+service: router-service
+app: arqui
+frameworkVersion: ^4.25.0
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  environment:
+    AUTH_FUNCTION_ARN: ${cf:arquitectura-serverless-${sls:stage}.CognitoHandlerArn}
+  
+  httpApi:
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - "*"
+
+resources:
+  Resources:
+    RouterLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: router-lambda-role-${sls:stage}
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          - PolicyName: InvokeTargetLambdas
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource:
+                    - ${cf:arquitectura-serverless-${sls:stage}.CognitoHandlerArn}
+                    # - ${cf:arquitectura-serverless-${sls:stage}.ProfileHandlerArn}
+                    # - ${cf:arquitectura-serverless-${sls:stage}.AgendamientoHandlerArn}
+
+functions:
+  router:
+    handler: handler.handler
+    role: RouterLambdaRole
+    timeout: 30
+    memorySize: 256
+    events:
+      - httpApi:
+          path: /router
+          method: post
+      - httpApi:
+          path: /router
+          method: options
+
+package:
+  individually: true
+  patterns:
+    - "!**/*.md"
+    - "!**/*.test.*"
+    - "!**/*.sh"
+    - "!**/*.ps1"
+    - "handler.js"
+    - "package.json"
+    - "node_modules/**"
