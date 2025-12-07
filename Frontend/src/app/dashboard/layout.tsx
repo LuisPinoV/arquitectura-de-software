@@ -24,7 +24,7 @@ export default function DashboardLayout({
         });
 
         const resJson = await res.json();
-        
+
         if (resJson.ok) {
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
@@ -41,10 +41,22 @@ export default function DashboardLayout({
         router.replace("/");
       }
     }
-    const refreshToken = localStorage.getItem("refreshToken");
-    
-    if (refreshToken) RefreshSession(refreshToken);
-    else router.replace("/");
+
+    if (typeof window === "undefined") return;
+
+    const timeout = setTimeout(() => {
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      if (!refreshToken) {
+        return;
+      }
+
+      const accessToken = localStorage.getItem("accessToken");
+      if(isExpiringSoon(accessToken ?? ""))
+        RefreshSession(refreshToken);
+    }, 10);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   //Gets colors
@@ -137,4 +149,14 @@ export default function DashboardLayout({
       </div>
     </ThemeProvider>
   );
+}
+
+function isExpiringSoon(token: string) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const exp = payload.exp * 1000;
+    return exp - Date.now() < 60_000; // less than 1 minute
+  } catch {
+    return true;
+  }
 }

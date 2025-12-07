@@ -39,6 +39,7 @@ export type Box = {
 };
 
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/apiClient";
 
 /*
 const data: Box[] = [
@@ -122,7 +123,7 @@ export function BoxesDataTable() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Abrir menú</span>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
@@ -130,7 +131,7 @@ export function BoxesDataTable() {
           <DropdownMenuLabel>Acciones</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => {router.push(`/dashboard/reportaje/boxes/${row.getValue("id")}`);
+            onClick={() => {router.replace(`/dashboard/reportaje/boxes/${row.getValue("id")}`);
             }}
           >
             Ver box
@@ -148,23 +149,24 @@ export function BoxesDataTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = React.useState("");
 
-  const [data, setBoxData] = React.useState<Box[]>([]);
+  const [data, setSpaceData] = React.useState<Box[]>([]);
   
 
   React.useEffect(() => {
-    async function GetAllBoxesData() {
+
+    async function GetAllSpacesData() {
       try {
-        const res = await fetch(
-          `/dashboard/reportaje/boxes/api/get_all_boxes_with_data`
+        const res = await apiFetch(
+          `/api/reports/get_all_boxes_with_data`
         );
-        const data = await res.json();
-        setBoxData(data);
+        const data = await res?.json();
+        setSpaceData(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     }
 
-    GetAllBoxesData();
+    GetAllSpacesData();
   }, []);
 
   const table = useReactTable({

@@ -67,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userName, setUserName] = React.useState<string | null>(null);
   const [spaceName, setSpaceName] = React.useState<string | null>(null);
 
-  data.navMain[3].title = `Añadir ${spaceName}`;
+  data.navMain[3].title = `Añadir ${spaceName ?? "Espacio"}`;
 
   React.useEffect(() => {
     function parseJwt(token: string | null) {
