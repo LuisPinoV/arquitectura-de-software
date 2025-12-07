@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { QRBox } from "./QR";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
@@ -46,6 +47,60 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   }
   const profile = useUserProfile() as any;
   const space = profile?.spaceName ?? "Box";
+
+  // cositas QR
+  const qrRef = useRef<HTMLDivElement>(null);
+
+  const handleDownload = () => {
+    if (!qrRef.current) {
+      return
+    }
+
+    const svg = qrRef.current.querySelector("svg");
+    if (!svg){
+      return
+    }
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const image = new Image()
+
+    image.onload = () => {
+      canvas.width = image.width;
+      canvas.height = image.height;
+      ctx?.drawImage(image, 0, 0);
+
+      const pngFile = canvas.toDataURL("image/png");
+
+      const link = document.createElement("a")
+      link.download = `qr_box_${box}.png`;
+      link.href = pngFile;
+      link.click();
+    };
+
+    image.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
+  const handlePrint = () => {
+    if (!qrRef.current) {
+      return
+    }
+
+    const printWindow = window.open("", "PRINT", "height=600, with=800");
+
+    if (!printWindow) {
+      return
+    }
+
+    printWindow.document.writeln(`<html><head><title>QR</title></head><body>`);
+    printWindow.document.writeln(qrRef.current.innerHTML);
+    printWindow.document.writeln(`</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  }
 
   return (
     <div>
@@ -145,11 +200,16 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
                     <DialogContent className="flex flex-col items-center">
                       <DialogHeader>
-                        <DialogTitle>QR - Box {box}</DialogTitle>
+                        <DialogTitle>Código QR del Box {box}</DialogTitle>
                       </DialogHeader>
 
                       <div className="mt-4 flex justify-center">
-                        <QRBox idbox={box} idPaciente="1" userId="1" />
+                        <QRBox idbox={box} idPaciente="1" userId="1" ref={qrRef} />
+                      </div>
+
+                      <div className="mt-6 flex gap-4">
+                        <Button onClick={handleDownload}>Descargar</Button>
+                        <Button onClick={handlePrint}>Imprimir</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
