@@ -52,7 +52,7 @@ import {
 import { useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import { apiFetch } from "@/lib/apiClient";
-import { getUserProfile } from "@/utils/getUserProfile";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 export function ChartChangeByMonths() {
   const chartData = [
