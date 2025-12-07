@@ -9,11 +9,16 @@ export function QRBox({
   userId: string;
   idPaciente: string;
 }) {
-  const fecha = new Date();
+
+  const date = new Date();
   
-  const fechaStr = fecha.toLocaleDateString("es-CL"); // 12-12-2025
-  const horaStr = fecha.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }); // 15:30
-  const horaStr2 = fecha.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }); // 15:30
+  const dateStr = date.toISOString().split("T")[0]; // 2025-12-12
+  const timeStr = date.toISOString().split("T")[1].split(".")[0]; // 15:30
+
+  
+  date.setMinutes(date.getMinutes() + 30);
+
+  const horaStr2 = date.toISOString().split("T")[1].split(".")[0]; // 16:00
 
 
   const query = new URLSearchParams({
@@ -21,12 +26,13 @@ export function QRBox({
     idPaciente: '01',//idPaciente,
     idFuncionario: '01',//userId,
     idBox: `${idbox}`,
-    fecha: fechaStr,
-    horaEntrada: horaStr,
+    fecha: dateStr,
+    horaEntrada: timeStr,
     horaSalida: horaStr2
   });
 
-  const url = `https://p547c5u13d.execute-api.us-east-1.amazonaws.com/agendamiento/?${query.toString()}`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"; 
+  const url = `${baseUrl}/agendamiento?${query.toString()}`;
 
   return (
     <>

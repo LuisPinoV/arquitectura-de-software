@@ -20,8 +20,7 @@ import React from "react";
 import { useUserProfile } from '@/hooks/use-user';
 
 const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
-  "/": [{ label: "Inicio" }],
-  "/dashboard/general": [{ label: "Inicio", href: "/" }, { label: "General" }],
+  "/dashboard/general": [{ label: "Inicio", href: "/dashboard/general" }, { label: "General" }],
   "/dashboard/reportaje": [
     { label: "Inicio", href: "/" },
     { label: "General", href: "/dashboard/general" },
