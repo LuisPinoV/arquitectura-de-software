@@ -115,22 +115,19 @@ export function BoxSearchMain() {
   const handleFilter = () => {
     let toFilterData = searchData;
 
-    toFilterData = toFilterData.filter((space) => {
-      const spaceName = `${space.toUpperCase()} - ${space["idBox"]}`;
-      {
-        `${space.toUpperCase()} - ${space}`;
-      }
-      const spaceType = space["especialidad"];
-      const spaceState = space["disponible"];
-      const spaceBusy = parseFloat(space["ocupancia"]);
+    toFilterData = toFilterData.filter((spaceData) => {
+      const spaceName = `${space} - ${spaceData["idBox"]}`;
+      const spaceType = spaceData["especialidad"];
+      const spaceState = spaceData["disponible"] ? "Libre" : "Ocupado";
+      const spaceBusy = !Number.isNaN(parseFloat(spaceData["ocupancia"])) ? parseFloat(spaceData["ocupancia"]) : 100;
 
       if (
-        spaceName.toLowerCase().includes(searchInput) &&
-        typesToFilter.includes(spaceType) &&
-        estadosAFiltrar.includes(spaceState) &&
-        spaceBusy >= usagePercentage
+        (spaceName.toLowerCase().includes(searchInput) || searchInput == "") &&
+        (typesToFilter.includes(spaceType) || typesToFilter.length == 0) &&
+        (statesToFilter.includes(spaceState) || statesToFilter.length == 0) &&
+        spaceBusy  >= usagePercentage
       )
-        return space;
+        return spaceData;
     });
 
     setChangeableData(toFilterData);
@@ -210,7 +207,7 @@ export function BoxSearchMain() {
       filter_state["defaultAllSelected"] ? true : false
     )
   );
-  const [estadosAFiltrar, setEstadosAFiltrar] = useState<string[]>(
+  const [statesToFilter, setEstadosAFiltrar] = useState<string[]>(
     filter_state.categories
   );
 
