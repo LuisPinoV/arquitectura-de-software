@@ -1,7 +1,6 @@
 import { Row, Col } from "antd";
 import {
   DropdownMenuCheckboxes,
-  DropdownOneSelected,
 } from "@/components/custom/dropdown";
 
 import { Button } from "@/components/ui/button";
@@ -22,12 +21,6 @@ const sortBy = {
   defaultAllSelected:false,
 };
 
-const pagesPerDisplay = {
-    name: "20",
-    categories: ["5", "10", "20", "25", "50", "100"],
-    default: "20",
-  };
-  
 export function BoxSorterer() {
   return (
     <Row justify="center" align="top" style={{ marginTop: "30px" }}>

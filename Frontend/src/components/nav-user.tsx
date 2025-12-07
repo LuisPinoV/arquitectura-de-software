@@ -24,7 +24,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 function getInitials(name?: string) {

@@ -133,10 +133,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     });
   }, [spaceName]);
 
-  if (typeof window !== "undefined") {
-    console.log("[AppSidebar] render", { userName, companyName, spaceName });
-  }
-
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"

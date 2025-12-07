@@ -49,21 +49,21 @@ const chartConfig = {
 
 export function SearchCard({ data }: any) {
 
-  const ocupancia = parseFloat(data["ocupancia"]);
+  const busyTime = parseFloat(data["ocupancia"]);
   
-  const ocupanciaRounded = parseFloat(ocupancia.toFixed(1));
+  const busyRounded = parseFloat(busyTime.toFixed(1));
 
-  const libreRounded = parseFloat((100 - ocupanciaRounded).toFixed(1));
+  const freeRounded = parseFloat((100 - busyRounded).toFixed(1));
   
   const chartData = [
     {
       state: "libre",
-      percentage: libreRounded,
+      percentage: freeRounded,
       fill: "var(--chart-free)",
     },
     {
       state: "ocupado",
-      percentage: ocupanciaRounded,
+      percentage: busyRounded,
       fill: "var(--chart-busy)",
     },
   ];
@@ -121,9 +121,9 @@ export function SearchCard({ data }: any) {
         <div className="card-text">
           <p>
             <span className="font-bold card-text-subtitle">Especialidad </span>{" "}
-            {data["especialidad"]} <br />
+            {data.especialidad} <br />
             <span className="font-bold card-text-subtitle">Estado </span>{" "}
-            {data["estado"]} <br />
+            {data.disponible ? "Libre" : "Ocupado"} <br />
           </p>
         </div>
       </CardContent>
@@ -151,65 +151,5 @@ export function CalendarSimple() {
         locale={es}
       />
     </div>
-  );
-}
-
-export function SearchCardPersonal({ data }: any) {
-
-  const ocupancia = parseFloat(data["ocupancia"]);
-  
-  const ocupanciaRounded = parseFloat(ocupancia.toFixed(1));
-
-  const libreRounded = parseFloat((100 - ocupanciaRounded).toFixed(1));
-  
-  const chartData = [
-    {
-      state: "libre",
-      percentage: libreRounded,
-      fill: "var(--chart-free)",
-    },
-    {
-      state: "ocupado",
-      percentage: ocupanciaRounded,
-      fill: "var(--chart-busy)",
-    },
-  ];
-
-  const router = useRouter();
-
-  const handleVisit = () => {
-    router.push(`/dashboard/reportaje/${data["name"]}`);
-  };
-
-  return (
-    <Card className="search-card" style={{ marginTop: "20px" }}>
-      <CardHeader>
-        <CardTitle className="text-center font-bold search-card-title">
-          {data["nombre"]}
-        </CardTitle>
-      </CardHeader>
-      <CardContent
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          flexDirection: "column",
-        }}
-      >
-        <Separator className="my-4 mx-0 px-0 w-100" />
-        <div className="card-text">
-          <p>
-            <span className="font-bold card-text-subtitle">Especialidad </span>{" "}
-            {data["tipo"]} <br />
-            <span className="font-bold card-text-subtitle">RUT </span>{" "}
-            {data["rut"]} <br />
-          </p>
-        </div>
-      </CardContent>
-      <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full" onClick={handleVisit}>
-          Visitar
-        </Button>
-      </CardFooter>
-    </Card>
   );
 }

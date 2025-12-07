@@ -44,20 +44,18 @@ export function BoxSearchMain() {
 
   const [searchInput, setSearchInput] = useState<string>("");
 
-  const [pasillos, setPasillos] = useState<string[]>([""]);
+  const [pasillos, setType] = useState<string[]>([""]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await apiFetch(
-          `/api/scheduling/get_boxes`
-        );
+        const res = await apiFetch(`/api/scheduling/get_boxes`);
         const data: any = await res?.json();
 
         setSearchData(data ?? []);
         setChangeableData(data ?? []);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data");
       }
     }
 
@@ -72,14 +70,16 @@ export function BoxSearchMain() {
       try {
         const res = await apiFetch(`/api/general/get_specialties`);
         const data: any = await res?.json();
-        setPasillos(
-          data["data"].map((especialidad: any) => especialidad["especialidad"]) ?? []
-        );
-        setPasillosAFiltrar(
-          data["data"].map((especialidad: any) => especialidad["especialidad"]) ?? []
-        );
+
+        if (Array.isArray(data) && data) {
+          setType(data.map((type: any) => type["especialidad"]));
+          setTypesToFilter(data.map((type: any) => type["especialidad"]));
+        } else {
+          setType([]);
+          setTypesToFilter([]);
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data");
       }
     }
 
@@ -95,7 +95,7 @@ export function BoxSearchMain() {
 
   let dataArr = changeableData;
 
-  const [pasillosSeleccionados, setPasillosSeleccionados] = useState<
+  const [selectedTypes, setSelectedTypes] = useState<
     CheckedState[]
   >(
     filter_specialties["categories"].map((_) =>
@@ -103,7 +103,7 @@ export function BoxSearchMain() {
     )
   );
 
-  const [pasillosAFiltrar, setPasillosAFiltrar] = useState<string[]>([]);
+  const [typesToFilter, setTypesToFilter] = useState<string[]>([]);
 
   const handleItemsPerPageChange = (value: number) => {
     setItemsPerPage(value);
@@ -115,22 +115,22 @@ export function BoxSearchMain() {
   const handleFilter = () => {
     let toFilterData = searchData;
 
-    toFilterData = toFilterData.filter((box) => {
-      const boxName = `${space.toUpperCase()} - ${box["idBox"]}`;
+    toFilterData = toFilterData.filter((space) => {
+      const spaceName = `${space.toUpperCase()} - ${space["idBox"]}`;
       {
-        `${space.toUpperCase()} - ${box}`;
+        `${space.toUpperCase()} - ${space}`;
       }
-      const boxEspecialidad = box["especialidad"];
-      const boxEstado = box["disponible"];
-      const boxOcupancia = parseFloat(box["ocupancia"]);
+      const spaceType = space["especialidad"];
+      const spaceState = space["disponible"];
+      const spaceBusy = parseFloat(space["ocupancia"]);
 
       if (
-        boxName.toLowerCase().includes(searchInput) &&
-        pasillosAFiltrar.includes(boxEspecialidad) &&
-        estadosAFiltrar.includes(boxEstado) &&
-        boxOcupancia >= usagePercentage
+        spaceName.toLowerCase().includes(searchInput) &&
+        typesToFilter.includes(spaceType) &&
+        estadosAFiltrar.includes(spaceState) &&
+        spaceBusy >= usagePercentage
       )
-        return box;
+        return space;
     });
 
     setChangeableData(toFilterData);
@@ -161,7 +161,7 @@ export function BoxSearchMain() {
 
     for (let i = 0; i < filter_specialties.categories.length; i++) {
       const curPasillo = filter_specialties.categories[i];
-      const curSeleccionadoEstado = pasillosSeleccionados[i];
+      const curSeleccionadoEstado = selectedTypes[i];
 
       if (curPasillo === curSelected) {
         newSeleccionadosEstados.push(!curSeleccionadoEstado);
@@ -187,18 +187,18 @@ export function BoxSearchMain() {
     }
 
     if (checkedAllNull) {
-      setPasillosSeleccionados(newSeleccionadosEstados);
-      setPasillosAFiltrar(pasillos);
+      setSelectedTypes(newSeleccionadosEstados);
+      setTypesToFilter(pasillos);
       return;
     }
 
-    setPasillosSeleccionados(newSeleccionadosEstados);
-    setPasillosAFiltrar(newPasillos);
+    setSelectedTypes(newSeleccionadosEstados);
+    setTypesToFilter(newPasillos);
   };
 
   const filter_state = {
     name: "Estado actual",
-    desc: "Elija por estado de box...",
+    desc: `Elija por estado de ${space}...`,
     categories: ["Libre", "Ocupado"],
     defaultAllSelected: false,
   };
@@ -262,7 +262,7 @@ export function BoxSearchMain() {
           <div>
             <div className="filterer-item-no-flex">
               <Input
-                placeholder={"Buscar una box..."}
+                placeholder={`Buscar un/a ${space}...`}
                 className="rounded-lg border"
                 onChange={(e) => setSearchInput(e.target.value)}
               />
@@ -270,7 +270,7 @@ export function BoxSearchMain() {
             <div className="filterer-item-flex">
               <DropdownMenuCheckboxes
                 data={filter_specialties}
-                value={pasillosSeleccionados}
+                value={selectedTypes}
                 onChange={(selected) => {
                   handleChangeSpecialties(selected);
                 }}

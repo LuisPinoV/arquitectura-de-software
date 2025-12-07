@@ -1,3 +1,5 @@
+"use client"
+
 import { BoxSearchMain } from "./components/box-search-main";
 
 import "./search-boxes.css";

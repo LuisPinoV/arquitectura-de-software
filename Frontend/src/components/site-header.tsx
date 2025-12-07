@@ -85,12 +85,7 @@ export function SiteHeader() {
   // Use centralized hook so header updates when profile is fetched
   const profile = useUserProfile() as any;
   const spaceName = profile?.spaceName ?? null;
-  const displaySpace = spaceName ?? 'Boxes';
-
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line no-console
-    console.debug('[SiteHeader] spaceName', spaceName);
-  }
+  const displaySpace = spaceName ?? 'Espacio';
 
   if (pathname.startsWith("/dashboard/reportaje/boxes/") && params?.box) {
     items.push(
