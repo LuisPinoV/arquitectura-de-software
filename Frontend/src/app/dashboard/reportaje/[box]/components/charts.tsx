@@ -42,6 +42,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Col, Row } from "antd";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 import {
   getCurrentMonthRange,
   getCurrentWeekRange,
@@ -96,9 +97,13 @@ export function ChartBoxAcrossTime({
 
     async function fetchData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_box_ocupancy_data_by_date?idBox=${idbox}&startDate=${firstDateISO}&endDate=${lastDateISO}`
         );
+        if (!res) {
+          console.error("No response from apiFetch for get_box_ocupancy_data_by_date");
+          return;
+        }
         const data: any = await res.json();
         setData(data);
       } catch (error) {
@@ -257,9 +262,21 @@ export function BoxSchedule({ idbox }: { idbox: string }) {
   >([]);
 
   useEffect(() => {
-    fetch(`/dashboard/reportaje/boxes/api/get_box_ocupancy_data?idBox=${idbox}`)
-      .then((res) => res.json())
-      .then((data) => setChartData(data));
+    async function fetchChart() {
+      try {
+        const res = await apiFetch(`/dashboard/reportaje/boxes/api/get_box_ocupancy_data?idBox=${idbox}`);
+        if (!res) {
+          console.error("No response from apiFetch for get_box_ocupancy_data");
+          return;
+        }
+        const data = await res.json();
+        setChartData(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+
+    fetchChart();
   }, [idbox]);
 
   return (

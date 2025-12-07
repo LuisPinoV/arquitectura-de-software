@@ -16,9 +16,16 @@ export async function GET(req: NextRequest) {
       const fecha = `${year}-${String(month).padStart(2, "0")}-01`;
 
       try {
+        const incomingToken = req.headers.get("authorization") ?? "";
+
         const res = await fetch(
           `${apiUrl}/usoBox/${idbox}/${fecha}/08:00`, // 🔹 adapt to your NestJS route
-          { cache: "no-store" }
+          { cache: "no-store",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": incomingToken,   // <-- Forward it to backend
+            },
+          }
         );
 
         if (!res.ok) throw new Error(`NestJS returned ${res.status}`);

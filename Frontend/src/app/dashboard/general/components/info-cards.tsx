@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import DynamicSpaceLabel from '@/components/dynamic-space-label';
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 
 export function InfoCards() {
 
@@ -30,13 +31,13 @@ export function InfoCards() {
         const tomorrowISO = tomorrow.toISOString().split("T")[0];
   
         try {
-          const resBoxes = await fetch(
+          const resBoxes = await apiFetch(
             `/api/reports/get_all_boxes_count`
           );
           const countBoxes: any = await resBoxes.json();
           const boxes: any = countBoxes["dataLength"];
   
-          const res1 = await fetch(
+          const res1 = await apiFetch(
             `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
           );
           const data1: any = await res1.json();
@@ -52,7 +53,7 @@ export function InfoCards() {
 
           setPercentageUsage(usageData1);
   
-          const res2 = await fetch(
+          const res2 = await apiFetch(
             `/api/reports/get_all_scheduling_today_count`
           );
           const data2: any = await res2.json();

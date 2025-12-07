@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { apiFetch } from "@/lib/apiClient";
 import {
   ColumnDef,
   flexRender,
@@ -105,9 +106,13 @@ export function ScheduleTable({ box }: { box: any }) {
   React.useEffect(() => {
     async function GetScheduleData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_data_schedules_box?idBox=${box}`
         );
+        if (!res) {
+          console.error("No response from apiFetch for get_data_schedules_box");
+          return;
+        }
         const data = await res.json();
         console.log("Fetched schedules:", data);
         setScheduleData(data);

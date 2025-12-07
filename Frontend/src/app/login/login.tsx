@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/apiClient";
 import {
   Card,
   CardContent,
@@ -86,7 +87,7 @@ export default function LoginPage() {
       if (!refreshToken) return;
       setLoadingLogin(true);
       try {
-        const res = await fetch(`/api/session/refresh`, {
+        const res = await apiFetch(`/api/session/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken: refreshToken }),
@@ -117,7 +118,7 @@ export default function LoginPage() {
   async function onSubmitLogin(data: z.infer<typeof FormSchema>) {
     try {
       setLoadingLogin(true);
-      const res = await fetch(`/api/session/login`, {
+      const res = await apiFetch(`/api/session/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

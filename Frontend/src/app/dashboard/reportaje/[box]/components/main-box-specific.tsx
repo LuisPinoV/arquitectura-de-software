@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartBoxAcrossTime, BoxSchedule } from "./charts";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 import { Separator } from "@/components/ui/separator";
 import { useUserProfile } from '@/hooks/use-user';
 import { ScheduleTable } from "./table-box";
@@ -16,9 +17,13 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   useEffect(() => {
     async function fetchDataTodayBox() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_data_today_box?idBox=${box}`
         );
+        if (!res) {
+          console.error("No response from apiFetch for get_data_today_box");
+          return;
+        }
         const data: any = await res.json();
         setBoxCurrentData(data);
       } catch (error) {

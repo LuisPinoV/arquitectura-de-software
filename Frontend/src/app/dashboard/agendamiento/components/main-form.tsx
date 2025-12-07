@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/apiClient";
 
 async function saveBooking(payload: {
   date: string;
@@ -47,7 +48,7 @@ async function saveBooking(payload: {
   for (let i = 0; i < payload["hours"].length; i++) {
     const hour = payload["hours"][i];
     try {
-      await fetch(
+      await apiFetch(
         `/dashboard/agendamiento/api/schedule?date=${payload["date"]}&time=${hour}&box=${payload["box"]}&funcionario=${payload["personal"]}`
       );
     } catch (error) {
@@ -91,7 +92,11 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
   useEffect(() => {
     async function fetchBoxes() {
       try {
-        const res = await fetch(`/dashboard/agendamiento/api/get_boxes`);
+        const res = await apiFetch(`/dashboard/agendamiento/api/get_boxes`);
+        if (!res) {
+          console.error("No response from apiFetch for get_boxes");
+          return;
+        }
         const data: any = await res.json();
         setBoxes(data["boxes"]);
       } catch (error) {
@@ -154,9 +159,13 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
 
       try {
         const curDate = date.toISOString().split("T")[0];
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/agendamiento/api/get_available_times?box=${selectedBox}&date=${curDate}`
         );
+        if (!res) {
+          console.error("No response from apiFetch for get_available_times");
+          return;
+        }
         const data: any = await res.json();
         setAvailableHours(data);
       } catch (error) {
@@ -221,9 +230,13 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
   useEffect(() => {
     async function fetchPersonal() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/agendamiento/api/get_available_personal`
         );
+        if (!res) {
+          console.error("No response from apiFetch for get_available_personal");
+          return;
+        }
         const data: any = await res.json();
         setPersonal(data);
       } catch (error) {

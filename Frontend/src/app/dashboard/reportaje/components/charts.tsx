@@ -51,6 +51,7 @@ import {
 } from "@/utils/get_current_dates";
 import { useEffect, useState } from "react";
 import { Col, Row } from "antd";
+import { apiFetch } from "@/lib/apiClient";
 
 export function ChartChangeByMonths() {
   const chartData = [
@@ -153,15 +154,23 @@ export function ChartInfoCards() {
       const tomorrowISO = tomorrow.toISOString().split("T")[0];
 
       try {
-        const resBoxes = await fetch(
+        const resBoxes = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_all_boxes_count`
         );
+        if (!resBoxes) {
+          console.error("No response from apiFetch for get_all_boxes_count");
+          return;
+        }
         const countBoxes: any = await resBoxes.json();
         const boxes: any = countBoxes["dataLength"];
 
-        const res1 = await fetch(
+        const res1 = await apiFetch(
           `/dashboard/general/api/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
         );
+        if (!res1) {
+          console.error("No response from apiFetch for usage_by_date");
+          return;
+        }
         const data1: any = await res1.json();
         const usageData1: any = data1["dataArr"][1]["uso"].toFixed(2);
         const dataChart1 = {
@@ -172,9 +181,13 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const res2 = await fetch(
+        const res2 = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_all_scheduling_today_count`
         );
+        if (!res2) {
+          console.error("No response from apiFetch for get_all_scheduling_today_count");
+          return;
+        }
         const data2: any = await res2.json();
         const lenData2: any = data2["dataLength"];
         const dataChart2 = {
@@ -185,9 +198,13 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const res3 = await fetch(
+        const res3 = await apiFetch(
           `/dashboard/reportaje/boxes/api/get_all_pending_schedules`
         );
+        if (!res3) {
+          console.error("No response from apiFetch for get_all_pending_schedules");
+          return;
+        }
 
         const data3: any = await res3.json();
 
@@ -199,9 +216,14 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const res4 = await fetch(
+        const res4 = await apiFetch(
           `/dashboard/reportaje/boxes/api/boxes_currently_available_count`
         );
+
+        if (!res4) {
+          console.error("No response from apiFetch for boxes_currently_available_count");
+          return;
+        }
 
         const data4: any = await res4.json();
 
@@ -392,9 +414,13 @@ export function ChartBoxesAcrossTime() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/dashboard/general/api/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
+        if (!res) {
+          console.error("No response from apiFetch for usage_by_date (ChartBoxesAcrossTime)");
+          return;
+        }
         const data: any = await res.json();
         setData(data["dataArr"]);
       } catch (error) {
