@@ -15,13 +15,5 @@ export async function GET(req: NextRequest) {
 
   const data = await res.json();
 
-  const source = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.boxes)
-    ? data.boxes
-    : [];
-
-  const boxes = source.map((obj: any) => obj["idBox"]);
-
-  return NextResponse.json(boxes);
+  return NextResponse.json(data);
 }

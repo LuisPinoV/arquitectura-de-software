@@ -71,7 +71,7 @@ export function SearchCard({ data }: any) {
   const router = useRouter();
 
   const handleVisit = () => {
-    router.push(`/dashboard/reportaje/${data["idBox"]}`);
+    router.push(`/dashboard/reportaje/${data.idBox}`);
   };
 
   const profile = useUserProfile() as any;
@@ -81,7 +81,7 @@ export function SearchCard({ data }: any) {
     <Card className="search-card" style={{ marginTop: "20px" }}>
       <CardHeader>
         <CardTitle className="text-center font-bold search-card-title">
-          {`${space} - ${data["box"]}`}
+          {`${space} - ${data.idBox}`}
         </CardTitle>
       </CardHeader>
       <CardContent
