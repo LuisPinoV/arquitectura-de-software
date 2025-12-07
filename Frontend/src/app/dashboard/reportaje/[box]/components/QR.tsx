@@ -1,6 +1,7 @@
 import QRCode from "react-qr-code";
+import { forwardRef } from "react";
 
-export function QRBox({
+export const QRBox = forwardRef(function QRBox({
   idbox,
   userId,            // idFuncionario
   idPaciente,        // si ya lo tienes
@@ -8,7 +9,7 @@ export function QRBox({
   idbox: string;
   userId: string;
   idPaciente: string;
-}) {
+}, ref: any) {
 
   const date = new Date();
   
@@ -35,8 +36,8 @@ export function QRBox({
   const url = `${baseUrl}/agendamiento_instantaneo?${query.toString()}`;
 
   return (
-    <>
+    <div ref={ref}>
       {idbox && <QRCode value={url} size={256} />}
-    </>
+    </div>
   );
-}
+});
