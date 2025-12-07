@@ -17,37 +17,27 @@ import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname, useParams } from "next/navigation";
 import React from "react";
-import { useUserProfile } from '@/hooks/use-user';
+import { useUserProfile } from "@/hooks/use-user";
 
 const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
-  "/dashboard/general": [{ label: "Inicio", href: "/dashboard/general" }, { label: "General" }],
+  "/dashboard/general": [
+    { label: "Inicio", href: "#" },
+    { label: "General" },
+  ],
   "/dashboard/reportaje": [
-    { label: "Inicio", href: "/" },
+    { label: "Inicio", href: "#" },
     { label: "General", href: "/dashboard/general" },
     { label: "Reportaje" },
   ],
   "/dashboard/reportaje/boxes": [
-    { label: "Inicio", href: "/" },
+    { label: "Inicio", href: "#" },
     { label: "Dashboard", href: "/dashboard/general" },
     { label: "Reportaje", href: "/dashboard/reportaje" },
     { label: "Boxes" },
   ],
-  "/dashboard/reportaje/personal": [
+  "/dashboard/busqueda": [
     { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Reportaje", href: "/dashboard/reportaje" },
-    { label: "Personal" },
-  ],
-  "/dashboard/busqueda_general": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Busqueda General" },
-  ],
-  "/dashboard/busqueda_boxes": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Busqueda Boxes" },
-  ],
-  "/dashboard/busqueda_medicos": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Busqueda Funcionarios" },
+    { label: "Busqueda" },
   ],
   "/dashboard/agendamiento": [
     { label: "Dashboard", href: "/dashboard/general" },
@@ -71,8 +61,8 @@ const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
   "/dashboard/account-settings/themes": [
     { label: "Dashboard", href: "/dashboard/general" },
     { label: "Cuenta", href: "/dashboard/general" },
-    { label: "Configuración", href:"/dashboard/account-settings" },
-    { label: "Temas"}
+    { label: "Configuración", href: "/dashboard/account-settings" },
+    { label: "Temas" },
   ],
 };
 
@@ -85,14 +75,13 @@ export function SiteHeader() {
   // Use centralized hook so header updates when profile is fetched
   const profile = useUserProfile() as any;
   const spaceName = profile?.spaceName ?? null;
-  const displaySpace = spaceName ?? 'Espacio';
+  const displaySpace = spaceName ?? "Espacio";
 
-  if (pathname.startsWith("/dashboard/reportaje/boxes/") && params?.box) {
+  if (pathname.startsWith("/dashboard/reportaje") && params?.box) {
     items.push(
-      { label: "Inicio", href: "/" },
+      { label: "Inicio", href: "#" },
       { label: "Dashboard", href: "/dashboard/general" },
       { label: "Reportaje", href: "/dashboard/reportaje" },
-      { label: displaySpace, href: "/dashboard/reportaje/boxes"  },
       { label: `${displaySpace} - ${params.box}` }
     );
   }
@@ -111,27 +100,27 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb className="hidden sm:flex w-full justify-between">
           <BreadcrumbList>
-                    {items.map((item, i) => (
+            {items.map((item, i) => (
               <React.Fragment key={i}>
                 <BreadcrumbItem>
                   {item.href ? (
-                      <BreadcrumbLink href={item.href}>
-                        {/* replace static 'Boxes' occurrences */}
-                        {item.label === 'Boxes'
-                          ? displaySpace
-                          : item.label?.startsWith('Busqueda Boxes')
-                          ? item.label.replace('Boxes', displaySpace)
-                          : item.label}
-                      </BreadcrumbLink>
-                    ) : (
-                      <BreadcrumbPage>
-                        {item.label === 'Boxes'
-                          ? displaySpace
-                          : item.label?.startsWith('Busqueda Boxes')
-                          ? item.label.replace('Boxes', displaySpace)
-                          : item.label}
-                      </BreadcrumbPage>
-                    )}
+                    <BreadcrumbLink href={item.href}>
+                      {/* replace static 'Boxes' occurrences */}
+                      {item.label === "Boxes"
+                        ? displaySpace
+                        : item.label?.startsWith("Busqueda Boxes")
+                        ? item.label.replace("Boxes", displaySpace)
+                        : item.label}
+                    </BreadcrumbLink>
+                  ) : (
+                    <BreadcrumbPage>
+                      {item.label === "Boxes"
+                        ? displaySpace
+                        : item.label?.startsWith("Busqueda Boxes")
+                        ? item.label.replace("Boxes", displaySpace)
+                        : item.label}
+                    </BreadcrumbPage>
+                  )}
                 </BreadcrumbItem>
                 {i < items.length - 1 && <BreadcrumbSeparator />}
               </React.Fragment>
