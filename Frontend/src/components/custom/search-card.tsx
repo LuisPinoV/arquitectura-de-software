@@ -71,7 +71,7 @@ export function SearchCard({ data }: any) {
   const router = useRouter();
 
   const handleVisit = () => {
-    router.push(`/dashboard/reportaje/boxes/${data["box"]}`);
+    router.push(`/dashboard/reportaje/${data["idBox"]}`);
   };
 
   const profile = useUserProfile() as any;
@@ -178,7 +178,7 @@ export function SearchCardPersonal({ data }: any) {
   const router = useRouter();
 
   const handleVisit = () => {
-    router.push(`/dashboard/reportaje/personal/${data["name"]}`);
+    router.push(`/dashboard/reportaje/${data["name"]}`);
   };
 
   return (
