@@ -123,7 +123,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                   <Button
                     style={{ margin: "0px 5px" }}
                     onClick={() =>
-                      router.push(`/dashboard/agendamiento/peticiones/${box}`)
+                      router.replace(`/dashboard/agendamiento/peticiones/${box}`)
                     }
                   >
                     Peticiones
@@ -131,7 +131,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                   <Button
                     style={{ margin: "5px 5px" }}
                     onClick={() =>
-                      router.push(`/dashboard/agendamiento/${box}`)
+                      router.replace(`/dashboard/agendamiento/${box}`)
                     }
                   >
                     Agendar
@@ -160,7 +160,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
         </Col>
         <Col xs={22}>
           <Card>
-            <CardHeader>
+            <CardHeader className="mx-2">
               <div className="text-muted-foreground leading-none">
                 Tabla agendamiento de box
               </div>

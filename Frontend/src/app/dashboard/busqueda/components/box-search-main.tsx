@@ -54,8 +54,8 @@ export function BoxSearchMain() {
         );
         const data: any = await res?.json();
 
-        setSearchData(data);
-        setChangeableData(data);
+        setSearchData(data ?? []);
+        setChangeableData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -65,18 +65,18 @@ export function BoxSearchMain() {
   }, []);
 
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  const space = profile?.spaceName ?? "Espacio";
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(`/dashboard/general/api/get_specialties`);
-        const data: any = await res.json();
+        const res = await apiFetch(`/api/general/get_specialties`);
+        const data: any = await res?.json();
         setPasillos(
-          data["data"].map((especialidad: any) => especialidad["especialidad"])
+          data["data"].map((especialidad: any) => especialidad["especialidad"]) ?? []
         );
         setPasillosAFiltrar(
-          data["data"].map((especialidad: any) => especialidad["especialidad"])
+          data["data"].map((especialidad: any) => especialidad["especialidad"]) ?? []
         );
       } catch (error) {
         console.error("Error fetching data:", error);
