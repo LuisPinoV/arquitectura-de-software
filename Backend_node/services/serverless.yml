@@ -1,0 +1,113 @@
+service: agendin-main
+app: agendin
+frameworkVersion: ^4.25.0
+
+plugins:
+  - serverless-prune-plugin
+  - serverless-scriptable-plugin
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3000
+    lambdaPort: 3002
+    noPrependStageInUrl: true
+
+  tf: ${file(../infra/tf-outputs.json)}
+
+  prune:
+    automatic: true
+    number: 5
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  environment:
+    USER_POOL_ID: { Ref: CognitoUserPool }
+    USER_POOL_CLIENT_ID: { Ref: CognitoUserPoolClient }
+    USER_PREFERENCES_TABLE: ${self:custom.tf.dynamo.value.preferences}
+    USER_TOKEN_TABLE: ${self:custom.tf.dynamo.value.tokens}
+    MONTHLY_BACKUP_BUCKET: ${self:custom.tf.s3_bucket.value.backup}
+  logs:
+    httpApi: true
+  httpApi:
+    authorizers:
+      cognitoJwt:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Sub: "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+        audience:
+          - { Ref: CognitoUserPoolClient }
+    cors:
+      allowedOrigins:
+        - "*"
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowedHeaders:
+        - "*"
+  vpc:
+    securityGroupIds:
+      - ${self:custom.tf.VPC.value.lambda_sg_id}
+    subnetIds:
+      - ${self:custom.tf.VPC.value.private_subnet_id}
+
+
+resources:
+  Resources: ${file(./config/resources.yml)}
+
+  Outputs:
+    UserPoolId:
+      Value: !Ref CognitoUserPool
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolId
+
+    UserPoolClientId:
+      Value: !Ref CognitoUserPoolClient
+      Export:
+        Name: ${self:service}-${sls:stage}-UserPoolClientId
+
+functions:
+  ### Simulador de base de datos
+  poblarDynamo: ${file(./config/functions/simulador.yml):simulador}
+
+  ### Cognito
+  cognitoHandler: ${file(./config/functions/cognito.yml):cognitoHandler}
+
+  ### APIS
+  preferenciaUsuarioHandler: ${file(./config/functions/apis.yml):preferenciaUsuario}
+
+  onCreatedNewUser: ${file(./config/functions/apis.yml):onCreatedNewUser}
+
+  getEspecialidad: ${file(./config/functions/apis.yml):getEspecialidad}
+
+  usuarioHandler: ${file(./config/functions/apis.yml):usuario}
+
+  funcionarioHandler: ${file(./config/functions/apis.yml):funcionario}
+
+  boxHandler: ${file(./config/functions/apis.yml):box}
+
+  agendamientoHandler: ${file(./config/functions/apis.yml):agendamiento}
+
+  # Backup
+  monthlyBackup: ${file(./config/functions/backup.yml):monthlyBackup}
+
+  saveDataToS3: ${file(./config/functions/backup.yml):saveDataToS3}
+
+  logDataToS3: ${file(./config/functions/backup.yml):logDataToS3}
+
+
+package:
+  individually: true
+  patterns:
+    - "!**/*.md"
+    - "!**/*.test.*"
+    - "!terraform/**"
+    - "!**/terraform/**"
+    - "!.terraform/**"
+    - "!**/router/**"

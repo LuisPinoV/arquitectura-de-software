@@ -25,6 +25,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
 import "../login/styles/loginPage.css";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 const RegisterSchema = z.object({
   name: z.string().min(1, "Nombre es requerido"),
@@ -36,6 +47,22 @@ const RegisterSchema = z.object({
 
 export default function RegisterPage() {
   const router = useRouter();
+
+  const [loadingRegister, setLoadingRegister] = useState<boolean>(false);
+
+  const [openAlert, setOpenAlert] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
+
+  const showAlert = (msg: string) => {
+    setAlertMessage(msg);
+    setOpenAlert(true);
+  };
+
+  const closeAlert = () => {
+    setAlertMessage("");
+    setOpenAlert(false);
+    router.replace("/");
+  };
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -50,8 +77,8 @@ export default function RegisterPage() {
 
   async function onSubmit(data: z.infer<typeof RegisterSchema>) {
     try {
-
-      const res = await fetch("/login/api/createUser", {
+      setLoadingRegister(true);
+      const res = await fetch("/api/session/createUser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,19 +90,31 @@ export default function RegisterPage() {
         }),
       });
 
+      
       const resJson = await res.json();
+      setLoadingRegister(false);
 
       if (resJson.ok) {
-        alert("Usuario creado correctamente");
-        router.replace("/");
+        showAlert("Usuario creado correctamente");
       } else {
-        alert(resJson.message || "Error al crear el usuario");
+        showAlert(resJson.message || "Error al crear el usuario");
       }
     } catch (e) {
-      console.error(e);
-      alert("Error al crear el usuario");
+      showAlert("Error al crear el usuario");
     }
   }
+
+  const registerButton = (
+    <Button type="submit" className="w-full">
+      Crear usuario
+    </Button>
+  );
+
+  const loadingButton = (
+    <Button type="submit" className="w-full">
+      <Spinner>Cargando...</Spinner>
+    </Button>
+  );
 
   return (
     <div className="login-page-container">
@@ -127,7 +166,11 @@ export default function RegisterPage() {
                       <FormItem>
                         <FormLabel>Contraseña</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="********" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="********"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -155,7 +198,10 @@ export default function RegisterPage() {
                       <FormItem>
                         <FormLabel>Espacio a arrendar</FormLabel>
                         <FormControl>
-                          <Input placeholder="Box, taller, sala..." {...field} />
+                          <Input
+                            placeholder="Box, taller, sala..."
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -163,9 +209,7 @@ export default function RegisterPage() {
                   />
 
                   <CardFooter>
-                    <Button type="submit" className="w-full">
-                      Crear usuario
-                    </Button>
+                    {loadingRegister ? loadingButton : registerButton}
                   </CardFooter>
                 </form>
               </Form>
@@ -174,6 +218,19 @@ export default function RegisterPage() {
         </div>
       </main>
       <Footer />
+      <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Registro de usuario</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={closeAlert}>
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

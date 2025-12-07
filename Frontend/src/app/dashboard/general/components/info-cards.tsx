@@ -31,33 +31,32 @@ export function InfoCards() {
   
         try {
           const resBoxes = await fetch(
-            `/dashboard/reportaje/boxes/api/get_all_boxes_count`
+            `/api/reports/get_all_boxes_count`
           );
           const countBoxes: any = await resBoxes.json();
           const boxes: any = countBoxes["dataLength"];
   
           const res1 = await fetch(
-            `/dashboard/general/api/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
+            `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
           );
           const data1: any = await res1.json();
           let usageData1 = "0%";
           if (
             data1 &&
-            Array.isArray(data1["dataArr"]) &&
-            data1["dataArr"].length > 1 &&
-            data1["dataArr"][1] &&
-            typeof data1["dataArr"][1]["uso"] === "number"
+            data1.length > 1 &&
+            data1[1] &&
+            typeof data1[1]["uso"] === "number"
           ) {
-            usageData1 = `${data1["dataArr"][1]["uso"].toFixed(2)}%`;
+            usageData1 = data1 ? `${data1[1]["uso"].toFixed(2)}%` : "0%";
           }
 
           setPercentageUsage(usageData1);
   
           const res2 = await fetch(
-            `/dashboard/reportaje/boxes/api/get_all_scheduling_today_count`
+            `/api/reports/get_all_scheduling_today_count`
           );
           const data2: any = await res2.json();
-          const lenData2: any = data2["dataLength"];
+          const lenData2: any = data2 ?? 0;
 
           setCountData(lenData2);
 

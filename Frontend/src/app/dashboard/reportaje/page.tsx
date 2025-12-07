@@ -1,59 +1,37 @@
-"use client";
-
-import { FileUser, Box } from "lucide-react";
-import { useUserProfile } from "@/hooks/use-user";
-import { Row, Col } from "antd";
+import { Col, Row } from "antd";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+  ChartBoxesAcrossTime,
+  ChartInfoCards,
+} from "./components/charts";
+import { Card, CardContent, CardHeader, } from "@/components/ui/card";
+import { BoxesDataTable } from "./components/table-boxes";
 
 export default function Page() {
-  const { spaceName } = useUserProfile() as any;
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line no-console
-    console.debug('[reportaje page] spaceName', spaceName);
-  }
-  const displaySpace = spaceName ?? 'Boxes';
   return (
-    <Row justify="center" align="middle" className="w-full h-full">
-      <Col
-        className="col-cards"
-        md={15}
-        lg={11}
-        sm={20}
-        style={{ margin: "5px 20px 5px 20px" }}
-      >
-        <Card className="w-full max-sm text-center">
-          <CardHeader>
-            <CardTitle>{displaySpace}</CardTitle>
-            <CardDescription>
-              Reportes y herramientas para la gestión de {displaySpace.toLowerCase()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent style={{ display: "flex", justifyContent: "center" }}>
-            <Box height={"50%"} width={"50%"} />
-          </CardContent>
-          <CardFooter style={{ display: "flex", justifyContent: "center" }}>
-            <Button className="w-full">
-              <Link
-                className = "w-full"
-                href="/dashboard/reportaje/boxes"
-                style={{ color: "white" }}
-              >
-                Visitar
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </Col>
-    </Row>
+    <div className="boxes-dashboard-container">
+      <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
+        Reporte Boxes
+      </h1>
+      <Row justify={"center"} align={"middle"}>
+        <Col xs={24} lg = {24}>
+          <ChartInfoCards />
+        </Col>
+        <Col sm={24} xs={24} lg={24}>
+          <ChartBoxesAcrossTime />
+        </Col>
+        <Col xs={24} style={{ margin: "10px 10px" }}>
+          <Card>
+            <CardHeader>
+              <div className="text-muted-foreground leading-none">
+                Tabla de boxes
+              </div>
+            </CardHeader>
+            <CardContent>
+              <BoxesDataTable />
+            </CardContent>
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 }
