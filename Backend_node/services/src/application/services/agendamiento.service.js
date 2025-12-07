@@ -40,7 +40,7 @@ export class AgendamientoService {
   }
 
   async createAgendamiento(body) {
-    if (!body.idConsulta || !body.idPaciente || !body.idFuncionario || !body.idBox || !body.fecha || !body.horaEntrada)
+    if (!body.idConsulta || !body.idPaciente || !body.idFuncionario || !body.idBox || !body.fecha || !body.horaEntrada || !body.horaSalida)
       throw new Error("Data missing");
     
     const createAgendamiento = new CreateAgendamientoUseCase(this.agendamientoRepository);

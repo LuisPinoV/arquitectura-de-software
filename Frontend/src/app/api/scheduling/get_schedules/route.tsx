@@ -10,30 +10,32 @@ export async function GET(req: NextRequest) {
   const lastDate = req.nextUrl.searchParams.get('lastDate') || today.toISOString().split("T")[0];
 
   const apiUrl = process.env.BACKEND_ADDRESS;
-
-  const res = await fetch(`${apiUrl}/tomah/agendamientos-por-especialidad-rango-fechas/${firstDate}/${lastDate}`, {
+  const incomingToken = req.headers.get("authorization") ?? "";
+  const res = await fetch(`${apiUrl}/agendamiento/estadisticas/especialidad/conteo-rango/${firstDate}/${lastDate}`, {
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
+      "Authorization": incomingToken,
     },
   })
   const data = await res.json()
 
-  let total_scheduling = 0;
-  for(let i = 0; i < data.length; i++)
-  {
-    total_scheduling += parseInt(data[i]["count"]);
-  }
+  
+  const total_scheduling = data.total;
+  const conteo = data.conteo;
 
-  let total_info = data.length > 5 ? 5: data.length;
+  const conteoPares = Object.entries(conteo);
 
-  const final_data:any[] = [];
+  const total_info = conteoPares.length > 5 ? 5 : conteoPares.length;
+
+  const final_data: any[] = [];
 
   for(let i = 0; i < total_info; i++)
   {
+    const [especialidad, count] = conteoPares[i];
     final_data.push(
       {
-        specialty: data[i]["especialidad"],
-        percentage: ((parseInt(data[i]["count"]) / total_scheduling) * 100).toFixed(1),
+        specialty: especialidad,
+        percentage: ((count / total_scheduling) * 100).toFixed(1),
       }
     );
   }
