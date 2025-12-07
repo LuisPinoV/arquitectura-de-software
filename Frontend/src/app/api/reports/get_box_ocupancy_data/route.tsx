@@ -19,11 +19,11 @@ export async function GET(req: NextRequest) {
         const incomingToken = req.headers.get("authorization") ?? "";
 
         const res = await fetch(
-          `${apiUrl}/usoBox/${idbox}/${fecha}/08:00`, // 🔹 adapt to your NestJS route
-          { cache: "no-store",
+          `${apiUrl}/usoBox/${idbox}/${fecha}/08:00`,
+          {
             headers: {
               "Content-Type": "application/json",
-              "Authorization": incomingToken,   // <-- Forward it to backend
+              "Authorization": incomingToken,
             },
           }
         );

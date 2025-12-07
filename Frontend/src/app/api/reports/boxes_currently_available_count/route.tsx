@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
   const time = today.toISOString().split("T")[1];
 
   const apiUrl = process.env.BACKEND_ADDRESS;
-  const apiUrl = process.env.BACKEND_ADDRESS;
   const incomingToken = req.headers.get("authorization") ?? "";
 
   const res = await fetch(
