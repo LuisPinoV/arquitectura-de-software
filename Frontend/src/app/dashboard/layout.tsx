@@ -42,19 +42,13 @@ export default function DashboardLayout({
       }
     }
 
-    if (typeof window === "undefined") return;
-
     const timeout = setTimeout(() => {
       const refreshToken = localStorage.getItem("refreshToken");
-
-      if (!refreshToken) {
-        return;
-      }
-
       const accessToken = localStorage.getItem("accessToken");
-      if(isExpiringSoon(accessToken ?? ""))
-        RefreshSession(refreshToken);
-    }, 10);
+
+      if (isExpiringSoon(accessToken ?? "") || !accessToken)
+        RefreshSession(refreshToken ?? "");
+    }, 50);
 
     return () => clearTimeout(timeout);
   }, []);
