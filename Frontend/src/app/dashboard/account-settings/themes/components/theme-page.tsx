@@ -34,7 +34,8 @@ import convert from "color-convert";
 import { useTheme } from "next-themes";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
-import { useUserProfile } from '@/hooks/use-user';
+import { useUserProfile } from "@/hooks/use-user";
+import { apiFetch } from "@/lib/apiClient";
 
 const iconsStyle: React.CSSProperties = {
   height: "30px",
@@ -328,8 +329,12 @@ export function ThemePage() {
   const { setTheme } = useTheme();
   const profile = useUserProfile() as any;
   const [editableName, setEditableName] = useState<string>(profile?.name ?? "");
-  const [editableCompany, setEditableCompany] = useState<string>(profile?.companyName ?? "");
-  const [editableSpace, setEditableSpace] = useState<string>(profile?.spaceName ?? "");
+  const [editableCompany, setEditableCompany] = useState<string>(
+    profile?.companyName ?? ""
+  );
+  const [editableSpace, setEditableSpace] = useState<string>(
+    profile?.spaceName ?? ""
+  );
   const [curColors, setCurColors] = useState<
     { name: string; colorHex: string }[]
   >([]);
@@ -366,77 +371,42 @@ export function ThemePage() {
 
   const handleSaveIdentity = async () => {
     try {
-      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-      if (!accessToken) {
-        toast.error('No autorizado');
-        return;
-      }
-      // Build API URL: allow env var to be either the full path (e.g. 'https://.../auth/me')
-      // or a base URL. Normalize to point to '/auth/updateUser'.
-      const rawEnv = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_AUTH_USER_URL) || process.env.NEXT_PUBLIC_AUTH_USER_URL || '';
-      let apiUrl = '';
-      if (rawEnv) {
-        try {
-          const parsed = new URL(rawEnv);
-          // If path contains '/auth', replace following segments with '/auth/updateUser'
-          const authIndex = parsed.pathname.indexOf('/auth');
-          if (authIndex >= 0) {
-            parsed.pathname = parsed.pathname.substring(0, authIndex) + '/auth/updateUser';
-          } else {
-            parsed.pathname = (parsed.pathname.endsWith('/') ? parsed.pathname.slice(0, -1) : parsed.pathname) + '/auth/updateUser';
-          }
-          apiUrl = parsed.toString();
-        } catch (e) {
-          // rawEnv might be a relative path like '/auth/me' or just a hostless string
-          if (rawEnv.startsWith('/')) {
-            apiUrl = rawEnv.replace(/\/auth.*$/i, '/auth/updateUser');
-          } else {
-            // fallback: append
-            apiUrl = rawEnv.replace(/\/auth.*$/i, '') + '/auth/updateUser';
-          }
-        }
-      } else {
-        apiUrl = 'https://1u3djkukn3.execute-api.us-east-1.amazonaws.com/auth/updateUser';
-      }
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ name: editableName, companyName: editableCompany, spaceName: editableSpace }),
+      const apiUrl = "/api/user-settings/update-user";
+
+      const res = await apiFetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          name: editableName,
+          companyName: editableCompany,
+          spaceName: editableSpace,
+        }),
       });
 
-      // Defensive handling: the endpoint may return non-JSON (e.g. 404 Not Found text)
-      const contentType = res.headers.get('content-type') || '';
+      const contentType = res?.headers.get("content-type") || "";
       let payload: any = null;
-      if (contentType.includes('application/json')) {
+      if (contentType.includes("application/json")) {
         try {
-          payload = await res.json();
+          payload = await res?.json();
         } catch (e) {
           // invalid json
-          payload = { _raw: await res.text() };
+          payload = { _raw: await res?.text() };
         }
       } else {
         // read as text for debugging
-        payload = { _raw: await res.text() };
+        payload = { _raw: await res?.text() };
       }
 
-      console.debug('[handleSaveIdentity] POST', apiUrl, 'status', res.status, 'payload', payload);
-
-      if (res.ok) {
-        toast.success('Datos guardados');
+      if (res?.ok) {
+        toast.success("Datos guardados");
         setTimeout(() => {
-          if (typeof window !== 'undefined') window.location.reload();
+          if (typeof window !== "undefined") window.location.reload();
         }, 800);
       } else {
-        // show server message when possible
-        const serverMessage = payload && (payload.message || payload.Message || payload._raw) ? (payload.message || payload.Message || payload._raw) : 'Error al guardar';
-        toast.error(serverMessage);
+        toast.error("Error al guardar");
       }
     } catch (err) {
-      console.error('[handleSaveIdentity] error', err);
-      toast.error('Error al guardar');
+      console.error("Error al guardar");
+      toast.error("Error al guardar");
     }
   };
 
@@ -486,22 +456,24 @@ export function ThemePage() {
   };
 
   async function GetThemes() {
-    const claims = await AutohrizeAndGetClaims();
-
-    // Derive userId similarly to addNewTheme: accept JWT claims, or /auth/me response shapes
+    const claims = await GetClaims();
     let userId: string | null = null;
-    if (claims && typeof claims === 'object') {
+    if (claims && typeof claims === "object") {
       if ((claims as any).sub) userId = (claims as any).sub;
       else if ((claims as any).Username) userId = (claims as any).Username;
       else if (Array.isArray((claims as any).UserAttributes)) {
         const attrs = (claims as any).UserAttributes;
-        const subAttr = attrs.find((a: any) => a.Name === 'sub' || a.Name === 'custom:sub');
+        const subAttr = attrs.find(
+          (a: any) => a.Name === "sub" || a.Name === "custom:sub"
+        );
         if (subAttr && subAttr.Value) userId = subAttr.Value;
       }
     }
 
     if (!userId) {
-      console.warn('[GetThemes] no usable userId available, aborting GetThemes', claims);
+      console.warn(
+        "[GetThemes] no usable userId available, aborting GetThemes"
+      );
       return;
     }
     const profiles = await getCustomThemesFromDB(userId);
@@ -510,13 +482,14 @@ export function ThemePage() {
 
     const profilesArr = [];
 
-    console.debug('[GetThemes] raw profiles from API', profiles);
-
     for (let i = 0; i < profiles.length; i++) {
       const curProfile = profiles[i];
 
       // Support different shapes where name may live
-      const profileName = curProfile?.preferences?.name || curProfile?.name || curProfile?.profileName;
+      const profileName =
+        curProfile?.preferences?.name ||
+        curProfile?.name ||
+        curProfile?.profileName;
       if (!profileName) continue;
 
       const colors: string[] = [];
@@ -527,7 +500,7 @@ export function ThemePage() {
         if (!curColor) continue;
 
         // color may be a string hex, or an object like { colorHex } or { hex } or { value }
-        if (typeof curColor === 'string') {
+        if (typeof curColor === "string") {
           colors.push(curColor);
         } else if (curColor.colorHex) {
           colors.push(curColor.colorHex);
@@ -691,26 +664,28 @@ export function ThemePage() {
   };
 
   const addNewTheme = async () => {
-    const claims = await AutohrizeAndGetClaims();
-    // Derive a usable userId from multiple possible shapes:
-    // - JWT claims: { sub }
-    // - /auth/me response: { Username, UserAttributes: [{ Name, Value }, ...] }
+    const claims = await GetClaims();
+
     let userId: string | null = null;
-    if (claims && typeof claims === 'object') {
+    if (claims && typeof claims === "object") {
       if ((claims as any).sub) {
         userId = (claims as any).sub;
       } else if ((claims as any).Username) {
         userId = (claims as any).Username;
       } else if (Array.isArray((claims as any).UserAttributes)) {
         const attrs = (claims as any).UserAttributes;
-        const subAttr = attrs.find((a: any) => a.Name === 'sub' || a.Name === 'custom:sub');
+        const subAttr = attrs.find(
+          (a: any) => a.Name === "sub" || a.Name === "custom:sub"
+        );
         if (subAttr && subAttr.Value) userId = subAttr.Value;
       }
     }
 
     if (!userId) {
-      console.warn('[addNewTheme] missing usable userId in claims', claims);
-      toast.error('No se pudo obtener información del usuario. Vuelve a iniciar sesión.');
+      console.warn("[addNewTheme] missing usable userId in claims");
+      toast.error(
+        "No se pudo obtener información del usuario. Vuelve a iniciar sesión."
+      );
       return;
     }
 
@@ -726,59 +701,72 @@ export function ThemePage() {
 
     try {
       // Resolve API URL: prefer runtime env on window, then build from env variable, else default to /profile
-      const raw = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_THEME_PROFILE) || process.env.NEXT_PUBLIC_THEME_PROFILE || '';
-      let apiUrl = '';
+      const raw =
+        (typeof window !== "undefined" &&
+          (window as any).__env &&
+          (window as any).__env.NEXT_PUBLIC_THEME_PROFILE) ||
+        process.env.NEXT_PUBLIC_THEME_PROFILE ||
+        "";
+      let apiUrl = "";
       if (raw) {
         try {
           const parsed = new URL(raw);
           apiUrl = parsed.toString();
         } catch (e) {
           // raw may be a relative path
-          if (raw.startsWith('/')) {
-            apiUrl = (typeof window !== 'undefined' ? window.location.origin : '') + raw;
+          if (raw.startsWith("/")) {
+            apiUrl =
+              (typeof window !== "undefined" ? window.location.origin : "") +
+              raw;
           } else {
             apiUrl = raw;
           }
         }
       } else {
-        apiUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/profile';
+        apiUrl =
+          (typeof window !== "undefined" ? window.location.origin : "") +
+          "/profile";
       }
 
-      console.debug('[addNewTheme] POST', apiUrl, body);
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
 
-      const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-
-      const res = await fetch(apiUrl, {
-        method: 'POST',
+      const res = await apiFetch(apiUrl, {
+        method: "POST",
         headers,
         body: JSON.stringify(body),
       });
 
-      const ct = res.headers.get('content-type') || '';
+      const ct = res?.headers.get("content-type") || "";
       let payload: any = null;
-      if (ct.includes('application/json')) {
-        try { payload = await res.json(); } catch(e) { payload = { _raw: await res.text() }; }
+      if (ct.includes("application/json")) {
+        try {
+          payload = await res?.json();
+        } catch (e) {
+          payload = { _raw: await res?.text() };
+        }
       } else {
-        payload = { _raw: await res.text() };
+        payload = { _raw: await res?.text() };
       }
 
-      if (res.ok) {
-        console.log('Perfil creado correctamente', payload);
+      if (res?.ok) {
         onCancelAddTheme();
         await GetThemes();
-        toast('Se ha creado nuevo tema', {
+        toast("Se ha creado nuevo tema", {
           description: new Date().toLocaleString(),
-          action: { label: 'Descartar', onClick: () => console.log('Descartar') },
+          action: {
+            label: "Descartar",
+            onClick: () => console.log("Descartar"),
+          },
         });
       } else {
-        console.error('Perfil no pudo ser creado', res.status, payload);
-        toast.error(payload?.message || payload?._raw || 'Perfil no pudo ser creado');
+        console.error("Perfil no pudo ser creado");
+        toast.error("Perfil no pudo ser creado");
       }
     } catch (err) {
-      console.error('addNewTheme error', err);
-      toast.error('Perfil no pudo ser creado');
+      console.error("addNewTheme error");
+      toast.error("Perfil no pudo ser creado");
     }
   };
 
@@ -893,7 +881,9 @@ export function ThemePage() {
           >
             <Card className="px-4">
               <CardHeader>
-                <CardTitle className="text-left text-lg font-semibold">Personalizar</CardTitle>
+                <CardTitle className="text-left text-lg font-semibold">
+                  Personalizar
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <Row>
@@ -908,17 +898,23 @@ export function ThemePage() {
                     />
                   </Col>
                   <Col xs={24} style={{ marginBottom: 12 }}>
-                    <span className="text-sm font-semibold">Nombre de la empresa</span>
+                    <span className="text-sm font-semibold">
+                      Nombre de la empresa
+                    </span>
                     <Input
                       className="mt-1"
                       type="text"
                       placeholder="Empresa"
                       value={editableCompany}
-                      onChange={(e) => setEditableCompany(e.currentTarget.value)}
+                      onChange={(e) =>
+                        setEditableCompany(e.currentTarget.value)
+                      }
                     />
                   </Col>
                   <Col xs={24} style={{ marginBottom: 12 }}>
-                    <span className="text-sm font-semibold">Nombre del espacio</span>
+                    <span className="text-sm font-semibold">
+                      Nombre del espacio
+                    </span>
                     <Input
                       className="mt-1"
                       type="text"
@@ -929,14 +925,20 @@ export function ThemePage() {
                   </Col>
                 </Row>
               </CardContent>
-              <CardFooter style={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button variant="outline" className="me-2" onClick={() => {
-                  // reset to current profile
-                  setEditableName(profile?.name ?? "");
-                  setEditableCompany(profile?.companyName ?? "");
-                  setEditableSpace(profile?.spaceName ?? "");
-                  toast('Restaurado');
-                }}>
+              <CardFooter
+                style={{ display: "flex", justifyContent: "flex-end" }}
+              >
+                <Button
+                  variant="outline"
+                  className="me-2"
+                  onClick={() => {
+                    // reset to current profile
+                    setEditableName(profile?.name ?? "");
+                    setEditableCompany(profile?.companyName ?? "");
+                    setEditableSpace(profile?.spaceName ?? "");
+                    toast("Restaurado");
+                  }}
+                >
                   Cancelar
                 </Button>
                 <Button onClick={handleSaveIdentity}>Guardar</Button>
@@ -1082,42 +1084,39 @@ function getThemeVariable(variable: string, theme: "light" | "dark") {
 
 async function getCustomThemesFromDB(id: string) {
   try {
-    const raw = (typeof window !== 'undefined' && (window as any).__env && (window as any).__env.NEXT_PUBLIC_THEME_PROFILE) || process.env.NEXT_PUBLIC_THEME_PROFILE || '';
-    let apiUrl = '';
-    if (raw) {
-      try { apiUrl = new URL(raw).toString(); } catch (e) { apiUrl = raw.startsWith('/') ? (typeof window !== 'undefined' ? window.location.origin : '') + raw : raw; }
-    } else {
-      apiUrl = (typeof window !== 'undefined' ? window.location.origin : '') + '/profile';
-    }
+    const res = await apiFetch(`/api/user-settings/get-themes-from-db?id=${id}`);
 
-    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    const headers: Record<string,string> = {};
-    if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-
-    const res = await fetch(`${apiUrl}/${id}`, {
-      method: "GET",
-      headers,
-    });
-
-    if (res.ok) {
+    if (res?.ok) {
       console.log("Got profiles");
       let resJson: any = null;
-      try { resJson = await res.json(); } catch (e) { const txt = await res.text(); try { resJson = JSON.parse(txt); } catch { resJson = txt; } }
+      try {
+        resJson = await res.json();
+      } catch (e) {
+        const txt = await res.text();
+        try {
+          resJson = JSON.parse(txt);
+        } catch {
+          resJson = txt;
+        }
+      }
 
-      // Some backend wrappers return an API Gateway-style envelope: { statusCode, body }
-      if (resJson && typeof resJson === 'object' && typeof resJson.body === 'string') {
+      if (
+        resJson &&
+        typeof resJson === "object" &&
+        typeof resJson.body === "string"
+      ) {
         try {
           const parsed = JSON.parse(resJson.body);
+
           return parsed;
         } catch (e) {
-          // body is not a JSON array, return as-is
           return resJson.body;
         }
       }
 
       return resJson;
     } else {
-      console.log("Couldn't get profiles", res.status);
+      console.log("Couldn't get profiles");
       return null;
     }
   } catch (err) {
@@ -1126,29 +1125,19 @@ async function getCustomThemesFromDB(id: string) {
   }
 }
 
-async function AutohrizeAndGetClaims() {
+async function GetClaims() {
+  const idToken = localStorage.getItem("idToken");
+
+  if (!idToken) return {};
+
   try {
-    const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) return;
-
-    const apiUrl = process.env.NEXT_PUBLIC_AUTH_USER_URL;
-    const res = await fetch(`${apiUrl}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
-    const resJson = await res.json();
-
-    if (res.ok) {
-      console.log("Got claims");
-      return resJson;
-    } else {
-      console.log("Couldn't get claims");
-      return null;
-    }
+    const parts = idToken.split(".");
+    if (parts.length < 2) return null;
+    const payload = parts[1];
+    const decoded = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(decodeURIComponent(escape(decoded)));
   } catch {
-    console.log("Couldn't get claims");
-    return null;
+    return {};
   }
 }
 
