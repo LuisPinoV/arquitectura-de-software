@@ -10,17 +10,14 @@ on:
 jobs:
   terraform-ci:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend_node/infra
 
     steps:
-      # ---------------------------
-      # CHECKOUT
-      # ---------------------------
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ---------------------------
-      # TERRAFORM
-      # ---------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -31,30 +28,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # ---------------------------
-      # TERRAFORM CHECKS
-      # ---------------------------
       - name: Terraform fmt (check)
-        working-directory: ./Backend_node/infra
         run: terraform fmt -check -recursive || true
 
       - name: Terraform Init
-        working-directory: ./Backend_node/infra
         run: terraform init
 
       - name: Terraform Validate
-        working-directory: ./Backend_node/infra
         run: terraform validate
 
       - name: Terraform Plan
-        working-directory: ./Backend_node/infra
         run: terraform plan -out=tfplan
 
-      # ---------------------------
-      # UPLOAD PLAN ARTIFACT
-      # ---------------------------
       - name: Upload terraform plan
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: Backend_node/infra/tfplan
+          path: ./infra/tfplan

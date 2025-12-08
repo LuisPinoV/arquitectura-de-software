@@ -8,17 +8,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend_node/infra
 
     steps:
-      # ---------------------------
-      # CHECKOUT
-      # ---------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ---------------------------
-      # AWS CREDENTIALS
-      # ---------------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -26,44 +23,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # ---------------------------
-      # TERRAFORM
-      # ---------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        working-directory: ./Backend_node/infra
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: ./Backend_node/infra
         run: terraform apply -auto-approve
 
-      # ---------------------------
-      # EXPORT TERRAFORM OUTPUTS TO JSON
-      # ---------------------------
-      - name: Export Terraform outputs to JSON
-        working-directory: ./Backend_node/infra
-        run: terraform output -json > ./tf-outputs.json
-
-      # ---------------------------
-      # SERVERLESS DEPLOYMENT
-      # ---------------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Install npm dependencies (backend)
-        working-directory: ./Backend_node/services
+      - name: Install npm deps (backend)
         run: npm ci
 
-      - name: Install Serverless v4.25.0
-        run: npm install -g serverless@4.25.0
+      - name: Install Serverless
+        run: npm install -g serverless@3
 
       - name: Deploy Serverless
-        working-directory: ./Backend_node/services
         run: serverless deploy --verbose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
