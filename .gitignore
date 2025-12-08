@@ -9,6 +9,12 @@ PruebaLoginCognito/
 .terraform.lock.hcl
 .terraform/
 Backend_node/tf-outputs.json
+<<<<<<< Updated upstream
 
 Backend_node/node_modules
 *node_modules/*
+=======
+node_modules/
+.serverless/
+.vscode/
+>>>>>>> Stashed changes
