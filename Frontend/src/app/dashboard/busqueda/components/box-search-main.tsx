@@ -25,6 +25,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { apiFetch } from "@/lib/apiClient";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 export function BoxSearchMain() {
   const pagesPerDisplay = {
@@ -44,42 +45,48 @@ export function BoxSearchMain() {
 
   const [searchInput, setSearchInput] = useState<string>("");
 
-  const [pasillos, setPasillos] = useState<string[]>([""]);
+  const [pasillos, setType] = useState<string[]>([""]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await apiFetch(
-          `/api/scheduling/get_boxes`
-        );
+        const res = await apiFetch(`/api/scheduling/get_boxes`);
         const data: any = await res?.json();
 
-        setSearchData(data);
-        setChangeableData(data);
+        setSearchData(data ?? []);
+        setChangeableData(data ?? []);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data");
       }
     }
 
     fetchData();
   }, []);
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  const [profile, setClientProfile] = useState<any>(null)
+  
+    useEffect(() => {
+      const p = getUserProfile()
+      setClientProfile(p)
+    }, [])
+  
+    const space = profile?.spaceName ?? "Espacio"
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(`/dashboard/general/api/get_specialties`);
-        const data: any = await res.json();
-        setPasillos(
-          data["data"].map((especialidad: any) => especialidad["especialidad"])
-        );
-        setPasillosAFiltrar(
-          data["data"].map((especialidad: any) => especialidad["especialidad"])
-        );
+        const res = await apiFetch(`/api/general/get_specialties`);
+        const data: any = await res?.json();
+
+        if (Array.isArray(data) && data) {
+          setType(data.map((type: any) => type["especialidad"]));
+          setTypesToFilter(data.map((type: any) => type["especialidad"]));
+        } else {
+          setType([]);
+          setTypesToFilter([]);
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data");
       }
     }
 
@@ -95,7 +102,7 @@ export function BoxSearchMain() {
 
   let dataArr = changeableData;
 
-  const [pasillosSeleccionados, setPasillosSeleccionados] = useState<
+  const [selectedTypes, setSelectedTypes] = useState<
     CheckedState[]
   >(
     filter_specialties["categories"].map((_) =>
@@ -103,7 +110,7 @@ export function BoxSearchMain() {
     )
   );
 
-  const [pasillosAFiltrar, setPasillosAFiltrar] = useState<string[]>([]);
+  const [typesToFilter, setTypesToFilter] = useState<string[]>([]);
 
   const handleItemsPerPageChange = (value: number) => {
     setItemsPerPage(value);
@@ -115,22 +122,19 @@ export function BoxSearchMain() {
   const handleFilter = () => {
     let toFilterData = searchData;
 
-    toFilterData = toFilterData.filter((box) => {
-      const boxName = `${space.toUpperCase()} - ${box["idBox"]}`;
-      {
-        `${space.toUpperCase()} - ${box}`;
-      }
-      const boxEspecialidad = box["especialidad"];
-      const boxEstado = box["disponible"];
-      const boxOcupancia = parseFloat(box["ocupancia"]);
+    toFilterData = toFilterData.filter((spaceData) => {
+      const spaceName = `${space} - ${spaceData["idBox"]}`;
+      const spaceType = spaceData["especialidad"];
+      const spaceState = spaceData["disponible"] ? "Libre" : "Ocupado";
+      const spaceBusy = !Number.isNaN(parseFloat(spaceData["ocupancia"])) ? parseFloat(spaceData["ocupancia"]) : 100;
 
       if (
-        boxName.toLowerCase().includes(searchInput) &&
-        pasillosAFiltrar.includes(boxEspecialidad) &&
-        estadosAFiltrar.includes(boxEstado) &&
-        boxOcupancia >= usagePercentage
+        (spaceName.toLowerCase().includes(searchInput) || searchInput == "") &&
+        (typesToFilter.includes(spaceType) || typesToFilter.length == 0) &&
+        (statesToFilter.includes(spaceState) || statesToFilter.length == 0) &&
+        spaceBusy  >= usagePercentage
       )
-        return box;
+        return spaceData;
     });
 
     setChangeableData(toFilterData);
@@ -139,7 +143,9 @@ export function BoxSearchMain() {
   const startIndex = (curPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, dataArr.length);
 
-  const visibleData = dataArr.slice(startIndex, endIndex);
+  console.log(dataArr);
+
+  const visibleData = Array.isArray(dataArr) ? dataArr.slice(startIndex, endIndex) : [];
 
   const totalPages = Math.ceil(dataArr.length / itemsPerPage);
 
@@ -161,7 +167,7 @@ export function BoxSearchMain() {
 
     for (let i = 0; i < filter_specialties.categories.length; i++) {
       const curPasillo = filter_specialties.categories[i];
-      const curSeleccionadoEstado = pasillosSeleccionados[i];
+      const curSeleccionadoEstado = selectedTypes[i];
 
       if (curPasillo === curSelected) {
         newSeleccionadosEstados.push(!curSeleccionadoEstado);
@@ -187,18 +193,18 @@ export function BoxSearchMain() {
     }
 
     if (checkedAllNull) {
-      setPasillosSeleccionados(newSeleccionadosEstados);
-      setPasillosAFiltrar(pasillos);
+      setSelectedTypes(newSeleccionadosEstados);
+      setTypesToFilter(pasillos);
       return;
     }
 
-    setPasillosSeleccionados(newSeleccionadosEstados);
-    setPasillosAFiltrar(newPasillos);
+    setSelectedTypes(newSeleccionadosEstados);
+    setTypesToFilter(newPasillos);
   };
 
   const filter_state = {
     name: "Estado actual",
-    desc: "Elija por estado de box...",
+    desc: `Elija por estado de ${space}...`,
     categories: ["Libre", "Ocupado"],
     defaultAllSelected: false,
   };
@@ -210,7 +216,7 @@ export function BoxSearchMain() {
       filter_state["defaultAllSelected"] ? true : false
     )
   );
-  const [estadosAFiltrar, setEstadosAFiltrar] = useState<string[]>(
+  const [statesToFilter, setEstadosAFiltrar] = useState<string[]>(
     filter_state.categories
   );
 
@@ -262,7 +268,7 @@ export function BoxSearchMain() {
           <div>
             <div className="filterer-item-no-flex">
               <Input
-                placeholder={"Buscar una box..."}
+                placeholder={`Buscar un/a ${space}...`}
                 className="rounded-lg border"
                 onChange={(e) => setSearchInput(e.target.value)}
               />
@@ -270,7 +276,7 @@ export function BoxSearchMain() {
             <div className="filterer-item-flex">
               <DropdownMenuCheckboxes
                 data={filter_specialties}
-                value={pasillosSeleccionados}
+                value={selectedTypes}
                 onChange={(selected) => {
                   handleChangeSpecialties(selected);
                 }}

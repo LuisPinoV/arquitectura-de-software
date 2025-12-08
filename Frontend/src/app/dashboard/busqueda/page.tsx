@@ -1,4 +1,5 @@
-import { Col, Row } from "antd";
+"use client"
+
 import { BoxSearchMain } from "./components/box-search-main";
 
 import "./search-boxes.css";

@@ -19,7 +19,7 @@ import {
 } from "recharts";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useUserProfile } from '@/hooks/use-user';
+import { useUserProfile } from "@/hooks/use-user";
 import {
   Card,
   CardAction,
@@ -52,6 +52,7 @@ import {
 import { useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import { apiFetch } from "@/lib/apiClient";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 export function ChartChangeByMonths() {
   const chartData = [
@@ -69,11 +70,20 @@ export function ChartChangeByMonths() {
     },
   } satisfies ChartConfig;
 
+  const [clientProfile, setClientProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const p = getUserProfile()
+    setClientProfile(p)
+  }, [])
+
+  const space = clientProfile?.spaceName ?? "Espacio"
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cambio en el uso de boxes</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>Cambio en el uso de {space}</CardTitle>
+        <CardDescription>Enero - Junio 2024</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -100,7 +110,7 @@ export function ChartChangeByMonths() {
       </CardContent>
       <CardFooter>
         <div className="text-muted-foreground leading-none">
-          Como cambió el uso de boxes a través del tiempo
+          Como cambió el uso de {space} a través del tiempo
         </div>
       </CardFooter>
     </Card>
@@ -108,41 +118,53 @@ export function ChartChangeByMonths() {
 }
 
 export function ChartInfoCards() {
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Boxes';
 
-  const [infoCardsData, setInfoCardsData] = useState<any>([
-    {
-      Nombre: "Uso de boxes",
-      Descripcion: "Cantidad",
-      Valor: 0,
-      MaxValue: 3600,
-      fill: "var(--primary)",
-    },
-    {
-      Nombre: "Uso de boxes",
-      Descripcion: "Cantidad",
-      Valor: 0,
-      MaxValue: 3600,
-      fill: "var(--primary)",
-    },
-    {
-      Nombre: "Uso de boxes",
-      Descripcion: "Cantidad",
-      Valor: 0,
-      MaxValue: 3600,
-      fill: "var(--primary)",
-    },
-    {
-      Nombre: "Uso de boxes",
-      Descripcion: "Cantidad",
-      Valor: 0,
-      MaxValue: 3600,
-      fill: "var(--primary)",
-    },
-  ]);
+  const [clientProfile, setClientProfile] = useState<any>(null)
 
   useEffect(() => {
+    const p = getUserProfile()
+    setClientProfile(p)
+  }, [])
+
+  const space = clientProfile?.spaceName ?? "Espacio"
+
+  const defaultData = [
+    {
+      Nombre: `Uso de ${space}`,
+      Descripcion: "Cantidad",
+      Valor: 0,
+      MaxValue: 3600,
+      fill: "var(--primary)",
+    },
+    {
+      Nombre: `Uso de ${space}`,
+      Descripcion: "Cantidad",
+      Valor: 0,
+      MaxValue: 3600,
+      fill: "var(--primary)",
+    },
+    {
+      Nombre: `Uso de ${space}`,
+      Descripcion: "Cantidad",
+      Valor: 0,
+      MaxValue: 3600,
+      fill: "var(--primary)",
+    },
+    {
+      Nombre: `Uso de ${space}`,
+      Descripcion: "Cantidad",
+      Valor: 0,
+      MaxValue: 3600,
+      fill: "var(--primary)",
+    },
+  ];
+
+  const [infoCardsData, setInfoCardsData] = useState<any[]>(defaultData);
+
+  useEffect(() => {
+
+    if (!clientProfile) return
+
     async function fetchData() {
       const today = new Date();
       const yesterday = new Date(today);
@@ -154,97 +176,91 @@ export function ChartInfoCards() {
       const tomorrowISO = tomorrow.toISOString().split("T")[0];
 
       try {
-        const resBoxes = await apiFetch(
-          `/dashboard/reportaje/boxes/api/get_all_boxes_count`
-        );
-        if (!resBoxes) {
-          console.error("No response from apiFetch for get_all_boxes_count");
-          return;
-        }
-        const countBoxes: any = await resBoxes.json();
-        const boxes: any = countBoxes["dataLength"];
+        const resSpaces = await apiFetch(`/api/reports/get_all_boxes_count`);
+        const countSpaces: any = await resSpaces?.json();
+        const boxes: any = countSpaces["dataLength"] ?? 1;
 
-        const res1 = await apiFetch(
-          `/dashboard/general/api/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
+        const resUsageByDate = await apiFetch(
+          `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
         );
-        if (!res1) {
-          console.error("No response from apiFetch for usage_by_date");
-          return;
+        const dataUsageByDate: any = await resUsageByDate?.json();
+        let usageDataByDate: any = 0;
+
+        if (Array.isArray(dataUsageByDate)) {
+          if (dataUsageByDate[1]?.uso) {
+            usageDataByDate = dataUsageByDate[1].uso.toFixed(2) ?? 0;
+          }
         }
-        const data1: any = await res1.json();
-        const usageData1: any = data1["dataArr"][1]["uso"].toFixed(2);
-        const dataChart1 = {
+
+        const dataChartUsageByDate = {
           Nombre: `Uso ${space} hoy`,
           Descripcion: "Porcentaje",
-          Valor: parseFloat(usageData1),
+          Valor: parseFloat(usageDataByDate ?? 0),
           MaxValue: 100,
           fill: "var(--primary)",
         };
 
-        const res2 = await apiFetch(
-          `/dashboard/reportaje/boxes/api/get_all_scheduling_today_count`
+        const resSchedulingCount = await apiFetch(
+          `/api/reports/get_all_scheduling_today_count`
         );
-        if (!res2) {
-          console.error("No response from apiFetch for get_all_scheduling_today_count");
-          return;
-        }
-        const data2: any = await res2.json();
-        const lenData2: any = data2["dataLength"];
-        const dataChart2 = {
+        const dataTodayCount: any = await resSchedulingCount?.json();
+        const lenDataTodayCount: any = dataTodayCount["dataLength"];
+
+        const dataChartSchedulingCount = {
           Nombre: "Agendamientos hoy",
           Descripcion: "Cantidad",
-          Valor: parseFloat(lenData2),
+          Valor: parseFloat(lenDataTodayCount ?? 0),
           MaxValue: boxes * 31,
           fill: "var(--primary)",
         };
 
-        const res3 = await apiFetch(
-          `/dashboard/reportaje/boxes/api/get_all_pending_schedules`
+        const resAllPendingSchedules = await apiFetch(
+          `/api/reports/get_all_pending_schedules`
         );
         if (!res3) {
           console.error("No response from apiFetch for get_all_pending_schedules");
           return;
         }
 
-        const data3: any = await res3.json();
+        const dataAllPendingSchedules: any =
+          await resAllPendingSchedules?.json();
 
-        const dataChart3 = {
+        const dataChartAllPendingSchedules = {
           Nombre: "Agendamientos por confirmar",
           Descripcion: "Cantidad",
-          Valor: parseFloat(data3["pendingCount"]),
-          MaxValue: parseFloat(data3["allCount"]),
+          Valor: parseFloat(dataAllPendingSchedules.pendingCount ?? 0),
+          MaxValue: parseFloat(dataAllPendingSchedules.allCount ?? 0),
           fill: "var(--primary)",
         };
 
-        const res4 = await apiFetch(
-          `/dashboard/reportaje/boxes/api/boxes_currently_available_count`
+        const resCurrentlyAvailableCount = await apiFetch(
+          `/api/reports/boxes_currently_available_count`
         );
 
-        if (!res4) {
-          console.error("No response from apiFetch for boxes_currently_available_count");
-          return;
-        }
+        const dataCurrentlyAvailableCount: any =
+          await resCurrentlyAvailableCount?.json();
 
-        const data4: any = await res4.json();
-
-        const dataChart4 = {
-          Nombre: "Boxes libres",
+        const dataChartCurrentlyAvailableCount = {
+          Nombre: `${space} libres`,
           Descripcion: "Cantidad",
-          Valor: parseFloat(data4["free"]),
-          MaxValue: parseFloat(data4["all"]),
+          Valor: parseFloat(dataCurrentlyAvailableCount.free ?? 0),
+          MaxValue: parseFloat(dataCurrentlyAvailableCount.all ?? 0),
           fill: "var(--primary)",
         };
 
-        
+        setInfoCardsData([
+          dataChartUsageByDate,
+          dataChartSchedulingCount,
+          dataChartAllPendingSchedules,
+          dataChartCurrentlyAvailableCount,
+        ]);
 
-        setInfoCardsData([dataChart1, dataChart2, dataChart3, dataChart4]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+      } catch (error) {}
     }
 
     fetchData();
-  }, []);
+  }, [clientProfile]);
+
   const chartConfig = {
     amount: {
       label: "Cantidad",
@@ -258,7 +274,7 @@ export function ChartInfoCards() {
   return (
     <Card className="p-0 m-2 mb-4">
       <CardHeader className="mt-2 text-lg items-center text-center">
-        <CardTitle>Información sobre el uso de boxes</CardTitle>
+        <CardTitle>Información sobre el uso de {space}</CardTitle>
       </CardHeader>
       <Row justify={"center"} align="middle">
         {infoCardsData.map((data: any, i: number) => (
@@ -284,11 +300,7 @@ export function ChartInfoCards() {
               <CardContent>
                 <Card
                   className="flex flex-col max-h-[250px] max-w-[250px]"
-                  style={{
-                    borderRadius: "50%",
-                    padding: "0",
-                    margin: "0",
-                  }}
+                  style={{ borderRadius: "50%", padding: "0", margin: "0" }}
                 >
                   <CardContent className="m-0 p-0">
                     <ChartContainer
@@ -307,7 +319,6 @@ export function ChartInfoCards() {
                         innerRadius={"85%"}
                         outerRadius={"142%"}
                       >
-                        {console.log(data.maxValue)}
                         <PolarGrid
                           gridType="circle"
                           radialLines={false}
@@ -323,11 +334,7 @@ export function ChartInfoCards() {
                         >
                           <Label
                             content={({ viewBox }) => {
-                              if (
-                                viewBox &&
-                                "cx" in viewBox &&
-                                "cy" in viewBox
-                              ) {
+                              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                                 return (
                                   <text
                                     x={viewBox.cx}
@@ -373,6 +380,7 @@ export function ChartInfoCards() {
   );
 }
 
+
 export function ChartBoxesAcrossTime() {
   const chartConfig = {
     libre: {
@@ -387,10 +395,14 @@ export function ChartBoxesAcrossTime() {
 
   const isMobile = useIsMobile();
 
+  const userProfile = useUserProfile();
+  const space = userProfile?.spaceName ?? "Espacio";
+
   const [chartData, setData] = useState<any[]>([]);
   const [dateRangeType, setDateRangeType] = useState("semanal");
 
   React.useEffect(() => {
+
     if (isMobile) {
       setDateRangeType("semanal");
     }
@@ -412,17 +424,14 @@ export function ChartBoxesAcrossTime() {
   const firstDateISO = dateRange[0].toISOString().split("T")[0];
 
   useEffect(() => {
+
     async function fetchData() {
       try {
         const res = await apiFetch(
-          `/dashboard/general/api/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
+          `/api/general/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
-        if (!res) {
-          console.error("No response from apiFetch for usage_by_date (ChartBoxesAcrossTime)");
-          return;
-        }
-        const data: any = await res.json();
-        setData(data["dataArr"]);
+        const data: any = await res?.json();
+        setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -432,7 +441,7 @@ export function ChartBoxesAcrossTime() {
   }, [dateRangeType]);
 
   const filteredData = chartData.map((item) => {
-    const date = new Date(item["fecha"]);
+    const date = item.fecha !== "message" ? new Date(item.fecha) : new Date();
     const ocupado = parseFloat(item["uso"]).toFixed(2);
     const libre = (100 - parseFloat(ocupado)).toFixed(2);
 
@@ -443,10 +452,12 @@ export function ChartBoxesAcrossTime() {
     };
   });
 
+  
+
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Uso de boxes a través del tiempo</CardTitle>
+        <CardTitle>Uso de {space} a través del tiempo</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">Total en el tiempo</span>
         </CardDescription>
@@ -532,12 +543,12 @@ export function ChartBoxesAcrossTime() {
               }}
             />
             <YAxis
-                          tickLine={false}
-                          axisLine={false}
-                          tickMargin={8}
-                          tickCount={3}
-                          domain={[0, 100]}
-                        />
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickCount={3}
+              domain={[0, 100]}
+            />
             <ChartTooltip
               cursor={false}
               content={
@@ -572,4 +583,3 @@ export function ChartBoxesAcrossTime() {
     </Card>
   );
 }
-

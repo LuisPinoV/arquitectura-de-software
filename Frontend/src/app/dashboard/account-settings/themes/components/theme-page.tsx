@@ -1121,7 +1121,7 @@ async function getCustomThemesFromDB(id: string) {
       return null;
     }
   } catch (err) {
-    console.log("Couldn't get profiles", err?.message || err);
+    console.log("Couldn't get profiles");
     return null;
   }
 }
