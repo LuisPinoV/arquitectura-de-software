@@ -3,12 +3,13 @@ export class GetAllAgendamientosUseCase {
     this.agendamientoRepository = agendamientoRepository;
   }
 
-  async execute() {
-    try {
-      const agendamientos = await this.agendamientoRepository.getAllAgendamientos();
-      return agendamientos;
-    } catch (error) {
+  async execute(organizacionId) {
+    const agendamientos = await this.agendamientoRepository.getAllAgendamientos(organizacionId);
+
+    if (!agendamientos) {
       throw new Error("Couldn't get all agendamientos");
     }
+
+    return agendamientos;
   }
 }

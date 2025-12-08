@@ -45,7 +45,8 @@ export class AgendamientoRepository {
       idPaciente: agendamientoData.idPaciente,
       fecha: agendamientoData.fecha,
       horaEntrada: agendamientoData.horaEntrada,
-      horaSalida: horaSalida
+      horaSalida: horaSalida,
+      organizacionId: organizacionId
     });
 
     if (!validacion.disponible) {
@@ -195,7 +196,8 @@ export class AgendamientoRepository {
         fecha: updates.fecha || agendamientoActual.fecha,
         horaEntrada: updates.horaEntrada || agendamientoActual.horaEntrada,
         horaSalida: updates.horaSalida || agendamientoActual.horaSalida,
-        idConsultaExcluir: idConsulta
+        idConsultaExcluir: idConsulta,
+        organizacionId: organizacionId
       };
 
       const validacion = await this.validateTimeSlotAvailability(datosValidacion);
@@ -606,7 +608,7 @@ export class AgendamientoRepository {
    * @param {string} params.idConsultaExcluir
    * @returns {Promise<Object>}
    */
-  async validateTimeSlotAvailability({ idBox, idFuncionario, idPaciente, fecha, horaEntrada, horaSalida, idConsultaExcluir = null }) {
+  async validateTimeSlotAvailability({ idBox, idFuncionario, idPaciente, fecha, horaEntrada, horaSalida, idConsultaExcluir = null, organizacionId }) {
     try {
       console.log(`Validando disponibilidad para box ${idBox}, funcionario ${idFuncionario}, paciente ${idPaciente} en ${fecha} ${horaEntrada}-${horaSalida}`);
 
@@ -614,10 +616,10 @@ export class AgendamientoRepository {
 
       const agendamientosBox = await this.agendamientoTotalHoyBox(idBox, fecha);
 
-      const agendamientosFuncionario = await this.getAgendamientosByFuncionario(idFuncionario);
+      const agendamientosFuncionario = await this.getAgendamientosByFuncionario(idFuncionario, organizacionId);
       const agendamientosFuncionarioFecha = agendamientosFuncionario.filter(ag => ag.fecha === fecha);
 
-      const agendamientosPaciente = await this.getAgendamientosByPaciente(idPaciente);
+      const agendamientosPaciente = await this.getAgendamientosByPaciente(idPaciente, organizacionId);
       const agendamientosPacienteFecha = agendamientosPaciente.filter(ag => ag.fecha === fecha);
 
       for (const agendamiento of agendamientosBox) {
