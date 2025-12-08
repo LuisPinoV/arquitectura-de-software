@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Administración Hospital Padre Hurtado",
-  description: "Gestión de boxes para el Hospital Padre Hurtado",
+  title: "Agendín",
+  description: "Gestión de espacios físicos",
 };
 
 export default function RootLayout({children,}: Readonly<{children: React.ReactNode;}>) 

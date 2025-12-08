@@ -4,7 +4,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const apiUrl = process.env.BACKEND_ADDRESS;
+    const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
 
     const res = await fetch(`${apiUrl}/auth/login`, {
       method: "POST",
