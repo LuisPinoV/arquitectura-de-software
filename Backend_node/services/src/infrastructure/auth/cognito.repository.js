@@ -175,6 +175,7 @@ export class CognitoRepository {
       });
 
       const res = await this.cognitoClient.send(cmd);
+
       return { ok: true, res };
     } catch (err) {
       console.error('Error updating user attributes', err);

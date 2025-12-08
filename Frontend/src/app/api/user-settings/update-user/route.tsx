@@ -18,8 +18,6 @@ export async function POST(request: Request) {
 
     const data = await res.json();
 
-    console.log(res);
-
     return NextResponse.json({ ...data, ok: res.ok });
   } catch (e) {
     return NextResponse.json(

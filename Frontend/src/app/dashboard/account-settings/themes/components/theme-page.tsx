@@ -35,7 +35,7 @@ import { useTheme } from "next-themes";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { useUserProfile } from "@/hooks/use-user";
-import { apiFetch } from "@/lib/apiClient";
+import { apiFetch, refreshTokens } from "@/lib/apiClient";
 
 const iconsStyle: React.CSSProperties = {
   height: "30px",
@@ -398,6 +398,8 @@ export function ThemePage() {
 
       if (res?.ok) {
         toast.success("Datos guardados");
+        await refreshTokens();
+
         setTimeout(() => {
           if (typeof window !== "undefined") window.location.reload();
         }, 800);

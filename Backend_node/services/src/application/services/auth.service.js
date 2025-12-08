@@ -14,6 +14,7 @@ import { PublishCreateUserUseCase } from "../useCases/auth/sns/publishCreateUser
 import { cognitoRepository } from "../../infrastructure/auth/cognito.repository.js";
 import { tokenRepository } from "../../infrastructure/auth/token.repository.js";
 import { AuthEventsRepository } from "../../infrastructure/auth/auth-events.repository.js";
+import { UpdateUserUseCase } from "../useCases/auth/cognito/updateUser.useCase.js";
 
 export class AuthService {
   constructor() {
@@ -22,8 +23,11 @@ export class AuthService {
 
     this.createdUserTopicArn = process.env.CREATE_USER_TOPIC_SNS_ARN ?? null;
     this.loggedInUserTopicArn = process.env.CREATE_USER_TOPIC_SNS_ARN ?? null;
-    
-    this.authEventsRepository = new AuthEventsRepository(this.createdUserTopicArn, this.loggedInUserTopicArn);
+
+    this.authEventsRepository = new AuthEventsRepository(
+      this.createdUserTopicArn,
+      this.loggedInUserTopicArn
+    );
   }
 
   async login(username, password) {
@@ -70,19 +74,31 @@ export class AuthService {
         newData.expiresIn
       );
 
-      return ({
+      return {
         accessToken: newData.accessToken,
-        idToken: newData.idToken
-      });
+        idToken: newData.idToken,
+      };
     } else {
       return null;
     }
   }
 
-  async createUser(username, password, name = null, companyName = null, spaceName = null) {
+  async createUser(
+    username,
+    password,
+    name = null,
+    companyName = null,
+    spaceName = null
+  ) {
     const createUser = new CreateUserUseCase(this.cognitoRepository);
 
-    const newUserData = await createUser.execute(username, password, name, companyName, spaceName);
+    const newUserData = await createUser.execute(
+      username,
+      password,
+      name,
+      companyName,
+      spaceName
+    );
 
     const publishCreateUser = new PublishCreateUserUseCase(
       this.authEventsRepository
@@ -100,11 +116,18 @@ export class AuthService {
   async updateUser(accessToken, attrs = {}) {
     // Resolve username from accessToken -> GetUser
     const userData = await this.getUserData(accessToken);
-    if (!userData) return { ok: false, message: 'Could not resolve user' };
-    const username = userData.Username || userData.username || null;
-    if (!username) return { ok: false, message: 'Could not determine username' };
 
-    const res = await this.cognitoRepository.updateUserAttributes(username, attrs);
+    if (!userData) return { ok: false, message: "Could not resolve user" };
+
+    const username = userData.Username || userData.username || null;
+
+    if (!username)
+      return { ok: false, message: "Could not determine username" };
+
+    const updateUserUseCase = new UpdateUserUseCase(this.cognitoRepository);
+
+    const res = await updateUserUseCase.execute(username, attrs);
+    
     return res;
   }
 

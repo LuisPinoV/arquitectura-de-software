@@ -17,7 +17,7 @@ const setRefreshToken = (token: string) => {
   localStorage.setItem("refreshToken", token);
 };
 
-async function refreshTokens() {
+export async function refreshTokens() {
   if (isRefreshing) {
     return new Promise(resolve => refreshQueue.push(resolve));
   }
