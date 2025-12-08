@@ -15,8 +15,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Row, Col } from "antd";
 import { apiFetch } from "@/lib/apiClient";
-import "./nuevo_espacio.css";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 const NuevoEspacioSchema = z.object({
   spaceName: z.string().min(1, "El nombre del espacio es requerido"),
@@ -28,6 +40,34 @@ const NuevoEspacioSchema = z.object({
 
 export default function NuevoEspacioPage() {
   const router = useRouter();
+
+  const [openAler, setOpenAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
+
+  const [loadingRegistration, setLoadingRegistration] =
+    useState<boolean>(false);
+
+  const showAlert = (msg: string) => {
+    setAlertMessage(msg);
+    setOpenAlert(true);
+  };
+
+  const closeAlert = () => {
+    setAlertMessage("");
+    setOpenAlert(false);
+  };
+
+  const registerButton = (
+    <Button type="submit" className="w-full">
+      Crear espacio
+    </Button>
+  );
+
+  const loadingButton = (
+    <Button type="submit" className="w-full">
+      <Spinner>Cargando...</Spinner>
+    </Button>
+  );
 
   const form = useForm<z.infer<typeof NuevoEspacioSchema>>({
     resolver: zodResolver(NuevoEspacioSchema),
@@ -42,132 +82,156 @@ export default function NuevoEspacioPage() {
 
   async function onSubmit(data: z.infer<typeof NuevoEspacioSchema>) {
     try {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      setLoadingRegistration(true);
       const res = await apiFetch("/api/spaces/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(data),
       });
 
       const json = await res?.json().catch(() => ({}));
-
       console.debug("Create espacio response", {
         status: res?.status,
         body: json,
       });
 
-      if (!res?.ok) {
-        alert(json.message || "Error creando el espacio");
-        return;
+      if (res?.ok) {
+        const createdId =
+          json.idBox ||
+          json.id ||
+          (typeof json === "object" && json.idBox) ||
+          null;
+        if (createdId) {
+          setLoadingRegistration(false);
+          showAlert(`Espacio creado correctamente (id: ${createdId})`);
+        } else {
+          setLoadingRegistration(false);
+          showAlert(json.message || "Espacio creado correctamente");
+        }
+      } else {
+        setLoadingRegistration(false);
+        showAlert(json.message || "Error creando el espacio");
       }
-
-      const createdId =
-        json.idBox || json.id || (typeof json === "object" && json.idBox);
-
-      alert(
-        createdId
-          ? `Espacio creado correctamente (id: ${createdId})`
-          : json.message || "Espacio creado correctamente"
-      );
-
-      router.push("/dashboard/agendamiento");
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(e);
-      alert("Error creando el espacio");
+      setLoadingRegistration(false);
+      showAlert("Error creando el espacio");
     }
   }
 
   return (
-    <div className="nuevo-espacio-container flex justify-center p-4">
-      <div className="w-full max-w-xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Nuevo espacio</CardTitle>
-          </CardHeader>
+    <div className="nuevo-espacio-container">
+      <Row justify="center">
+        <Col xs={24} sm={18} md={14} lg={10} xl={8}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Nuevo espacio</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="flex flex-col gap-4"
+                >
+                  <FormField
+                    control={form.control}
+                    name="spaceName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del espacio</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Sala A, Box 12" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col gap-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="spaceName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del espacio</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: Sala A, Box 12" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoría</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Opcional" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categoría</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Opcional" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="pasillo"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pasillo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: P1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="pasillo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pasillo</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ej: P1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="capacidad"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Capacidad</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="capacidad"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Capacidad</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Descripción</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Descripción breve..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descripción</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Descripción breve..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full mt-4">
-                  Crear espacio
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+                  <div className="mt-4">
+                    {loadingRegistration ? loadingButton : registerButton}
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </Col>
+      </Row>
+      <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Creación espacio</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={closeAlert}>
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
