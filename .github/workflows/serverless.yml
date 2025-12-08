@@ -1,4 +1,4 @@
-name: Serverless
+name: Serverless Deploy
 
 on:
   workflow_dispatch:
@@ -8,6 +8,7 @@ on:
 
 jobs:
   deploy-serverless:
+    needs: deploy
     runs-on: ubuntu-latest
 
     defaults:
@@ -15,22 +16,43 @@ jobs:
         working-directory: ./Backend_node/services
 
     steps:
+      # ---------------------------
+      # CHECKOUT
+      # ---------------------------
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ---------------------------
+      # DOWNLOAD TERRAFORM OUTPUT JSON
+      # ---------------------------
+      - name: Download terraform outputs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-outputs
+          path: ./Backend_node/infra
+
+      - name: Show terraform outputs
+        run: cat terraform-output.json
+
+      # ---------------------------
+      # NODE / SERVERLESS
+      # ---------------------------
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Install Serverless v3
-        run: npm install -g serverless@3
+      - name: Install Serverless v4
+        run: npm install -g serverless@4.25.0
 
+      # ---------------------------
+      # DEPLOY
+      # ---------------------------
       - name: Deploy with Serverless
-        run: serverless deploy --verbose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: serverless deploy --verbose
