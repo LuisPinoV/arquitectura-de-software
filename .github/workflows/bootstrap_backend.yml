@@ -4,10 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       state_bucket_name:
-        description: 'Optional S3 bucket name for terraform state (must be globally unique). If empty, generated.'
         required: false
       lock_table_name:
-        description: 'Optional DynamoDB table name for locking. If empty, generated.'
         required: false
 
 jobs:
@@ -34,21 +32,21 @@ jobs:
       - name: Generate resource names (if not provided)
         id: gen_names
         run: |
-          owner_repo="$GITHUB_REPOSITORY"
-          owner="${owner_repo%%/*}"
-          repo="${owner_repo##*/}"
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          REGION=${AWS_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}
+
           if [ -n "${{ github.event.inputs.state_bucket_name }}" ]; then
             bucket_name="${{ github.event.inputs.state_bucket_name }}"
           else
-            bucket_name="tf-state-${repo}-${owner}-${GITHUB_RUN_NUMBER}"
-            bucket_name=$(echo "$bucket_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9.-]/-/g')
+            bucket_name="terraform-state-${ACCOUNT_ID}-${REGION}"
           fi
+
           if [ -n "${{ github.event.inputs.lock_table_name }}" ]; then
             lock_name="${{ github.event.inputs.lock_table_name }}"
           else
-            lock_name="tf-lock-${repo}-${owner}-${GITHUB_RUN_NUMBER}"
-            lock_name=$(echo "$lock_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')
+            lock_name="terraformState${ACCOUNT_ID}"
           fi
+
           echo "TF_STATE_BUCKET=$bucket_name" >> $GITHUB_ENV
           echo "TF_LOCK_TABLE=$lock_name" >> $GITHUB_ENV
           echo "Generated TF_STATE_BUCKET=$bucket_name"
