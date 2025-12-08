@@ -71,6 +71,12 @@ export function SiteHeader() {
       { label: t("settings.title"), href: "/dashboard/account-settings" },
       { label: "Temas" },
     ],
+    "/dashboard/account-settings/general": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("settings.title"), href: "/dashboard/account-settings" },
+      { label: "General" },
+    ],
   };
 
   const items = breadcrumbMap[pathname] || [];

@@ -14,31 +14,22 @@ export async function GET(req: NextRequest) {
   });
   const data = await resSchedule.json();
 
-  if (!data) {
-    return NextResponse.json([]);
-  }
+  const resScheduleBox = data
+  .filter((curData: any) => {
+    const curDataDate = new Date(curData["fecha"]);
+    const curDataBox = String(curData["idbox"]);
 
-  console.log(data);
-  const resScheduleBox = Array.isArray(data)
-    ? data
-        .filter((curData: any) => {
-          const curDataDate = new Date(curData["fecha"]);
-          const curDataBox = String(curData["idbox"]);
+    return curDataBox === box && curDataDate >= today;
+  })
+  .map((curData: any) => {
+    const curDataDate = new Date(curData["fecha"]);
 
-          return curDataBox === box && curDataDate >= today;
-        })
-        .map((curData: any) => {
-          const curDataDate = new Date(curData["fecha"]);
-
-          return {
-            idAgendamiento: curData["idagendamiento"], // or some real ID field
-            date: curDataDate.toISOString().split("T")[0],
-            time: `${curData["horaentrada"].split(":")[0]}:${
-              curData["horaentrada"].split(":")[1]
-            }`,
-          };
-        })
-    : [];
+    return {
+      idAgendamiento: curData["idagendamiento"], // or some real ID field
+      date: curDataDate.toISOString().split("T")[0],
+      time: `${curData["horaentrada"].split(":")[0]}:${curData["horaentrada"].split(":")[1]}`
+    };
+  });
 
   return NextResponse.json(resScheduleBox);
 }

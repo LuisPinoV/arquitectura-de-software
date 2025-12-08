@@ -6,20 +6,19 @@ export async function GET(req: NextRequest) {
   const date = today.split("T")[0];
   const hour = today.split("T")[1];
 
-  const apiUrl = process.env.BACKEND_ADDRESS;
   const incomingToken = req.headers.get("authorization") ?? "";
+  const apiUrl = process.env.BACKEND_ADDRESS;
 
-  const res = await fetch(`${apiUrl}/tomah/query2/${date}/${hour}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": incomingToken,   // <-- Forward it to backend
-    },
-  });
+  const res = await fetch(
+    `${apiUrl}/tomah/query2/${date}/${hour}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": incomingToken,   // <-- Forward it to backend
+      },
+    }
+  );
   const data = await res.json();
-
-  if (!data) {
-    return NextResponse.json({});
-  }
 
   const keys = Object.keys(data);
   const values = Object.values(data);
@@ -40,5 +39,5 @@ export async function GET(req: NextRequest) {
 
   const final_data = dataArr.slice(0, 9);
 
-  return NextResponse.json(final_data);
+  return NextResponse.json({ final_data });
 }

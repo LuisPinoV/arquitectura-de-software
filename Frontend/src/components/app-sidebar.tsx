@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, House, Search, NotebookPen, Plus } from "lucide-react";
+import {
+  BookOpen,
+  House,
+  Search,
+  NotebookPen,
+  Plus,
+  Calendar1,
+} from "lucide-react";
 
 import Image from "next/image";
 
@@ -24,48 +31,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userName, setUserName] = React.useState<string | null>(null);
   const [spaceName, setSpaceName] = React.useState<string | null>(null);
 
-  const navMainData = React.useMemo(() => [
-    {
-      title: t("nav.general"),
-      url: "/dashboard/general",
-      icon: House,
-      isActive: true,
-    },
-    {
-      title: t("nav.search"),
-      url: "/dashboard/busqueda",
-      icon: Search,
-    },
-    {
-      title: t("nav.reports"),
-      url: "/dashboard/reportaje",
-      icon: BookOpen,
-    },
-    {
-      title: `${t("nav.addSpace")} ${spaceName ?? t("common.space")}`,
-      url: "/dashboard/nuevo-espacio",
-      icon: Plus,
-    },
-    {
-      title: t("nav.scheduling"),
-      url: "/dashboard/agendamiento",
-      icon: NotebookPen,
-      items: [
-        {
-          title: t("nav.calendar"),
-          url: "/dashboard/agendamiento/calendario",
-        },
-        {
-          title: t("nav.requests"),
-          url: "/dashboard/agendamiento/peticiones",
-        },
-        {
-          title: t("nav.importData"),
-          url: "/dashboard/agendamiento/import_data",
-        },
-      ],
-    },
-  ], [t, spaceName]);
+  const navMainData = React.useMemo(
+    () => [
+      {
+        title: t("nav.general"),
+        url: "/dashboard/general",
+        icon: House,
+        isActive: true,
+      },
+      {
+        title: t("nav.search"),
+        url: "/dashboard/busqueda",
+        icon: Search,
+      },
+      {
+        title: t("nav.reports"),
+        url: "/dashboard/reportaje",
+        icon: BookOpen,
+      },
+      {
+        title: t("nav.scheduling"),
+        url: "/dashboard/agendamiento",
+        icon: NotebookPen,
+      },
+      {
+        title: `${t("nav.calendar")}`,
+        url: "/dashboard/agendamiento/calendario",
+        icon: Calendar1,
+      },
+      {
+        title: `${t("nav.addSpace")} ${spaceName ?? t("common.space")}`,
+        url: "/dashboard/nuevo-espacio",
+        icon: Plus,
+      },
+    ],
+    [t, spaceName]
+  );
 
   React.useEffect(() => {
     function parseJwt(token: string | null) {
@@ -142,12 +143,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Image
-                    src="/asd.svg"
-                    alt={"ICO"}
-                    height={20}
-                    width={20}
-                  />
+                  <Image src="/asd.svg" alt={"ICO"} height={20} width={20} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate text-lg font-medium">
