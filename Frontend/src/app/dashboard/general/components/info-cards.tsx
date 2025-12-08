@@ -77,7 +77,7 @@ export function InfoCards() {
               {percentageUsage}
             </CardTitle>
             <CardAction>
-              <Link href="#">{t("common.viewMore")}</Link>
+              <Link href="/dashboard/reportaje">{t("common.viewMore")}</Link>
             </CardAction>
           </CardHeader>
         </Card>
@@ -92,7 +92,7 @@ export function InfoCards() {
               {countData}
             </CardTitle>
             <CardAction>
-              <Link href="#">{t("common.viewMore")}</Link>
+              <Link href="/dashboard/reportaje">{t("common.viewMore")}</Link>
             </CardAction>
           </CardHeader>
         </Card>

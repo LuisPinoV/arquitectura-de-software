@@ -72,19 +72,21 @@ export function ChartChangeByMonths() {
     },
   } satisfies ChartConfig;
 
-  const [clientProfile, setClientProfile] = useState<any>(null)
+  const [clientProfile, setClientProfile] = useState<any>(null);
 
   useEffect(() => {
-    const p = getUserProfile()
-    setClientProfile(p)
-  }, [])
+    const p = getUserProfile();
+    setClientProfile(p);
+  }, []);
 
-  const space = clientProfile?.spaceName ?? "Espacio"
+  const space = clientProfile?.spaceName ?? "Espacio";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("dashboard.changeInUsage")} {space}</CardTitle>
+        <CardTitle>
+          {t("dashboard.changeInUsage")} {space}
+        </CardTitle>
         <CardDescription>{t("dashboard.janToJune2024")}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -122,14 +124,14 @@ export function ChartChangeByMonths() {
 export function ChartInfoCards() {
   const { t } = useLanguage();
 
-  const [clientProfile, setClientProfile] = useState<any>(null)
+  const [clientProfile, setClientProfile] = useState<any>(null);
 
   useEffect(() => {
-    const p = getUserProfile()
-    setClientProfile(p)
-  }, [])
+    const p = getUserProfile();
+    setClientProfile(p);
+  }, []);
 
-  const space = clientProfile?.spaceName ?? "Espacio"
+  const space = clientProfile?.spaceName ?? "Espacio";
 
   const defaultData = [
     {
@@ -158,8 +160,7 @@ export function ChartInfoCards() {
   const [infoCardsData, setInfoCardsData] = useState<any[]>(defaultData);
 
   useEffect(() => {
-
-    if (!clientProfile) return
+    if (!clientProfile) return;
 
     async function fetchData() {
       const today = new Date();
@@ -230,7 +231,6 @@ export function ChartInfoCards() {
           dataChartSchedulingCount,
           dataChartCurrentlyAvailableCount,
         ]);
-
       } catch (error) {}
     }
 
@@ -250,7 +250,9 @@ export function ChartInfoCards() {
   return (
     <Card className="p-0 m-2 mb-4">
       <CardHeader className="mt-2 text-lg items-center text-center">
-        <CardTitle>{t("dashboard.infoAboutUsage")} {space}</CardTitle>
+        <CardTitle>
+          {t("dashboard.infoAboutUsage")} {space}
+        </CardTitle>
       </CardHeader>
       <Row justify={"center"} align="middle">
         {infoCardsData.map((data: any, i: number) => (
@@ -310,7 +312,11 @@ export function ChartInfoCards() {
                         >
                           <Label
                             content={({ viewBox }) => {
-                              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                              if (
+                                viewBox &&
+                                "cx" in viewBox &&
+                                "cy" in viewBox
+                              ) {
                                 return (
                                   <text
                                     x={viewBox.cx}
@@ -356,7 +362,6 @@ export function ChartInfoCards() {
   );
 }
 
-
 export function ChartBoxesAcrossTime() {
   const { t } = useLanguage();
   const chartConfig = {
@@ -379,7 +384,6 @@ export function ChartBoxesAcrossTime() {
   const [dateRangeType, setDateRangeType] = useState("semanal");
 
   React.useEffect(() => {
-
     if (isMobile) {
       setDateRangeType("semanal");
     }
@@ -401,7 +405,6 @@ export function ChartBoxesAcrossTime() {
   const firstDateISO = dateRange[0].toISOString().split("T")[0];
 
   useEffect(() => {
-
     async function fetchData() {
       try {
         const res = await apiFetch(
@@ -429,14 +432,16 @@ export function ChartBoxesAcrossTime() {
     };
   });
 
-  
-
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>{t("dashboard.usage")} {space} {t("dashboard.overTime")}</CardTitle>
+        <CardTitle>
+          {t("dashboard.usage")} {space} {t("dashboard.overTime")}
+        </CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/card:block">{t("dashboard.totalOverTime")}</span>
+          <span className="hidden @[540px]/card:block">
+            {t("dashboard.totalOverTime")}
+          </span>
         </CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
@@ -446,9 +451,15 @@ export function ChartBoxesAcrossTime() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[600px]/card:flex"
           >
-            <ToggleGroupItem value="semanal">{t("dashboard.thisWeek")}</ToggleGroupItem>
-            <ToggleGroupItem value="mensual">{t("dashboard.thisMonth")}</ToggleGroupItem>
-            <ToggleGroupItem value="anual">{t("dashboard.thisYear")}</ToggleGroupItem>
+            <ToggleGroupItem value="semanal">
+              {t("dashboard.thisWeek")}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="mensual">
+              {t("dashboard.thisMonth")}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="anual">
+              {t("dashboard.thisYear")}
+            </ToggleGroupItem>
           </ToggleGroup>
           <Select value={dateRangeType} onValueChange={setDateRangeType}>
             <SelectTrigger
