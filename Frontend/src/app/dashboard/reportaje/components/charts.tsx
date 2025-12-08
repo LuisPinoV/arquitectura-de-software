@@ -153,13 +153,6 @@ export function ChartInfoCards() {
       MaxValue: 3600,
       fill: "var(--primary)",
     },
-    {
-      Nombre: `${t("dashboard.usageOf")} ${space}`,
-      Descripcion: t("dashboard.quantity"),
-      Valor: 0,
-      MaxValue: 3600,
-      fill: "var(--primary)",
-    },
   ];
 
   const [infoCardsData, setInfoCardsData] = useState<any[]>(defaultData);
@@ -217,25 +210,6 @@ export function ChartInfoCards() {
           fill: "var(--primary)",
         };
 
-        const resAllPendingSchedules = await apiFetch(
-          `/api/reports/get_all_pending_schedules`
-        );
-        if (!resAllPendingSchedules) {
-          console.error("No response from apiFetch for get_all_pending_schedules");
-          return;
-        }
-
-        const dataAllPendingSchedules: any =
-          await resAllPendingSchedules?.json();
-
-        const dataChartAllPendingSchedules = {
-          Nombre: `${t("dashboard.scheduling")} ${t("dashboard.pendingConfirmation")}`,
-          Descripcion: t("dashboard.quantity"),
-          Valor: parseFloat(dataAllPendingSchedules.pendingCount ?? 0),
-          MaxValue: parseFloat(dataAllPendingSchedules.allCount ?? 0),
-          fill: "var(--primary)",
-        };
-
         const resCurrentlyAvailableCount = await apiFetch(
           `/api/reports/boxes_currently_available_count`
         );
@@ -254,7 +228,6 @@ export function ChartInfoCards() {
         setInfoCardsData([
           dataChartUsageByDate,
           dataChartSchedulingCount,
-          dataChartAllPendingSchedules,
           dataChartCurrentlyAvailableCount,
         ]);
 

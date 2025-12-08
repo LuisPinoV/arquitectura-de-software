@@ -127,7 +127,7 @@ export function SearchCard({ data }: any) {
         <Separator className="my-4 mx-0 px-0 w-100" />
         <div className="card-text">
           <p>
-            <span className="font-bold card-text-subtitle">Especialidad </span>{" "}
+            <span className="font-bold card-text-subtitle">Categoría </span>{" "}
             {data.especialidad} <br />
             <span className="font-bold card-text-subtitle">Estado </span>{" "}
             {data.disponible ? "Libre" : "Ocupado"} <br />
