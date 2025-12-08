@@ -6,6 +6,7 @@ import {
   PutCommand,
   GetCommand,
   QueryCommand,
+  ScanCommand,
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
@@ -66,22 +67,22 @@ export class UsuarioRepository {
   }
 
   async getAllPacientes(organizacionId) {
-    const command = new QueryCommand({
+    const command = new ScanCommand({
       TableName: this.tableName,
-      IndexName: "AgendamientosPorPaciente",
-      KeyConditionExpression: "PacienteId = :pid",
-      FilterExpression: "organizacionId = :orgId",
+      FilterExpression: "begins_with(PK, :pkPrefix) AND SK = :sk AND organizacionId = :orgId",
       ExpressionAttributeValues: {
-        ":pid": "dummy",
-        ":orgId": organizacionId
+        ":pkPrefix": "PACIENTE#",
+        ":sk": "PROFILE",
+        ":orgId": organizacionId,
       },
     });
+
+    const result = await this.dynamo.send(command);
 
     return result.Items || [];
   }
 
   async updateUsuario(idPaciente, updates, organizacionId) {
-    // Primero validar que el usuario pertenece a la organización
     const usuarioActual = await this.getUsuario(idPaciente, organizacionId);
     if (!usuarioActual) {
       throw new Error(`Usuario ${idPaciente} no encontrado`);
