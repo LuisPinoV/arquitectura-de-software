@@ -31,13 +31,12 @@ export class BoxRepository {
     this.dynamo = dynamo;
   }
 
-  async createBox({ idBox, nombre, especialidad, pasillo, capacidad, disponible = true }) {
+  async createBox({ idBox, especialidad, pasillo, capacidad, disponible = true }) {
     const now = new Date().toISOString();
     const item = {
       PK: `BOX#${idBox}`,
       SK: "METADATA",
       tipo: "Box",
-      nombre,
       idBox,
       especialidad,
       pasillo,

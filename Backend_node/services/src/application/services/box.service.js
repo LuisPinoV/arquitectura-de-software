@@ -49,7 +49,7 @@ export class BoxService {
   }
 
   async createBox(body) {
-    if (!body.idBox || !body.especialidad || !body.pasillo || !body.capacidad || !body.nombre)
+    if (!body.idBox || !body.especialidad || !body.pasillo || !body.capacidad)
       throw new Error("Data missing");
     
     const createBox = new CreateBoxUseCase(this.boxRepository);
