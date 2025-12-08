@@ -25,6 +25,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { apiFetch } from "@/lib/apiClient";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 export function BoxSearchMain() {
   const pagesPerDisplay = {
@@ -62,8 +63,14 @@ export function BoxSearchMain() {
     fetchData();
   }, []);
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Espacio";
+  const [profile, setClientProfile] = useState<any>(null)
+  
+    useEffect(() => {
+      const p = getUserProfile()
+      setClientProfile(p)
+    }, [])
+  
+    const space = profile?.spaceName ?? "Espacio"
 
   useEffect(() => {
     async function fetchData() {

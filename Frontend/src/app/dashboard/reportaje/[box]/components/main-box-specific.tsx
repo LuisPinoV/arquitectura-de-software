@@ -20,6 +20,8 @@ import { Separator } from "@/components/ui/separator";
 import { useUserProfile } from "@/hooks/use-user";
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
+import { getUserProfile } from "@/utils/get_user_profile";
+import { apiFetch } from "@/lib/apiClient";
 
 export default function MainBoxSpecific({ box }: { box: any }) {
   const router = useRouter();
@@ -28,11 +30,11 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   useEffect(() => {
     async function fetchDataTodayBox() {
       try {
-        const res = await fetch(
-          `/dashboard/reportaje/boxes/api/get_data_today_box?idBox=${box}`
+        const res = await apiFetch(
+          `/api/reports/get_data_today_box?idBox=${box}`
         );
-        const data: any = await res.json();
-        setBoxCurrentData(data);
+        const data: any = await res?.json();
+        setBoxCurrentData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -41,16 +43,22 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   }, []);
   let nextTime = "--:--";
   if (boxCurrentData) {
-    if (boxCurrentData["proximoBloque"]) {
-      nextTime = `${boxCurrentData["proximoBloque"].split(":")[0]}:${
-        boxCurrentData["proximoBloque"].split(":")[1]
+    if (boxCurrentData.proximoBloque) {
+      nextTime = `${boxCurrentData.proximoBloque.split(":")[0]}:${
+        boxCurrentData.proximoBloque.split(":")[1]
       }`;
     }
   }
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  
+  const [clientProfile, setClientProfile] = useState<any>(null);
+  
+    useEffect(() => {
+      const p = getUserProfile();
+      setClientProfile(p);
+    }, []);
+  
+    const space = clientProfile?.spaceName ?? "Espacio";
 
-  // cositas QR
   const qrRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = () => {
@@ -262,7 +270,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <TablaInventario />
+              <TablaInventario idBox={box}/>
             </CardContent>
           </Card>
         </Col>

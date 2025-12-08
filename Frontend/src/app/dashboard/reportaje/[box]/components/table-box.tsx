@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { apiFetch } from "@/lib/apiClient";
 
 export type Schedule = {
   idAgendamiento: number;
@@ -105,14 +106,14 @@ export function ScheduleTable({ box }: { box: any }) {
   React.useEffect(() => {
     async function GetScheduleData() {
       try {
-        const res = await fetch(
-          `/dashboard/reportaje/boxes/api/get_data_schedules_box?idBox=${box}`
+        const res = await apiFetch(
+          `/api/reports/get_data_schedules_box?idBox=${box}`
         );
-        const data = await res.json();
-        console.log("Fetched schedules:", data);
-        setScheduleData(data);
+        const data = await res?.json();
+        
+        setScheduleData(data ?? []);
       } catch (error) {
-        console.error("Error fetching schedule data:", error);
+        console.error("Error fetching schedule data: ", error);
       }
     }
 
@@ -138,7 +139,6 @@ export function ScheduleTable({ box }: { box: any }) {
 
   return (
     <div className="w-full">
-      {/* Search input */}
       <div className="flex items-center py-2">
         <Input
           placeholder="Buscar..."
@@ -148,7 +148,6 @@ export function ScheduleTable({ box }: { box: any }) {
         />
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto rounded-md border">
         <Table className="table-fixed">
           <TableHeader>

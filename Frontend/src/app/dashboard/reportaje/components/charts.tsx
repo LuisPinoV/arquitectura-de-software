@@ -70,8 +70,14 @@ export function ChartChangeByMonths() {
     },
   } satisfies ChartConfig;
 
-  const userProfile = useUserProfile();
-  const space = userProfile?.spaceName ?? "Espacio";
+  const [clientProfile, setClientProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const p = getUserProfile()
+    setClientProfile(p)
+  }, [])
+
+  const space = clientProfile?.spaceName ?? "Espacio"
 
   return (
     <Card>

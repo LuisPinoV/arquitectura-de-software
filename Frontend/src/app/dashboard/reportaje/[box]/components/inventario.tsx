@@ -10,17 +10,18 @@ const inventario = [
     }
 ]
 
-export function TablaInventario() {
+export function TablaInventario({idBox}:{idBox:string}) {
     const [tableData, setData] = useState<any[]>(inventario);
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const res = await apiFetch(
-                    `/api/tabla/inventario/{idbox}`// Falta crear la API xdddd
+                    `/api/reports/inventory?box=${idBox}`
                 );
                 const data: any = await res?.json();
-                setData(data ?? []);
+
+                setData(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error("Error en la obtención de los datos:", error);
             }
