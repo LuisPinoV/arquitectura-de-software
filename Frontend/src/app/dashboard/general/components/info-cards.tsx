@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import DynamicSpaceLabel from '@/components/dynamic-space-label';
+import DynamicSpaceLabel from "@/components/dynamic-space-label";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiClient";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,62 +22,57 @@ export function InfoCards() {
   const [countData, setCountData] = useState<string>("");
 
   useEffect(() => {
-      async function fetchData() {
-        const today = new Date();
-        const yesterday = new Date(today);
-        const tomorrow = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        tomorrow.setDate(today.getDate() + 1);
-  
-        const yesterdayISO = yesterday.toISOString().split("T")[0];
-        const tomorrowISO = tomorrow.toISOString().split("T")[0];
-  
-        try {
-          const resBoxes = await apiFetch(
-            `/api/reports/get_all_boxes_count`
-          );
-          if (!resBoxes) return;
-          const countBoxes: any = await resBoxes.json();
-          const boxes: any = countBoxes["dataLength"];
-  
-          const res1 = await apiFetch(
-            `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
-          );
-          if (!res1) return;
-          const data1: any = await res1.json();
-          let usageData1 = "0%";
-          if (
-            data1 &&
-            data1.length > 1 &&
-            data1[1] &&
-            typeof data1[1]["uso"] === "number"
-          ) {
-            usageData1 = data1 ? `${data1[1]["uso"].toFixed(2)}%` : "0%";
-          }
+    async function fetchData() {
+      const today = new Date();
+      const yesterday = new Date(today);
+      const tomorrow = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      tomorrow.setDate(today.getDate() + 1);
 
-          setPercentageUsage(usageData1);
-  
-          const res2 = await apiFetch(
-            `/api/reports/get_all_scheduling_today_count`
-          );
-          if (!res2) return;
-          const data2: any = await res2.json();
-          const lenData2: any = data2 ?? 0;
+      const yesterdayISO = yesterday.toISOString().split("T")[0];
+      const tomorrowISO = tomorrow.toISOString().split("T")[0];
 
-          setCountData(lenData2);
+      try {
 
-        } catch (error) {
-          console.error("Error fetching data:", error);
+        const res1 = await apiFetch(
+          `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
+        );
+        if (!res1) return;
+        const data1: any = await res1.json();
+        let usageData1 = "0%";
+        if (
+          data1 &&
+          data1.length > 1 &&
+          data1[1] &&
+          typeof data1[1]["uso"] === "number"
+        ) {
+          usageData1 = data1 ? `${data1[1]["uso"].toFixed(2)}%` : "0%";
         }
+
+        setPercentageUsage(usageData1);
+
+        const res2 = await apiFetch(
+          `/api/reports/get_all_scheduling_today_count`
+        );
+        if (!res2) return;
+        const data2: any = await res2.json();
+        const lenData2: any = data2.dataLength ?? 0;
+
+        setCountData(lenData2);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-      fetchData();
-    }, []);
+    }
+    fetchData();
+  }, []);
   return (
     <Row justify="center" align="top">
       <Col className="general-col" xs={24} sm={12} md={12} lg={12} xl={12}>
         <Card className="@container/card info-card">
-            <CardHeader>
-            <CardDescription><DynamicSpaceLabel template={t("dashboard.usageToday")} /></CardDescription>
+          <CardHeader>
+            <CardDescription>
+              <DynamicSpaceLabel template={t("dashboard.usageToday")} />
+            </CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {percentageUsage}
             </CardTitle>
@@ -90,7 +85,9 @@ export function InfoCards() {
       <Col className="general-col" xs={24} sm={12} md={12} lg={12} xl={12}>
         <Card className="@container/card info-card">
           <CardHeader>
-            <CardDescription>{t("dashboard.schedulingRequests")}</CardDescription>
+            <CardDescription>
+              {t("dashboard.schedulingRequests")}
+            </CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {countData}
             </CardTitle>
