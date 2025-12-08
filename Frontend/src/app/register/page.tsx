@@ -4,6 +4,7 @@ import { Header } from "../login/loginComponents/headerLogin/headerLogin";
 import { Footer } from "../login/loginComponents/footerLogin/footerLogin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiFetch } from "@/lib/apiClient";
 import {
   Card,
   CardContent,
@@ -78,7 +79,7 @@ export default function RegisterPage() {
   async function onSubmit(data: z.infer<typeof RegisterSchema>) {
     try {
       setLoadingRegister(true);
-      const res = await fetch("/api/session/createUser", {
+      const res = await apiFetch("/api/session/createUser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -90,6 +91,9 @@ export default function RegisterPage() {
         }),
       });
 
+      if (!res) {
+        throw new Error("No response from create user endpoint");
+      }
       
       const resJson = await res.json();
       setLoadingRegister(false);

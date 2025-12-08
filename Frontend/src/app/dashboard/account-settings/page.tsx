@@ -27,7 +27,7 @@ export default function Page() {
   return (
     <Row justify={"center"} align={"middle"} style={{ height: "100%" }}>
       <Col xs={24} md = {12} xl={8} style={settingsButtonsColsStyle}>
-        <SettingButton Icon = {alertIcon} title = "General" url = "#"/>
+        <SettingButton Icon = {alertIcon} title = "General" url = "/dashboard/account-settings/general"/>
       </Col>
       <Col
         className="settings-cols"

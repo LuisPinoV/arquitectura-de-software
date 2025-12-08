@@ -40,6 +40,7 @@ export type Box = {
 
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/apiClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /*
 const data: Box[] = [
@@ -58,7 +59,7 @@ const data: Box[] = [
 
 export function BoxesDataTable() {
   const router = useRouter();
-  
+  const { t } = useLanguage();
   const columns: ColumnDef<Box>[] = [
   {
     accessorKey: "id",
@@ -68,7 +69,7 @@ export function BoxesDataTable() {
         className="flex items-center gap-1"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Nombre
+        {t("common.name")}
         <ArrowUpDown className="w-4 h-4" />
       </Button>
     ),
@@ -83,7 +84,7 @@ export function BoxesDataTable() {
         className="flex items-center gap-1"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Estado
+        {t("dashboard.state")}
         <ArrowUpDown className="w-4 h-4" />
       </Button>
     ),
@@ -95,7 +96,7 @@ export function BoxesDataTable() {
             : "text-green-600"
         }
       >
-        {row.getValue("state")}
+        {row.getValue("state") === "Ocupado" ? t("dashboard.occupied") : t("dashboard.free")}
       </div>
     ),
     sortingFn: "alphanumeric",
@@ -108,7 +109,7 @@ export function BoxesDataTable() {
         className="flex items-center gap-1"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Uso
+        {t("dashboard.usage")}
         <ArrowUpDown className="w-4 h-4" />
       </Button>
     ),
@@ -123,23 +124,23 @@ export function BoxesDataTable() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Abrir menú</span>
+            <span className="sr-only">{t("dashboard.openMenu")}</span>
             <MoreHorizontal />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("dashboard.actions")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => {router.replace(`/dashboard/reportaje/boxes/${row.getValue("id")}`);
             }}
           >
-            Ver box
+            {t("dashboard.viewBox")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => console.log(`Ver detalles ${row.original.id}`)}
           >
-            Agendar
+            {t("dashboard.schedule")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

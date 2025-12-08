@@ -74,8 +74,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function GraficoConcentracionPorEspecialidad() {
+  const { t } = useLanguage();
   const [chartData, setData] = useState<any[]>([]);
 
   const isMobile = useIsMobile();
@@ -174,9 +176,9 @@ export function GraficoConcentracionPorEspecialidad() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[600px]/card:flex"
           >
-            <ToggleGroupItem value="semanal">Esta semana</ToggleGroupItem>
-            <ToggleGroupItem value="mensual">Este mes</ToggleGroupItem>
-            <ToggleGroupItem value="anual">Este año</ToggleGroupItem>
+            <ToggleGroupItem value="semanal">{t("dashboard.thisWeek")}</ToggleGroupItem>
+            <ToggleGroupItem value="mensual">{t("dashboard.thisMonth")}</ToggleGroupItem>
+            <ToggleGroupItem value="anual">{t("dashboard.thisYear")}</ToggleGroupItem>
           </ToggleGroup>
           <Select value={dateRangeType} onValueChange={setDateRangeType}>
             <SelectTrigger
@@ -188,13 +190,13 @@ export function GraficoConcentracionPorEspecialidad() {
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="semanal" className="rounded-lg">
-                Esta semana
+                {t("dashboard.thisWeek")}
               </SelectItem>
               <SelectItem value="mensual" className="rounded-lg">
-                Esta mes
+                {t("dashboard.thisMonth")}
               </SelectItem>
               <SelectItem value="anual" className="rounded-lg">
-                Este año
+                {t("dashboard.thisYear")}
               </SelectItem>
             </SelectContent>
           </Select>

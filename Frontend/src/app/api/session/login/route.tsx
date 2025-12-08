@@ -11,11 +11,14 @@ export async function POST(request: Request) {
 
     console.log(apiUrl);
 
+    const incomingToken = request.headers.get("authorization") ?? "";
+
     const res = await fetch(`${apiUrl}/auth/login`, {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json",
+        "Authorization": incomingToken,   // <-- Forward it to backend
       },
     });
 
