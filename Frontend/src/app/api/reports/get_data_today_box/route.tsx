@@ -8,12 +8,14 @@ export async function GET(req: NextRequest) {
   const todayTimeISO = today.toISOString().split("T")[1];
 
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
   const res = await fetch(
     `${apiUrl}/usoBox/${box}/${todayDateISO}/${todayTimeISO}`,
     {
       headers: {
         "Content-Type": "application/json",
+        "Authorization": incomingToken,   // <-- Forward it to backend
       },
     }
   );

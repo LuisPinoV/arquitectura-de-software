@@ -42,13 +42,13 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Col, Row } from "antd";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 import {
   getCurrentMonthRange,
   getCurrentWeekRange,
   getCurrentYearRange,
 } from "@/utils/get_current_dates";
 import { useUserProfile } from "@/hooks/use-user";
-import { apiFetch } from "@/lib/apiClient";
 import { getUserProfile } from "@/utils/get_user_profile";
 
 export function ChartBoxAcrossTime({

@@ -4,10 +4,12 @@ export async function GET(req: NextRequest) {
   const box = req.nextUrl.searchParams.get("idBox") || "0";
   const today = new Date();
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
   const resSchedule = await fetch(`${apiUrl}/agendamiento`, {
     headers: {
       "Content-Type": "application/json",
+      "Authorization": incomingToken,   // <-- Forward it to backend
     },
   });
   const data = await resSchedule.json();

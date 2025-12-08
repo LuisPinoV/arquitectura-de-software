@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { apiFetch } from "@/lib/apiClient";
 import {
   ColumnDef,
   flexRender,
@@ -31,7 +32,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { apiFetch } from "@/lib/apiClient";
 
 export type Schedule = {
   idAgendamiento: number;

@@ -18,58 +18,61 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname, useParams } from "next/navigation";
 import React from "react";
 import { useUserProfile } from "@/hooks/use-user";
-
-const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
-  "/dashboard/general": [
-    { label: "Inicio", href: "#" },
-    { label: "General" },
-  ],
-  "/dashboard/reportaje": [
-    { label: "Inicio", href: "#" },
-    { label: "General", href: "/dashboard/general" },
-    { label: "Reportaje" },
-  ],
-  "/dashboard/reportaje/boxes": [
-    { label: "Inicio", href: "#" },
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Reportaje", href: "/dashboard/reportaje" },
-    { label: "Boxes" },
-  ],
-  "/dashboard/busqueda": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Busqueda" },
-  ],
-  "/dashboard/agendamiento": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Agendamiento" },
-  ],
-  "/dashboard/agendamiento/calendario": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Agendamiento", href: "/dashboard/agendamiento" },
-    { label: "Calendario" },
-  ],
-  "/dashboard/agendamiento/import_data": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Agendamiento", href: "/dashboard/agendamiento" },
-    { label: "Importar datos" },
-  ],
-  "/dashboard/account-settings": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Cuenta", href: "/dashboard/general" },
-    { label: "Configuración" },
-  ],
-  "/dashboard/account-settings/themes": [
-    { label: "Dashboard", href: "/dashboard/general" },
-    { label: "Cuenta", href: "/dashboard/general" },
-    { label: "Configuración", href: "/dashboard/account-settings" },
-    { label: "Temas" },
-  ],
-};
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
   const params = useParams();
+  const { t } = useLanguage();
+
+  const breadcrumbMap: Record<string, { label: string; href?: string }[]> = {
+    "/dashboard/general": [
+      { label: t("nav.dashboard"), href: "#" },
+      { label: t("nav.general") },
+    ],
+    "/dashboard/reportaje": [
+      { label: t("nav.dashboard"), href: "#" },
+      { label: t("nav.general"), href: "/dashboard/general" },
+      { label: t("nav.reports") },
+    ],
+    "/dashboard/reportaje/boxes": [
+      { label: t("nav.dashboard"), href: "#" },
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.reports"), href: "/dashboard/reportaje" },
+      { label: t("common.boxes") },
+    ],
+    "/dashboard/busqueda": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.search") },
+    ],
+    "/dashboard/agendamiento": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.scheduling") },
+    ],
+    "/dashboard/agendamiento/calendario": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.scheduling"), href: "/dashboard/agendamiento" },
+      { label: t("nav.calendar") },
+    ],
+    "/dashboard/agendamiento/import_data": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.scheduling"), href: "/dashboard/agendamiento" },
+      { label: t("nav.importData") },
+    ],
+    "/dashboard/account-settings": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("settings.title") },
+    ],
+    "/dashboard/account-settings/themes": [
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("settings.title"), href: "/dashboard/account-settings" },
+      { label: "Temas" },
+    ],
+  };
+
   const items = breadcrumbMap[pathname] || [];
 
   // Use centralized hook so header updates when profile is fetched

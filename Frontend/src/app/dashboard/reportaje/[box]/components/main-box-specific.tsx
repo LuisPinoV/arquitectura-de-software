@@ -16,13 +16,12 @@ import { TablaInventario } from "./inventario";
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 import { Separator } from "@/components/ui/separator";
 import { useUserProfile } from "@/hooks/use-user";
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
 import { getUserProfile } from "@/utils/get_user_profile";
-import { apiFetch } from "@/lib/apiClient";
-
 export default function MainBoxSpecific({ box }: { box: any }) {
   const router = useRouter();
   const [boxCurrentData, setBoxCurrentData] = useState<any>();
