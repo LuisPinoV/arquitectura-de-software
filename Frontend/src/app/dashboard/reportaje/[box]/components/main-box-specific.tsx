@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { QRBox } from "./QR";
 import { useRef } from "react";
-import { TablaInventario } from "./inventario";
+import { TablaInventario, EditarInventario } from "./inventario";
 
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -261,9 +261,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                     <DialogTitle>Editar inventario del {space} {box} </DialogTitle>
                   </DialogHeader>
         
-                  <div>
-                    *Aca van los items del inventario*
-                  </div>
+                  <EditarInventario idBox={box} onClose={() => {}} onSaved={() => {}}/>
 
                 </DialogContent>
               </Dialog>

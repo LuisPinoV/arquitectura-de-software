@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
 
   const box = req.nextUrl.searchParams.get("box") || "0";
 
-  const res = await fetch(`${apiUrl}/box_template_api/${box}`, {
+  const res = await fetch(`${apiUrl}/box/${box}/inventario`, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": incomingToken,
