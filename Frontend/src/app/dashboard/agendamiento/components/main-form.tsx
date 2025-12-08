@@ -253,7 +253,6 @@ export function MainFormScheduling({
         }
         const data: any = await res?.json();
 
-        console.log(data);
         setPersonal(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching data:", error);
