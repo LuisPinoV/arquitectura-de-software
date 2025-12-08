@@ -21,13 +21,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install Serverless v3
-        run: npm install -g serverless@3
+      - name: Install Serverless v4
+        run: npm install -g serverless@4.25.0
 
       - name: Deploy with Serverless
         run: serverless deploy --verbose
