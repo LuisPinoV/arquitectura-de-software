@@ -9,3 +9,7 @@ output "UserPreferencesTableName" {
 output "CognitoTokenTableName" {
     value = aws_dynamodb_table.user_token_table.name
 }
+
+output "terraform_lock_table" {
+    value       = length(aws_dynamodb_table.terraformState) > 0 ? aws_dynamodb_table.terraformState[0].name : ""
+}
