@@ -42,7 +42,8 @@ provider:
           - { Ref: CognitoUserPoolClient }
     cors:
       allowedOrigins:
-        - "*"
+        - "http://localhost:3000"
+        - "https://main.d22ou3h245g1s1.amplifyapp.com"
       allowedMethods:
         - GET
         - POST
