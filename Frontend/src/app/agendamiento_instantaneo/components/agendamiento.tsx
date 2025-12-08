@@ -6,35 +6,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { apiFetch } from "@/lib/apiClient";
 import { useUserProfile } from '@/hooks/use-user';
 import { useRouter } from "next/navigation";
-import {v4 as uuidv4} from 'uuid';
-
-interface Funcionario {
-  idFuncionario: string;
-  nombre: string;
-  rut: string;
-}
-
-interface Paciente {
-  idPaciente: string;
-  nombre: string;
-  apellido: string;
-  rut: string;
-}
 
 export default function AutoFillPopupPage() {
   const router = useRouter();
-  const profile = useUserProfile() as any;
 
   const [authChecked, setAuthChecked] = useState(false);
-  const [showPopup, setShowPopup] = useState(true);
-  const [idUsuario, setIdUsuario] = useState("");
-  const [idFuncionario, setIdFuncionario] = useState("");
-  const [fecha, setFecha] = useState("");
-  const [hora, setHora] = useState("");
-  const [horaSalida, setHoraSalida] = useState("");
-  const [idBox, setIdBox] = useState<string | null>(null);
-  const [listaUsuarios, setListaUsuarios] = useState<Paciente[]>([]);
-  const [listaFuncionarios, setListaFuncionarios] = useState<Funcionario[]>([]);
 
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
@@ -45,12 +21,24 @@ export default function AutoFillPopupPage() {
       setAuthChecked(true)
     }
   }, [router]);
-  
+
+  if (!authChecked) {
+    return null;
+  }
+  const [showPopup, setShowPopup] = useState(true);
+
+  const [idUsuario, setIdUsuario] = useState("");
+  const [idFuncionario, setIdFuncionario] = useState("");
+
+  const [fecha, setFecha] = useState("");
+  const [hora, setHora] = useState("");
+  const [horaSalida, setHoraSalida] = useState("");
+  const [idBox, setIdBox] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resUsuarios = await apiFetch("/api/agendamiento_instantaneo/get_pacientes");
+        const resUsuarios = await apiFetch("/api/agendamiento_instantaneo/get_paciente");
         const dataUsuarios = await resUsuarios?.json();
         setListaUsuarios(dataUsuarios as Paciente[]);
       } catch (err) {
@@ -60,6 +48,7 @@ export default function AutoFillPopupPage() {
       try {
         const resFuncionarios = await apiFetch("/api/agendamiento_instantaneo/get_funcionarios");
         const dataFuncionarios = await resFuncionarios?.json();
+        console.log("Funcionarios:", dataFuncionarios)
         setListaFuncionarios(dataFuncionarios as Funcionario[])
       } catch (error) {
         console.error("Error cargando a los funcionarios", error)
@@ -68,6 +57,22 @@ export default function AutoFillPopupPage() {
 
     fetchData();
   }, []);
+
+  interface Funcionario {
+    idFuncionario: string;
+    nombre: string;
+    rut: string;
+  }
+
+  interface Paciente {
+    idPaciente: string;
+    nombre: string;
+    apellido: string;
+    rut: string;
+  }
+
+  const [listaUsuarios, setListaUsuarios] = useState<Paciente[]>([]);
+  const [listaFuncionarios, setListaFuncionarios] = useState<Funcionario[]>([]);
 
   useEffect(() => {
     const now = new Date();
@@ -87,8 +92,7 @@ export default function AutoFillPopupPage() {
 
   const confirmar = async () => {
     const payload = {
-      idConsulta: uuidv4(),
-      idPaciente:idUsuario,
+      idUsuario,
       idFuncionario,
       fecha,
       horaEntrada: hora,
@@ -97,19 +101,15 @@ export default function AutoFillPopupPage() {
     };
 
     // api para postear agendamiento
-    try {
-      await apiFetch("/api/agendamiento_instantaneo/post_agendamiento", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      console.log('Posteado el agendamiento')
-    } catch (error) {
-      console.error("Error en la creación del agendamiento", error);
-    }
+    await apiFetch("/api/agendamiento_instantaneo/post_agendamiento", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
     setShowPopup(false);
   };
-  
+  const profile = useUserProfile ? useUserProfile() as any : null;
   const space = profile?.spaceName ?? 'Boxes';
 
   return (

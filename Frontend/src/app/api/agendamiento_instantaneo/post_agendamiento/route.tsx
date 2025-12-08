@@ -7,12 +7,12 @@ export async function POST(request: Request) {
         const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
         const incomingToken = request.headers.get("authorization") ?? "";
 
-        const res = await fetch(`${apiUrl}/agendamiento`, {
+        const res = await fetch(`${apiUrl}/agendamiento/`, {
             method: "POST",
             body: JSON.stringify(body),
             headers: {
                 "Content-Type": "application/json",
-                "Authorizarion":incomingToken,
+                "Authorization":incomingToken,
             },
         });
 
