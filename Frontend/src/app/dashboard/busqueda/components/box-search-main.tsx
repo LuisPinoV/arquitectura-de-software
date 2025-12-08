@@ -143,8 +143,6 @@ export function BoxSearchMain() {
   const startIndex = (curPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, dataArr.length);
 
-  console.log(dataArr);
-
   const visibleData = Array.isArray(dataArr) ? dataArr.slice(startIndex, endIndex) : [];
 
   const totalPages = Math.ceil(dataArr.length / itemsPerPage);
