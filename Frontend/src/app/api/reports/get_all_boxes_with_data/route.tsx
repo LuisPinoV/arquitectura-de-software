@@ -19,8 +19,6 @@ export async function GET(req: NextRequest) {
 
   const dataAll = await resAll.json();
 
-  console.log(dataAll);
-
   const dataBoxes: Box[] = [];
 
   if (Array.isArray(dataAll)) {
@@ -40,8 +38,6 @@ export async function GET(req: NextRequest) {
       }
     );
     const dataPerBox = await resPerBox.json();
-
-    console.log(dataPerBox);
 
     if (dataPerBox && dataPerBox.message !== 'Not Found') {
       dataBoxes.push({
