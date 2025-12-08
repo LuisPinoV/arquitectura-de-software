@@ -11,9 +11,11 @@ export async function POST(request: Request) {
     const especialidad = body.category || body.spaceName || "SIN_ESPECIALIDAD";
     const pasillo = body.pasillo || "-";
     const capacidad = body.capacidad ? parseInt(String(body.capacidad)) : 1;
+    const nombre = body.nombre ?? "Espacio";
 
     const payload = {
       idBox,
+      nombre,
       especialidad,
       pasillo,
       capacidad,

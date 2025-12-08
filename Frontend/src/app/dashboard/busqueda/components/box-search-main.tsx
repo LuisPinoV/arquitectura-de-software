@@ -55,6 +55,8 @@ export function BoxSearchMain() {
         const res = await apiFetch(`/api/scheduling/get_boxes`);
         const data: any = await res?.json();
 
+        console.log(data);
+
         setSearchData(data ?? []);
         setChangeableData(data ?? []);
       } catch (error) {
