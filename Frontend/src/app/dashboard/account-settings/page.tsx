@@ -1,10 +1,15 @@
+"use client";
+
 import { Col, Row } from "antd";
 import { AlertCircle, Brush, Accessibility } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import "./account-settings.theme.css";
 import SettingButton from "./components/buttons";
 
 export default function Page() {
+  const { t } = useLanguage();
+  
   const settingsButtonsColsStyle: React.CSSProperties = {
     display: "flex",
     justifyContent: "center",
@@ -27,7 +32,7 @@ export default function Page() {
   return (
     <Row justify={"center"} align={"middle"} style={{ height: "100%" }}>
       <Col xs={24} md = {12} xl={8} style={settingsButtonsColsStyle}>
-        <SettingButton Icon = {alertIcon} title = "General" url = "/dashboard/account-settings/general"/>
+        <SettingButton Icon = {alertIcon} title = {t("settings.general")} url = "/dashboard/account-settings/general"/>
       </Col>
       <Col
         className="settings-cols"
@@ -36,7 +41,7 @@ export default function Page() {
         xl={8}
         style={settingsButtonsColsStyle}
       >
-        <SettingButton Icon = {brushIcon} title = "Personalizar" url = "/dashboard/account-settings/themes"/>
+        <SettingButton Icon = {brushIcon} title = {t("settings.customize")} url = "/dashboard/account-settings/themes"/>
       </Col>
 
       <Col
@@ -46,7 +51,7 @@ export default function Page() {
         xl={8}
         style={settingsButtonsColsStyle}
       >
-        <SettingButton Icon = {accessibilityIcon} title = "Accesibilidad" url = "#"/>
+        <SettingButton Icon = {accessibilityIcon} title = {t("settings.accessibility")} url = "#"/>
       </Col>
     </Row>
   );
