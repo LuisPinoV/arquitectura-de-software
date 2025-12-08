@@ -32,7 +32,7 @@ export function BoxesTable() {
             `/api/general/table_box_data`
           );
           const data: any = await res?.json();
-          setData(data ?? []);
+          setData(Array.isArray(data) ? data : []);
         } catch (error) {
           console.error("Error fetching data:", error);
         }
