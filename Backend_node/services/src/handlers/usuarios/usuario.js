@@ -1,6 +1,7 @@
 import { AutoRouter } from "itty-router";
 import { usuarioRepository } from '../../infrastructure/db/usuario.repository.js';
 import { UsuarioService } from "../../application/services/usuario.service.js";
+import { extractCognitoUserId } from "../../middleware/auth.middleware.js";
 
 //Service
 const usuarioService = new UsuarioService(usuarioRepository);
@@ -59,12 +60,16 @@ async function createUsuario(req) {
   }
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const body = await req.json();
-    const nuevoPaciente = await usuarioService.createUsuario(body);
+    const nuevoPaciente = await usuarioService.createUsuario(body, organizacionId);
     return new Response(JSON.stringify(nuevoPaciente), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al crear usuario:', error);
-    return new Response(JSON.stringify({ message: 'Error al crear usuario' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -72,7 +77,8 @@ async function getUsuario(req) {
   const { usuarioId } = req.params;
 
   try {
-    const usuario = await usuarioService.getUsuario(usuarioId);
+    const organizacionId = extractCognitoUserId(req.event);
+    const usuario = await usuarioService.getUsuario(usuarioId, organizacionId);
     if (!usuario) {
       return new Response(JSON.stringify({ message: 'Usuario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
@@ -80,7 +86,10 @@ async function getUsuario(req) {
     return new Response(JSON.stringify(usuario), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener usuario:', error);
-    return new Response(JSON.stringify({ message: 'Error al obtener usuario' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -88,7 +97,8 @@ async function getUsuarioAgendamientos(req) {
   const { usuarioId } = req.params;
 
   try {
-    const usuario = await usuarioService.getUsuario(usuarioId);
+    const organizacionId = extractCognitoUserId(req.event);
+    const usuario = await usuarioService.getUsuario(usuarioId, organizacionId);
     if (!usuario) {
       return new Response(JSON.stringify({ message: 'Usuario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
     }
@@ -98,7 +108,10 @@ async function getUsuarioAgendamientos(req) {
     return new Response(JSON.stringify({ usuario: usuario, agendamientos }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener usuario con agendamientos:', error);
-    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -108,31 +121,39 @@ async function updateUsuario(req) {
   }
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { usuarioId } = req.params;
     const updates = await req.json();
-    const actualizado = await usuarioService.updateUsuario(usuarioId, updates);
+    const actualizado = await usuarioService.updateUsuario(usuarioId, updates, organizacionId);
 
     return new Response(JSON.stringify(actualizado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al actualizar paciente:', error);
-    return new Response(JSON.stringify({ message: 'Error al actualizar paciente' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function deleteUsuario(req) {
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { usuarioId } = req.params;
 
     if (!usuarioId) {
       return new Response(JSON.stringify({ message: "Falta el parámetro pacienteId en la ruta" }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
-    const eliminado = await usuarioService.deleteUsuario(usuarioId);
+    const eliminado = await usuarioService.deleteUsuario(usuarioId, organizacionId);
 
     return new Response(JSON.stringify(eliminado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al eliminar paciente:", error);
-    return new Response(JSON.stringify({ message: "Error al eliminar paciente" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 

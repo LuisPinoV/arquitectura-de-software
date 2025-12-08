@@ -4,8 +4,8 @@ export class CreateFuncionarioUseCase {
   }
 
   async execute(body) {
-    const created =
-      await this.funcionarioRepository.createFuncionario(body);
+    // body ya incluye organizacionId desde el service
+    const created = await this.funcionarioRepository.createFuncionario(body);
 
     if (!created)
       throw new Error("Couldn't create funcionario");

@@ -1,16 +1,13 @@
-export class UpdateBoxUseCase
-{
-    constructor(boxRepository)
-    {
+export class UpdateBoxUseCase {
+    constructor(boxRepository) {
         this.boxRepository = boxRepository;
     }
 
-    async execute()
-    {
-        const updated = await this.boxRepository.updateBox();
+    async execute(idBox, updates, organizacionId) {
+        const updated = await this.boxRepository.updateBox(idBox, updates, organizacionId);
 
-        if(!updated) throw new Error("Couldn't update box");
-        
+        if (!updated) throw new Error("Couldn't update box");
+
         return updated;
     }
 }

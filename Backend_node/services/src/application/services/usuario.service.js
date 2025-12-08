@@ -15,22 +15,22 @@ export class UsuarioService {
     this.usuarioRepository = usuarioRepository;
   }
 
-  async getUsuarios() {
+  async getUsuarios(organizacionId) {
     const getUsuarios = new GetUsuariosUseCase(this.usuarioRepository);
 
-    return await getUsuarios.execute();
+    return await getUsuarios.execute(organizacionId);
   }
 
-  async getUsuario(idUsuario) {
+  async getUsuario(idUsuario, organizacionId) {
     const getUsuario = new GetUsuarioUseCase(this.usuarioRepository);
 
-    return await getUsuario.execute(idUsuario);
+    return await getUsuario.execute(idUsuario, organizacionId);
   }
 
-  async createUsuario(body) {
+  async createUsuario(body, organizacionId) {
     const createUsuario = new CreateUsuarioUseCase(this.usuarioRepository);
 
-    return await createUsuario.execute(body);
+    return await createUsuario.execute({ ...body, organizacionId });
   }
 
   async getUsuarioAgendamientos(idUsuario) {
@@ -41,16 +41,16 @@ export class UsuarioService {
     return await getUsuarioAgendamientos.execute(idUsuario);
   }
 
-  async deleteUsuario(idUsuario) {
+  async deleteUsuario(idUsuario, organizacionId) {
     const deleteUsuario = new DeleteUsuarioUseCase(this.usuarioRepository);
 
-    return await deleteUsuario.execute(idUsuario);
+    return await deleteUsuario.execute(idUsuario, organizacionId);
   }
 
-  async updateUsuario(idUsuario, updates) {
+  async updateUsuario(idUsuario, updates, organizacionId) {
     const updateUsuario = new UpdateUsuarioUseCase(this.usuarioRepository);
 
-    return await updateUsuario.execute(idUsuario, updates);
+    return await updateUsuario.execute(idUsuario, updates, organizacionId);
   }
 
   async createAgendamiento(body) {

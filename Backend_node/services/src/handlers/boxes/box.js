@@ -1,5 +1,6 @@
 import { AutoRouter } from "itty-router";
 import { BoxService } from "../../application/services/box.service.js";
+import { extractCognitoUserId } from "../../middleware/auth.middleware.js";
 
 // Service
 
@@ -154,18 +155,21 @@ async function createBox(req) {
   if (!req.body) return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const body = await req.json();
     console.log("Body recibido en createBox:", JSON.stringify(body));
-    const box = await boxService.createBox(body);
+    const box = await boxService.createBox(body, organizacionId);
     console.log("Box creado exitosamente:", JSON.stringify(box));
     return new Response(JSON.stringify(box), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al crear box:", error);
     console.error("Stack trace:", error.stack);
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
     return new Response(JSON.stringify({
-      message: "Error interno",
-      error: error.message
-    }), { status: 500, headers: { "Content-Type": "application/json" } });
+      message: error.message
+    }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -173,7 +177,8 @@ async function getBox(req) {
   const { idBox } = req.params;
 
   try {
-    const box = await boxService.getBox(idBox);
+    const organizacionId = extractCognitoUserId(req.event);
+    const box = await boxService.getBox(idBox, organizacionId);
     if (!box)
       return new Response(JSON.stringify({ message: "Box no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
     return new Response(JSON.stringify(box), {
@@ -182,58 +187,72 @@ async function getBox(req) {
     });
   } catch (error) {
     console.error("Error al obtener box:", error);
-    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
-async function getAllBoxes(_) {
+async function getAllBoxes(req) {
   try {
-    const boxes = await boxService.getBoxes();
+    const organizacionId = extractCognitoUserId(req.event);
+    const boxes = await boxService.getBoxes(organizacionId);
     return new Response(JSON.stringify(boxes), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error al obtener boxes:", error);
-    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401 : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function updateBox(req) {
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { idBox } = req.params;
     const updates = await req.json();
-    const updated = await boxService.updateBox(idBox, updates);
+    const updated = await boxService.updateBox(idBox, updates, organizacionId);
     return new Response(JSON.stringify(updated), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error al actualizar box:", error);
-    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function deleteBox(req) {
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { idBox } = req.params;
-    const deleted = await boxService.deleteBox(idBox);
+    const deleted = await boxService.deleteBox(idBox, organizacionId);
     return new Response(JSON.stringify(deleted), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error al eliminar box:", error);
-    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getBoxAgendamientos(req) {
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { idBox } = req.params;
-    const box = await boxService.getBox(idBox);
+    const box = await boxService.getBox(idBox, organizacionId);
 
     if (!box)
       return new Response(JSON.stringify({ message: "Box no encontrado" }), { status: 404, headers: { "Content-Type": "application/json" } });
@@ -242,7 +261,10 @@ async function getBoxAgendamientos(req) {
     return new Response(JSON.stringify({ box, agendamientos }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener agendamientos del box:", error);
-    return new Response(JSON.stringify({ message: "Error interno" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 

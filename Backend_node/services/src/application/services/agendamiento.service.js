@@ -1,6 +1,6 @@
 // agendamiento.service.js - VERSIÓN CORREGIDA
 import { GetAgendamientoUseCase } from "../useCases/agendamiento/getAgendamiento.useCase.js";
-import { GetAllAgendamientosUseCase } from "../useCases/agendamiento/getAllAgendamientos.useCase.js"; 
+import { GetAllAgendamientosUseCase } from "../useCases/agendamiento/getAllAgendamientos.useCase.js";
 import { GetAgendamientoCompletoUseCase } from "../useCases/agendamiento/getAgendamientoCompleto.useCase.js";
 import { CreateAgendamientoUseCase } from "../useCases/agendamiento/createAgendamiento.useCase.js";
 import { UpdateAgendamientoUseCase } from "../useCases/agendamiento/updateAgendamiento.useCase.js";
@@ -29,72 +29,72 @@ export class AgendamientoService {
     this.agendamientoRepository = agendamientoRepository;
   }
 
-  async getAgendamiento(idConsulta) {
+  async getAgendamiento(idConsulta, organizacionId) {
     const getAgendamiento = new GetAgendamientoUseCase(this.agendamientoRepository);
-    return await getAgendamiento.execute(idConsulta);
+    return await getAgendamiento.execute(idConsulta, organizacionId);
   }
 
-  async getAllAgendamientos() {
+  async getAllAgendamientos(organizacionId) {
     const getAllAgendamientos = new GetAllAgendamientosUseCase(this.agendamientoRepository);
-    return await getAllAgendamientos.execute();
+    return await getAllAgendamientos.execute(organizacionId);
   }
 
-  async createAgendamiento(body) {
-    if (!body.idConsulta || !body.idPaciente || !body.idFuncionario || !body.idBox || !body.fecha || !body.horaEntrada || !body.horaSalida)
+  async createAgendamiento(body, organizacionId) {
+    if (!body.idConsulta || !body.idPaciente || !body.idFuncionario || !body.idBox || !body.fecha || !body.horaEntrada)
       throw new Error("Data missing");
-    
+
     const createAgendamiento = new CreateAgendamientoUseCase(this.agendamientoRepository);
-    return await createAgendamiento.execute(body);
+    return await createAgendamiento.execute(body, organizacionId);
   }
 
-  async updateAgendamiento(idConsulta, updates) {
+  async updateAgendamiento(idConsulta, updates, organizacionId) {
     const updateAgendamiento = new UpdateAgendamientoUseCase(this.agendamientoRepository);
-    return await updateAgendamiento.execute(idConsulta, updates);
+    return await updateAgendamiento.execute(idConsulta, updates, organizacionId);
   }
 
-  async deleteAgendamiento(idConsulta) {
+  async deleteAgendamiento(idConsulta, organizacionId) {
     const deleteAgendamiento = new DeleteAgendamientoUseCase(this.agendamientoRepository);
-    return await deleteAgendamiento.execute(idConsulta);
+    return await deleteAgendamiento.execute(idConsulta, organizacionId);
   }
 
-  async getAgendamientosByPaciente(idPaciente) {
+  async getAgendamientosByPaciente(idPaciente, organizacionId) {
     const getAgendamientosByPaciente = new GetAgendamientosByPacienteUseCase(this.agendamientoRepository);
-    return await getAgendamientosByPaciente.execute(idPaciente);
+    return await getAgendamientosByPaciente.execute(idPaciente, organizacionId);
   }
 
-  async getAgendamientosByFuncionario(idFuncionario) {
+  async getAgendamientosByFuncionario(idFuncionario, organizacionId) {
     const getAgendamientosByFuncionario = new GetAgendamientosByFuncionarioUseCase(this.agendamientoRepository);
-    return await getAgendamientosByFuncionario.execute(idFuncionario);
+    return await getAgendamientosByFuncionario.execute(idFuncionario, organizacionId);
   }
 
-  async getAgendamientosByBox(idBox) {
+  async getAgendamientosByBox(idBox, organizacionId) {
     const getAgendamientosByBox = new GetAgendamientosByBoxUseCase(this.agendamientoRepository);
-    return await getAgendamientosByBox.execute(idBox);
+    return await getAgendamientosByBox.execute(idBox, organizacionId);
   }
 
-  async getAgendamientosByFecha(fecha) {
+  async getAgendamientosByFecha(fecha, organizacionId) {
     const getAgendamientosByFecha = new GetAgendamientosByFechaUseCase(this.agendamientoRepository);
-    return await getAgendamientosByFecha.execute(fecha);
+    return await getAgendamientosByFecha.execute(fecha, organizacionId);
   }
 
-  async getAgendamientosByEspecialidad(especialidadNombre) {
+  async getAgendamientosByEspecialidad(especialidadNombre, organizacionId) {
     const getAgendamientosByEspecialidad = new GetAgendamientosByEspecialidadUseCase(this.agendamientoRepository);
-    return await getAgendamientosByEspecialidad.execute(especialidadNombre);
+    return await getAgendamientosByEspecialidad.execute(especialidadNombre, organizacionId);
   }
 
-  async getCountAgendamientosPorEspecialidad() {
+  async getCountAgendamientosPorEspecialidad(organizacionId) {
     const useCase = new GetCountAgendamientosPorEspecialidadUseCase(this.agendamientoRepository);
-    return await useCase.execute();
+    return await useCase.execute(organizacionId);
   }
 
-  async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin) {
+  async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin, organizacionId) {
     const useCase = new GetCountAgendamientosPorEspecialidadRangoFechasUseCase(this.agendamientoRepository);
-    return await useCase.execute(fechaInicio, fechaFin);
+    return await useCase.execute(fechaInicio, fechaFin, organizacionId);
   }
 
-  async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
+  async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin, organizacionId) {
     const useCase = new GetPorcentajeOcupacionPorEspecialidadUseCase(this.agendamientoRepository);
-    return await useCase.execute(fechaInicio, fechaFin);
+    return await useCase.execute(fechaInicio, fechaFin, organizacionId);
   }
 
   async getEstadosAgendamiento(idConsulta) {

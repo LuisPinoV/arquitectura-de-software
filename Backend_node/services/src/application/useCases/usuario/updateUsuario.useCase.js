@@ -1,15 +1,12 @@
-export class UpdateUsuarioUseCase
-{
-    constructor(usuarioRepository)
-    {
+export class UpdateUsuarioUseCase {
+    constructor(usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    async execute(usuarioId, updates)
-    {
-        const updated = await this.usuarioRepository.updateUsuario(usuarioId, updates);
+    async execute(idUsuario, updates, organizacionId) {
+        const updated = await this.usuarioRepository.updateUsuario(idUsuario, updates, organizacionId);
 
-        if(!updated) throw new Error("Couldn't update user");
+        if (!updated) throw new Error("Couldn't update usuario");
 
         return updated;
     }

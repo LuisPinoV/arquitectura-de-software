@@ -1,5 +1,6 @@
 import { AutoRouter } from "itty-router";
 import { FuncionarioService } from "../../application/services/funcionario.service.js";
+import { extractCognitoUserId } from "../../middleware/auth.middleware.js";
 
 const funcionarioService = new FuncionarioService();
 
@@ -55,13 +56,17 @@ async function createFuncionario(req) {
   }
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const body = await req.json();
-    const nuevo = await funcionarioService.createFuncionario(body);
+    const nuevo = await funcionarioService.createFuncionario(body, organizacionId);
 
     return new Response(JSON.stringify(nuevo), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al crear funcionario:', error);
-    return new Response(JSON.stringify({ message: 'Error al crear funcionario' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -69,7 +74,8 @@ async function getFuncionario(req) {
   const { funcionarioId } = req.params;
 
   try {
-    const funcionario = await funcionarioService.getFuncionario(funcionarioId);
+    const organizacionId = extractCognitoUserId(req.event);
+    const funcionario = await funcionarioService.getFuncionario(funcionarioId, organizacionId);
 
     if (!funcionario) {
       return new Response(JSON.stringify({ message: 'Funcionario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
@@ -78,7 +84,10 @@ async function getFuncionario(req) {
     return new Response(JSON.stringify(funcionario), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener funcionario:', error);
-    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -88,26 +97,34 @@ async function updateFuncionario(req) {
   }
 
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { funcionarioId } = req.params;
     const updates = await req.json();
-    const updated = await funcionarioService.updateFuncionario(funcionarioId, updates);
+    const updated = await funcionarioService.updateFuncionario(funcionarioId, updates, organizacionId);
 
     return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al actualizar funcionario:', error);
-    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function deleteFuncionario(req) {
   try {
+    const organizacionId = extractCognitoUserId(req.event);
     const { funcionarioId } = req.params;
-    const eliminado = await funcionarioService.deleteFuncionario(funcionarioId);
+    const eliminado = await funcionarioService.deleteFuncionario(funcionarioId, organizacionId);
 
     return new Response(JSON.stringify(eliminado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al eliminar funcionario:', error);
-    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
@@ -115,7 +132,8 @@ async function getFuncionarioAgendamientos(req) {
   const { funcionarioId } = req.params;
 
   try {
-    const funcionario = await funcionarioService.getFuncionario(funcionarioId);
+    const organizacionId = extractCognitoUserId(req.event);
+    const funcionario = await funcionarioService.getFuncionario(funcionarioId, organizacionId);
 
     if (!funcionario) {
       return new Response(JSON.stringify({ message: 'Funcionario no encontrado' }), { status: 404, headers: { "Content-Type": "application/json" } });
@@ -126,35 +144,23 @@ async function getFuncionarioAgendamientos(req) {
     return new Response(JSON.stringify({ funcionario, agendamientos }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error('Error al obtener agendamientos del funcionario:', error);
-    return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
 
 async function getAllFuncionariosHandler(req) {
   try {
-    const data = await funcionarioService.getAllFuncionarios();
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data,
-        count: data.length
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const organizacionId = extractCognitoUserId(req.event);
+    const data = await funcionarioService.getAllFuncionarios(organizacionId);
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: error?.message || "Internal Server Error",
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      }),
-      {
-        status: error?.statusCode || 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const status = error.message.includes("autenticado") ? 401 : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }

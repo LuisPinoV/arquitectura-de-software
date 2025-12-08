@@ -1,16 +1,13 @@
-export class DeleteBoxUseCase
-{
-    constructor(boxRepository)
-    {
+export class DeleteBoxUseCase {
+    constructor(boxRepository) {
         this.boxRepository = boxRepository;
     }
 
-    async execute(idBox)
-    {
-        const deleted = await this.boxRepository.deleteBox(idBox);
+    async execute(idBox, organizacionId) {
+        const deleted = await this.boxRepository.deleteBox(idBox, organizacionId);
 
-        if(!deleted) throw new Error("Couldn't delete box or didn't exist");
-        
+        if (!deleted) throw new Error("Couldn't delete box or didn't exist");
+
         return deleted;
     }
 }

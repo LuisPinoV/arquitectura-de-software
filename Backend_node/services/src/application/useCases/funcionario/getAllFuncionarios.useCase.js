@@ -3,8 +3,8 @@ export class GetAllFuncionariosUseCase {
     this.funcionarioRepository = funcionarioRepository;
   }
 
-  async execute() {
-    const funcionarios = await this.funcionarioRepository.getAllFuncionarios();
+  async execute(organizacionId) {
+    const funcionarios = await this.funcionarioRepository.getAllFuncionarios(organizacionId);
 
     if (!funcionarios) {
       throw new Error("Couldn't fetch funcionarios");

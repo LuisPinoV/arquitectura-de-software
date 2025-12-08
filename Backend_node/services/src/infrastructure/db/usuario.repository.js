@@ -19,7 +19,7 @@ export class UsuarioRepository {
     this.dynamo = dynamo;
   }
 
-  async createUsuario({ idPaciente, nombre, apellido, rut }) {
+  async createUsuario({ idPaciente, nombre, apellido, rut, organizacionId }) {
     const now = new Date().toISOString();
 
     const item = {
@@ -30,6 +30,7 @@ export class UsuarioRepository {
       nombre,
       apellido,
       rut,
+      organizacionId,
       createdAt: now,
       updatedAt: now,
     };
@@ -44,7 +45,7 @@ export class UsuarioRepository {
     return item;
   }
 
-  async getUsuario(idPaciente) {
+  async getUsuario(idPaciente, organizacionId) {
     const command = new GetCommand({
       TableName: this.tableName,
       Key: {
@@ -54,21 +55,38 @@ export class UsuarioRepository {
     });
 
     const result = await this.dynamo.send(command);
-    return result.Item || null;
+    const item = result.Item;
+
+    // Validar permisos de organización
+    if (item && item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para acceder a este recurso");
+    }
+
+    return item || null;
   }
 
-  async getAllPacientes() {
+  async getAllPacientes(organizacionId) {
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: "AgendamientosPorPaciente",
       KeyConditionExpression: "PacienteId = :pid",
-      ExpressionAttributeValues: { ":pid": "dummy" },
+      FilterExpression: "organizacionId = :orgId",
+      ExpressionAttributeValues: {
+        ":pid": "dummy",
+        ":orgId": organizacionId
+      },
     });
 
     return result.Items || [];
   }
 
-  async updateUsuario(idPaciente, updates) {
+  async updateUsuario(idPaciente, updates, organizacionId) {
+    // Primero validar que el usuario pertenece a la organización
+    const usuarioActual = await this.getUsuario(idPaciente, organizacionId);
+    if (!usuarioActual) {
+      throw new Error(`Usuario ${idPaciente} no encontrado`);
+    }
+
     const now = new Date().toISOString();
 
     const updateExpr = [];
@@ -98,7 +116,7 @@ export class UsuarioRepository {
   }
 
 
-  async deleteUsuario(idPaciente) {
+  async deleteUsuario(idPaciente, organizacionId) {
     console.log("deletePaciente -> idPaciente:", idPaciente);
     console.log("deletePaciente -> table:", this.tableName);
 
@@ -112,6 +130,11 @@ export class UsuarioRepository {
 
     const found = await this.dynamo.send(get);
     console.log("Paciente encontrado antes de borrar:", found.Item);
+
+    // Validar permisos de organización
+    if (found.Item && found.Item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para eliminar este recurso");
+    }
 
     const command = new DeleteCommand({
       TableName: this.tableName,

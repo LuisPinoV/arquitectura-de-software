@@ -1,16 +1,13 @@
-export class GetBoxesUseCase
-{
-    constructor(boxRepository)
-    {
+export class GetBoxesUseCase {
+    constructor(boxRepository) {
         this.boxRepository = boxRepository;
     }
 
-    async execute()
-    {
-        const boxes = await this.boxRepository.getAllBoxes();
+    async execute(organizacionId) {
+        const boxes = await this.boxRepository.getAllBoxes(organizacionId);
 
-        if(!boxes) throw new Error("Couldn't get boxes");
-        
+        if (!boxes) throw new Error("Couldn't get boxes");
+
         return boxes;
     }
 }

@@ -4,8 +4,8 @@ export class GetFuncionarioUseCase {
     this.funcionarioRepository = funcionarioRepository;
   }
 
-  async execute(idFuncionario) {
-    const funcionario = await this.funcionarioRepository.getFuncionario(idFuncionario);
+  async execute(idFuncionario, organizacionId) {
+    const funcionario = await this.funcionarioRepository.getFuncionario(idFuncionario, organizacionId);
 
     if (!funcionario) {
       throw new Error("Funcionario no encontrado");

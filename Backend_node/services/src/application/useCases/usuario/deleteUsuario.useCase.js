@@ -1,15 +1,12 @@
-export class DeleteUsuarioUseCase
-{
-    constructor(usuarioRepository)
-    {
+export class DeleteUsuarioUseCase {
+    constructor(usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    async execute(usuarioId)
-    {
-        const deleted = await this.usuarioRepository.deleteUsuario(usuarioId);
+    async execute(idUsuario, organizacionId) {
+        const deleted = await this.usuarioRepository.deleteUsuario(idUsuario, organizacionId);
 
-        if(!deleted) throw new Error("Couldn't delete user");
+        if (!deleted) throw new Error("Couldn't delete usuario");
 
         return deleted;
     }

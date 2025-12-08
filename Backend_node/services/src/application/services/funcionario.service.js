@@ -41,36 +41,24 @@ export class FuncionarioService {
     return await getTiposFuncionarios.execute();
   }
 
-  async createFuncionario(body) {
-    const createFuncionario = new CreateFuncionarioUseCase(
-      this.funcionarioRepository
-    );
-
-    return await createFuncionario.execute(body);
+  async createFuncionario(funcionarioData, organizacionId) {
+    const createFuncionario = new CreateFuncionarioUseCase(this.funcionarioRepository);
+    return await createFuncionario.execute({ ...funcionarioData, organizacionId });
   }
 
-  async getFuncionario(idFuncionario) {
-    const getFuncionario = new GetFuncionarioUseCase(
-      this.funcionarioRepository
-    );
-
-    return await getFuncionario.execute(idFuncionario);
+  async getFuncionario(idFuncionario, organizacionId) {
+    const getFuncionario = new GetFuncionarioUseCase(this.funcionarioRepository);
+    return await getFuncionario.execute(idFuncionario, organizacionId);
   }
 
-  async updateFuncionario(idFuncionario, updates) {
-    const updateFuncionario = new UpdateFuncionarioUseCase(
-      this.funcionarioRepository
-    );
-
-    return await updateFuncionario.execute(idFuncionario, updates);
+  async updateFuncionario(idFuncionario, updates, organizacionId) {
+    const updateFuncionario = new UpdateFuncionarioUseCase(this.funcionarioRepository);
+    return await updateFuncionario.execute(idFuncionario, updates, organizacionId);
   }
 
-  async deleteFuncionario(idFuncionario) {
-    const deleteFuncionario = new DeleteFuncionarioUseCase(
-      this.funcionarioRepository
-    );
-
-    return await deleteFuncionario.execute(idFuncionario);
+  async deleteFuncionario(idFuncionario, organizacionId) {
+    const deleteFuncionario = new DeleteFuncionarioUseCase(this.funcionarioRepository);
+    return await deleteFuncionario.execute(idFuncionario, organizacionId);
   }
 
   async getFuncionarioAgendamientos(idFuncionario) {
@@ -80,12 +68,10 @@ export class FuncionarioService {
 
     return await getFuncionarioAgendamiento.execute(idFuncionario);
   }
-  async getAllFuncionarios() {
-    const getAllFuncionarios = new GetAllFuncionariosUseCase(
-      this.funcionarioRepository
-   );
 
-    return await getAllFuncionarios.execute();
+  async getAllFuncionarios(organizacionId) {
+    const getAllFuncionarios = new GetAllFuncionariosUseCase(this.funcionarioRepository);
+    return await getAllFuncionarios.execute(organizacionId);
   }
 
 }

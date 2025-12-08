@@ -3,12 +3,13 @@ export class CreateAgendamientoUseCase {
     this.agendamientoRepository = agendamientoRepository;
   }
 
-  async execute(agendamientoData) {
+  async execute(agendamientoData, organizacionId) {
     try {
-      const agendamiento = await this.agendamientoRepository.createAgendamiento(agendamientoData);
+      const agendamiento = await this.agendamientoRepository.createAgendamiento(agendamientoData, organizacionId);
       return agendamiento;
     } catch (error) {
-      throw new Error("Couldn't create agendamiento");
+      console.error("Error in CreateAgendamientoUseCase:", error);
+      throw error; // Re-throw original error instead of generic message
     }
   }
 }

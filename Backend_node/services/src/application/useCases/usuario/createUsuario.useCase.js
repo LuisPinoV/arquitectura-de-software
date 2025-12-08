@@ -1,16 +1,14 @@
-export class CreateUsuarioUseCase
-{
-    constructor(usuarioRepository)
-    {
+export class CreateUsuarioUseCase {
+    constructor(usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    async execute(body)
-    {
-        const created = await this.usuarioRepository.createUsuario(body);
+    async execute(body) {
+        // body ya incluye organizacionId desde el service
+        const usuario = await this.usuarioRepository.createUsuario(body);
 
-        if(!created) throw new Error("Couldn't create user");
+        if (!usuario) throw new Error("Couldn't create usuario");
 
-        return created;
+        return usuario;
     }
 }

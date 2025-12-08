@@ -1,15 +1,12 @@
-export class GetUsuarioUseCase
-{
-    constructor(usuarioRepository)
-    {
+export class GetUsuarioUseCase {
+    constructor(usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    async execute(idUsuario)
-    {
-        const usuario = await this.usuarioRepository.getUsuario(idUsuario);
+    async execute(idUsuario, organizacionId) {
+        const usuario = await this.usuarioRepository.getUsuario(idUsuario, organizacionId);
 
-        if(!usuario) throw new Error("Couldn't get user");
+        if (!usuario) throw new Error("Couldn't get usuario");
 
         return usuario;
     }

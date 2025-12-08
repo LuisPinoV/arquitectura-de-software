@@ -20,7 +20,7 @@ export class FuncionarioRepository {
     this.dynamo = dynamo;
   }
 
-  async createFuncionario({ idFuncionario, nombre, rut, tipoFuncionario }) {
+  async createFuncionario({ idFuncionario, nombre, rut, tipoFuncionario, organizacionId }) {
     const now = new Date().toISOString();
 
     const item = {
@@ -31,6 +31,7 @@ export class FuncionarioRepository {
       nombre,
       rut,
       tipoFuncionario,
+      organizacionId,
       createdAt: now,
       updatedAt: now,
     };
@@ -45,7 +46,7 @@ export class FuncionarioRepository {
     return item;
   }
 
-  async getFuncionario(idFuncionario) {
+  async getFuncionario(idFuncionario, organizacionId) {
     const command = new GetCommand({
       TableName: this.tableName,
       Key: {
@@ -55,10 +56,23 @@ export class FuncionarioRepository {
     });
 
     const result = await this.dynamo.send(command);
-    return result.Item || null;
+    const item = result.Item;
+
+    // Validar permisos de organización
+    if (item && item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para acceder a este recurso");
+    }
+
+    return item || null;
   }
 
-  async updateFuncionario(idFuncionario, updates) {
+  async updateFuncionario(idFuncionario, updates, organizacionId) {
+    // Primero validar que el funcionario pertenece a la organización
+    const funcionarioActual = await this.getFuncionario(idFuncionario, organizacionId);
+    if (!funcionarioActual) {
+      throw new Error(`Funcionario ${idFuncionario} no encontrado`);
+    }
+
     const now = new Date().toISOString();
     const updateExpr = [];
     const exprAttrValues = { ":u": now };
@@ -86,7 +100,7 @@ export class FuncionarioRepository {
     return result.Attributes;
   }
 
-  async deleteFuncionario(idFuncionario) {
+  async deleteFuncionario(idFuncionario, organizacionId) {
     console.log("deleteFuncionario -> idFuncionario:", idFuncionario);
 
     const get = new GetCommand({
@@ -99,6 +113,11 @@ export class FuncionarioRepository {
 
     const found = await this.dynamo.send(get);
     console.log("Funcionario encontrado antes de borrar:", found.Item);
+
+    // Validar permisos de organización
+    if (found.Item && found.Item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para eliminar este recurso");
+    }
 
     const command = new DeleteCommand({
       TableName: this.tableName,
@@ -129,14 +148,15 @@ export class FuncionarioRepository {
     return result.Items || [];
   }
 
-    // funcionario.repository.js
-  async getAllFuncionarios() {
+  // funcionario.repository.js
+  async getAllFuncionarios(organizacionId) {
     const command = new ScanCommand({
       TableName: this.tableName,
-      FilterExpression: "begins_with(PK, :pkPrefix) AND SK = :sk",
+      FilterExpression: "begins_with(PK, :pkPrefix) AND SK = :sk AND organizacionId = :orgId",
       ExpressionAttributeValues: {
         ":pkPrefix": "FUNCIONARIO#",
         ":sk": "PROFILE",
+        ":orgId": organizacionId,
       },
     });
 

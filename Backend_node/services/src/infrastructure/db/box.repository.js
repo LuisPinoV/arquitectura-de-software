@@ -15,14 +15,14 @@ const client = new DynamoDBClient();
 const dynamo = DynamoDBDocumentClient.from(client);
 
 const HORAS = [
-  '08:00','08:30','09:00','09:30',
-  '10:00','10:30','11:00','11:30',
-  '12:00','12:30','13:00','13:30',
-  '14:00','14:30','15:00','15:30',
-  '16:00','16:30','17:00','17:30',
-  '18:00','18:30','19:00','19:30',
-  '20:00','20:30','21:00','21:30',
-  '22:00','22:30','23:00','23:30'
+  '08:00', '08:30', '09:00', '09:30',
+  '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30',
+  '14:00', '14:30', '15:00', '15:30',
+  '16:00', '16:30', '17:00', '17:30',
+  '18:00', '18:30', '19:00', '19:30',
+  '20:00', '20:30', '21:00', '21:30',
+  '22:00', '22:30', '23:00', '23:30'
 ];
 
 export class BoxRepository {
@@ -31,7 +31,7 @@ export class BoxRepository {
     this.dynamo = dynamo;
   }
 
-  async createBox({ idBox, especialidad, pasillo, capacidad, disponible = true }) {
+  async createBox({ idBox, especialidad, pasillo, capacidad, disponible = true, organizacionId }) {
     const now = new Date().toISOString();
     const item = {
       PK: `BOX#${idBox}`,
@@ -42,6 +42,7 @@ export class BoxRepository {
       pasillo,
       capacidad,
       disponible,
+      organizacionId,
       createdAt: now,
       updatedAt: now,
     };
@@ -49,26 +50,43 @@ export class BoxRepository {
     return item;
   }
 
-  async getBox(idBox) {
+  async getBox(idBox, organizacionId) {
     const result = await this.dynamo.send(new GetCommand({
       TableName: this.tableName,
       Key: { PK: `BOX#${idBox}`, SK: "METADATA" },
     }));
-    return result.Item || null;
+
+    const item = result.Item;
+
+    // Validar permisos de organización
+    if (item && item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para acceder a este recurso");
+    }
+
+    return item || null;
   }
 
-  async getAllBoxes() {
+  async getAllBoxes(organizacionId) {
     const command = new ScanCommand({
       TableName: this.tableName,
-      FilterExpression: "#tipo = :t",
+      FilterExpression: "#tipo = :t AND organizacionId = :orgId",
       ExpressionAttributeNames: { "#tipo": "tipo" },
-      ExpressionAttributeValues: { ":t": "Box" },
+      ExpressionAttributeValues: {
+        ":t": "Box",
+        ":orgId": organizacionId
+      },
     });
     const result = await this.dynamo.send(command);
     return result.Items || [];
   }
 
-  async updateBox(idBox, updates) {
+  async updateBox(idBox, updates, organizacionId) {
+    // Primero validar que el box pertenece a la organización
+    const boxActual = await this.getBox(idBox, organizacionId);
+    if (!boxActual) {
+      throw new Error(`Box ${idBox} no encontrado`);
+    }
+
     const now = new Date().toISOString();
     const updateExpr = [];
     const exprAttrValues = { ":u": now };
@@ -90,12 +108,18 @@ export class BoxRepository {
     return result.Attributes;
   }
 
-  async deleteBox(idBox) {
+  async deleteBox(idBox, organizacionId) {
     const found = await this.dynamo.send(new GetCommand({
       TableName: this.tableName,
       Key: { PK: `BOX#${idBox}`, SK: "METADATA" },
     }));
     console.log("Box encontrado antes de borrar:", found.Item);
+
+    // Validar permisos de organización
+    if (found.Item && found.Item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para eliminar este recurso");
+    }
+
     const result = await this.dynamo.send(new DeleteCommand({
       TableName: this.tableName,
       Key: { PK: `BOX#${idBox}`, SK: "METADATA" },
@@ -117,7 +141,7 @@ export class BoxRepository {
 
   async getDisponibilidadBox(idBox, fecha) {
     const params = {
-      TableName: this.tableName, 
+      TableName: this.tableName,
       FilterExpression: "BoxId = :box AND FechaBox = :fecha",
       ExpressionAttributeValues: {
         ":box": `BOX#${idBox}`,
@@ -125,7 +149,7 @@ export class BoxRepository {
       },
     };
 
-    const result = await this.dynamo.send(new ScanCommand(params)); 
+    const result = await this.dynamo.send(new ScanCommand(params));
 
     const agendamientos = result.Items || [];
     const total = agendamientos.length;
@@ -137,14 +161,14 @@ export class BoxRepository {
 
   async getPorcentajeUsoBoxes(fecha, hora) {
     const params = {
-      TableName: this.tableName, 
+      TableName: this.tableName,
       FilterExpression: "FechaBox = :fecha",
       ExpressionAttributeValues: {
         ":fecha": `FECHA#${fecha}`,
       },
     };
 
-    const result = await this.dynamo.send(new ScanCommand(params)); 
+    const result = await this.dynamo.send(new ScanCommand(params));
 
     const agendamientos = (result.Items || []).filter(
       a => a.horaEntrada <= hora && a.horaSalida > hora
@@ -152,7 +176,7 @@ export class BoxRepository {
 
     const boxesUsados = new Set(agendamientos.map(a => a.idBox)).size;
 
-    
+
     const totalBoxes = 120;
     const porcentajeUso = ((boxesUsados / totalBoxes) * 100).toFixed(2);
 
@@ -160,63 +184,63 @@ export class BoxRepository {
   }
 
   async getOcupacionPorEspecialidad(fecha, hora) {
-  const params = {
-    TableName: this.tableName,
-    FilterExpression: "FechaBox = :fecha",
-    ExpressionAttributeValues: {
-      ":fecha": `FECHA#${fecha}`,
-    },
-  };
+    const params = {
+      TableName: this.tableName,
+      FilterExpression: "FechaBox = :fecha",
+      ExpressionAttributeValues: {
+        ":fecha": `FECHA#${fecha}`,
+      },
+    };
 
-  const result = await this.dynamo.send(new ScanCommand(params));
-  console.log("Resultados crudos de DynamoDB:", result.Items?.length || 0);
+    const result = await this.dynamo.send(new ScanCommand(params));
+    console.log("Resultados crudos de DynamoDB:", result.Items?.length || 0);
 
-  const agendamientos = (result.Items || []).filter(
-    a => a.horaEntrada <= hora && a.horaSalida > hora
-  );
-  
-  console.log("Agendamientos filtrados:", agendamientos.length);
+    const agendamientos = (result.Items || []).filter(
+      a => a.horaEntrada <= hora && a.horaSalida > hora
+    );
 
-  const ocupacionPorEspecialidad = {};
-  
-  for (const ag of agendamientos) {
-    try {
-      let especialidad = "SIN_ESPECIALIDAD";
-      if (ag.idBox) {
-        const boxResult = await this.dynamo.send(new GetCommand({
-          TableName: this.tableName,
-          Key: { 
-            PK: `BOX#${ag.idBox}`, 
-            SK: "METADATA" 
+    console.log("Agendamientos filtrados:", agendamientos.length);
+
+    const ocupacionPorEspecialidad = {};
+
+    for (const ag of agendamientos) {
+      try {
+        let especialidad = "SIN_ESPECIALIDAD";
+        if (ag.idBox) {
+          const boxResult = await this.dynamo.send(new GetCommand({
+            TableName: this.tableName,
+            Key: {
+              PK: `BOX#${ag.idBox}`,
+              SK: "METADATA"
+            }
+          }));
+
+          if (boxResult.Item) {
+            especialidad = boxResult.Item.especialidad || "SIN_ESPECIALIDAD";
+            console.log(`Box ${ag.idBox} tiene especialidad: ${especialidad}`);
+          } else {
+            console.log(`Box ${ag.idBox} no encontrado`);
           }
-        }));
-        
-        if (boxResult.Item) {
-          especialidad = boxResult.Item.especialidad || "SIN_ESPECIALIDAD";
-          console.log(`Box ${ag.idBox} tiene especialidad: ${especialidad}`);
         } else {
-          console.log(`Box ${ag.idBox} no encontrado`);
+          console.log("Agendamiento sin idBox:", ag);
         }
-      } else {
-        console.log("Agendamiento sin idBox:", ag);
-      }
-      if (!ocupacionPorEspecialidad[especialidad]) {
-        ocupacionPorEspecialidad[especialidad] = 0;
-      }
-      ocupacionPorEspecialidad[especialidad]++;
-      
-    } catch (error) {
-      console.error("Error procesando agendamiento:", ag.idConsulta, error);
-    }
-  }
+        if (!ocupacionPorEspecialidad[especialidad]) {
+          ocupacionPorEspecialidad[especialidad] = 0;
+        }
+        ocupacionPorEspecialidad[especialidad]++;
 
-  console.log("Ocupación resultante:", ocupacionPorEspecialidad);
-  return { fecha, hora, ocupacionPorEspecialidad };
-}
+      } catch (error) {
+        console.error("Error procesando agendamiento:", ag.idConsulta, error);
+      }
+    }
+
+    console.log("Ocupación resultante:", ocupacionPorEspecialidad);
+    return { fecha, hora, ocupacionPorEspecialidad };
+  }
 
   async getUsoBox(idBox, fecha, hora) {
     const params = {
-      TableName: this.tableName, 
+      TableName: this.tableName,
       FilterExpression: "BoxId = :box AND FechaBox = :fecha",
       ExpressionAttributeValues: {
         ":box": `BOX#${idBox}`,
@@ -224,7 +248,7 @@ export class BoxRepository {
       },
     };
 
-    const result = await this.dynamo.send(new ScanCommand(params)); 
+    const result = await this.dynamo.send(new ScanCommand(params));
 
     const agendamiento = (result.Items || []).find(
       a => a.horaEntrada <= hora && a.horaSalida > hora

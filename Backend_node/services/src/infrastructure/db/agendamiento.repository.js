@@ -20,17 +20,24 @@ export class AgendamientoRepository {
     this.dynamo = dynamo;
   }
 
-  async createAgendamiento(agendamientoData) {
+  async createAgendamiento(agendamientoData, organizacionId) {
     const now = new Date().toISOString();
+
+    console.log(`[createAgendamiento] Starting - idBox: ${agendamientoData.idBox}, organizacionId: ${organizacionId}`);
 
     const box = await this.getBoxInfo(agendamientoData.idBox);
     if (!box) {
+      console.error(`[createAgendamiento] Box ${agendamientoData.idBox} not found in database`);
       throw new Error(`Box ${agendamientoData.idBox} no encontrado`);
     }
+
+    console.log(`[createAgendamiento] Box found:`, box);
 
     const duracionBloque = box.duracionBloqueMinutos || 30;
 
     const horaSalida = this.addMinutes(agendamientoData.horaEntrada, duracionBloque);
+
+    console.log(`[createAgendamiento] Validating time slot availability...`);
 
     const validacion = await this.validateTimeSlotAvailability({
       idBox: agendamientoData.idBox,
@@ -42,14 +49,18 @@ export class AgendamientoRepository {
     });
 
     if (!validacion.disponible) {
+      console.error(`[createAgendamiento] Time slot not available:`, validacion.conflictos);
       const error = new Error("El bloque de horario no está disponible");
       error.conflictos = validacion.conflictos;
       throw error;
     }
 
+    console.log(`[createAgendamiento] Creating item with organizacionId: ${organizacionId}`);
+
     const item = {
       PK: `AGENDAMIENTO#${agendamientoData.idConsulta}`,
       SK: "METADATA",
+      organizacionId: organizacionId,
       tipo: "Agendamiento",
       idConsulta: agendamientoData.idConsulta,
       idPaciente: agendamientoData.idPaciente,
@@ -72,6 +83,8 @@ export class AgendamientoRepository {
       TableName: this.tableName,
       Item: item
     }));
+
+    console.log(`[createAgendamiento] Successfully created agendamiento ${agendamientoData.idConsulta}`);
     return item;
   }
 
@@ -127,7 +140,7 @@ export class AgendamientoRepository {
     return bloques;
   }
 
-  async getAgendamiento(idConsulta) {
+  async getAgendamiento(idConsulta, organizacionId) {
     const result = await this.dynamo.send(new GetCommand({
       TableName: this.tableName,
       Key: {
@@ -135,16 +148,27 @@ export class AgendamientoRepository {
         SK: "METADATA"
       },
     }));
-    return result.Item || null;
+
+    const item = result.Item;
+
+    // Validar permisos de organización
+    if (item && item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para acceder a este recurso");
+    }
+
+    return item || null;
   }
 
-  async getAllAgendamientos() {
+  async getAllAgendamientos(organizacionId) {
     console.log("Escaneando tabla:", this.tableName);
     const command = new ScanCommand({
       TableName: this.tableName,
-      FilterExpression: "#tipo = :t",
+      FilterExpression: "#tipo = :t AND organizacionId = :orgId",
       ExpressionAttributeNames: { "#tipo": "tipo" },
-      ExpressionAttributeValues: { ":t": "Agendamiento" },
+      ExpressionAttributeValues: {
+        ":t": "Agendamiento",
+        ":orgId": organizacionId
+      },
     });
     const result = await this.dynamo.send(command);
     console.log("Items encontrados:", result.Items?.length || 0);
@@ -152,14 +176,14 @@ export class AgendamientoRepository {
   }
 
 
-  async updateAgendamiento(idConsulta, updates) {
+  async updateAgendamiento(idConsulta, updates, organizacionId) {
     const now = new Date().toISOString();
 
     const camposHorario = ['fecha', 'horaEntrada', 'horaSalida', 'idBox', 'idFuncionario'];
     const actualizaHorario = Object.keys(updates).some(key => camposHorario.includes(key));
 
     if (actualizaHorario) {
-      const agendamientoActual = await this.getAgendamiento(idConsulta);
+      const agendamientoActual = await this.getAgendamiento(idConsulta, organizacionId);
       if (!agendamientoActual) {
         throw new Error(`Agendamiento ${idConsulta} no encontrado`);
       }
@@ -208,7 +232,7 @@ export class AgendamientoRepository {
     return result.Attributes;
   }
 
-  async deleteAgendamiento(idConsulta) {
+  async deleteAgendamiento(idConsulta, organizacionId) {
     const found = await this.dynamo.send(new GetCommand({
       TableName: this.tableName,
       Key: {
@@ -216,6 +240,12 @@ export class AgendamientoRepository {
         SK: "METADATA"
       },
     }));
+
+    // Validar permisos de organización
+    if (found.Item && found.Item.organizacionId !== organizacionId) {
+      throw new Error("No tienes permiso para eliminar este recurso");
+    }
+
     console.log("Agendamiento borrado:", found.Item);
 
     const result = await this.dynamo.send(new DeleteCommand({
@@ -230,51 +260,58 @@ export class AgendamientoRepository {
   }
 
 
-  async getAgendamientosByPaciente(idPaciente) {
+  async getAgendamientosByPaciente(idPaciente, organizacionId) {
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: "AgendamientosPorPaciente",
       KeyConditionExpression: "PacienteId = :pid",
+      FilterExpression: "organizacionId = :orgId",
       ExpressionAttributeValues: {
-        ":pid": `PACIENTE#${idPaciente}`
+        ":pid": `PACIENTE#${idPaciente}`,
+        ":orgId": organizacionId
       },
     });
     const result = await this.dynamo.send(command);
     return result.Items || [];
   }
 
-  async getAgendamientosByFuncionario(idFuncionario) {
+  async getAgendamientosByFuncionario(idFuncionario, organizacionId) {
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: "AgendamientosPorFuncionario",
       KeyConditionExpression: "FuncionarioId = :fid",
+      FilterExpression: "organizacionId = :orgId",
       ExpressionAttributeValues: {
-        ":fid": `FUNCIONARIO#${idFuncionario}`
+        ":fid": `FUNCIONARIO#${idFuncionario}`,
+        ":orgId": organizacionId
       },
     });
     const result = await this.dynamo.send(command);
     return result.Items || [];
   }
 
-  async getAgendamientosByBox(idBox) {
+  async getAgendamientosByBox(idBox, organizacionId) {
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: "AgendamientosPorBox",
       KeyConditionExpression: "BoxId = :bid",
+      FilterExpression: "organizacionId = :orgId",
       ExpressionAttributeValues: {
-        ":bid": `BOX#${idBox}`
+        ":bid": `BOX#${idBox}`,
+        ":orgId": organizacionId
       },
     });
     const result = await this.dynamo.send(command);
     return result.Items || [];
   }
 
-  async getAgendamientosByFecha(fecha) {
+  async getAgendamientosByFecha(fecha, organizacionId) {
     const command = new ScanCommand({
       TableName: this.tableName,
-      FilterExpression: "fecha = :fecha",
+      FilterExpression: "fecha = :fecha AND organizacionId = :orgId",
       ExpressionAttributeValues: {
-        ":fecha": fecha
+        ":fecha": fecha,
+        ":orgId": organizacionId
       },
     });
     const result = await this.dynamo.send(command);
@@ -282,7 +319,7 @@ export class AgendamientoRepository {
   }
 
 
-  async getAgendamientosByEspecialidad(especialidadNombre) {
+  async getAgendamientosByEspecialidad(especialidadNombre, organizacionId) {
     try {
       const especialidadNormalizada = this.normalizarEspecialidad(especialidadNombre);
       const boxesCommand = new ScanCommand({
@@ -308,7 +345,7 @@ export class AgendamientoRepository {
       }
 
       const agendamientosPromises = boxIds.map(boxId =>
-        this.getAgendamientosByBox(boxId)
+        this.getAgendamientosByBox(boxId, organizacionId)
       );
 
       const agendamientosPorBox = await Promise.all(agendamientosPromises);
@@ -331,7 +368,7 @@ export class AgendamientoRepository {
       .replace(/\s+/g, "");
   }
 
-  async getCountAgendamientosPorEspecialidad() {
+  async getCountAgendamientosPorEspecialidad(organizacionId) {
     try {
       console.log("Obteniendo conteo de agendamientos por especialidad...");
 
@@ -350,7 +387,7 @@ export class AgendamientoRepository {
       const conteoPorEspecialidad = {};
 
       for (const especialidad of especialidadesUnicas) {
-        const agendamientos = await this.getAgendamientosByEspecialidad(especialidad);
+        const agendamientos = await this.getAgendamientosByEspecialidad(especialidad, organizacionId);
         conteoPorEspecialidad[especialidad] = agendamientos.length;
       }
 
@@ -371,7 +408,7 @@ export class AgendamientoRepository {
     }
   }
 
-  async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin) {
+  async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin, organizacionId) {
     try {
       console.log(`=== INICIO getCountAgendamientosPorEspecialidadRangoFechas ===`);
       console.log(`Rango de fechas: ${fechaInicio} a ${fechaFin}`);
@@ -397,7 +434,7 @@ export class AgendamientoRepository {
 
       for (const especialidad of especialidadesUnicas) {
         console.log(`\n--- Procesando especialidad: ${especialidad} ---`);
-        const agendamientos = await this.getAgendamientosByEspecialidad(especialidad);
+        const agendamientos = await this.getAgendamientosByEspecialidad(especialidad, organizacionId);
         console.log(`Total agendamientos para ${especialidad}: ${agendamientos.length}`);
 
         if (agendamientos.length > 0) {
@@ -438,12 +475,12 @@ export class AgendamientoRepository {
     }
   }
 
-  async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin) {
+  async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin, organizacionId) {
     try {
       console.log(`Calculando porcentaje de ocupación por especialidad entre ${fechaInicio} y ${fechaFin}`);
 
 
-      const conteoResultado = await this.getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin);
+      const conteoResultado = await this.getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin, organizacionId);
 
       const boxesCommand = new ScanCommand({
         TableName: this.tableName,
@@ -1008,7 +1045,7 @@ export class AgendamientoRepository {
         const validacion = await this.validateTimeSlotAvailability({
           idBox,
           idFuncionario,
-          idPaciente: 0, 
+          idPaciente: 0,
           fecha,
           horaEntrada: horaActual,
           horaSalida

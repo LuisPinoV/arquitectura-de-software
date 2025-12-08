@@ -18,9 +18,9 @@ export class BoxService {
     this.boxRepository = boxRepository;
   }
 
-  async getBoxes() {
+  async getBoxes(organizacionId) {
     const getBoxes = new GetBoxesUseCase(this.boxRepository);
-    return await getBoxes.execute();
+    return await getBoxes.execute(organizacionId);
   }
 
   async getDisponibilidadBox(idBox, fecha) {
@@ -43,27 +43,27 @@ export class BoxService {
     return await getUsageBox.execute(idBox, fecha, hora);
   }
 
-  async getBox(idBox) {
+  async getBox(idBox, organizacionId) {
     const getBox = new GetBoxUseCase(this.boxRepository);
-    return await getBox.execute(idBox);
+    return await getBox.execute(idBox, organizacionId);
   }
 
-  async createBox(body) {
+  async createBox(body, organizacionId) {
     if (!body.idBox || !body.especialidad || !body.pasillo || !body.capacidad)
       throw new Error("Data missing");
-    
+
     const createBox = new CreateBoxUseCase(this.boxRepository);
-    return await createBox.execute(body);
+    return await createBox.execute({ ...body, organizacionId });
   }
 
-  async updateBox(idBox, updates) { 
+  async updateBox(idBox, updates, organizacionId) {
     const updateBox = new UpdateBoxUseCase(this.boxRepository);
-    return await updateBox.execute(idBox, updates);
+    return await updateBox.execute(idBox, updates, organizacionId);
   }
 
-  async deleteBox(idBox) {
+  async deleteBox(idBox, organizacionId) {
     const deleteBox = new DeleteBoxUseCase(this.boxRepository);
-    return await deleteBox.execute(idBox);
+    return await deleteBox.execute(idBox, organizacionId);
   }
 
   async getAgendamientosByBox(idBox) {
