@@ -8,6 +8,7 @@ on:
 
 jobs:
   deploy-serverless:
+    needs: deploy
     runs-on: ubuntu-latest
 
     defaults:
