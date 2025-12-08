@@ -11,11 +11,15 @@ const router = AutoRouter();
 
 router
   .post("/box", createBox)
+  .get("/box/inventario", getAllInventarios)
   .get("/box/agendamientos/:idBox", getBoxAgendamientos)
   .get("/box/disponibilidad/:idBox/:fecha", getDisponibilidadBox) // ejemploPro: /box/disponibilidad/1/2025-11-04
   .get("/box/porcentaje-uso/:fecha/:hora", getPorcentajeUsoBoxes) // ejemploPro: /box/porcentaje-uso/2025-11-07/14:30
   .get("/box/ocupacion-especialidad/:fecha/:hora", getOcupacionPorEspecialidad) // ejemploPro: /box/ocupacion-especialidad/2025-11-07/14:30
-  .get("/box/uso/:idBox/:fecha/:hora", getUsoBox) // ejemploPro: /box/uso/10/2025-11-07/14:00
+  .get("/box/uso/:idBox/:fecha/:hora", getUsoBox)  // ejemploPro: /box/uso/10/2025-11-07/14:00
+  .get("/box/:idBox/inventario", getInventario)
+  .post("/box/:idBox/inventario", updateInventario)
+  .delete("/box/:idBox/inventario", deleteInventario)
   .get("/box/:idBox", getBox)
   .get("/box", getAllBoxes)
   .put("/box/:idBox", updateBox)
@@ -264,6 +268,59 @@ async function getBoxAgendamientos(req) {
     const status = error.message.includes("autenticado") ? 401
       : error.message.includes("permiso") ? 403
         : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function getInventario(req) {
+  try {
+    const organizacionId = extractCognitoUserId(req.event);
+    const { idBox } = req.params;
+    const inventario = await boxService.getInventario(idBox, organizacionId);
+    return new Response(JSON.stringify(inventario), { status: 200, headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("Error al obtener inventario:", error);
+    const status = error.message.includes("autenticado") ? 401 : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function getAllInventarios(req) {
+  try {
+    const organizacionId = extractCognitoUserId(req.event);
+    const inventarios = await boxService.getAllInventarios(organizacionId);
+    return new Response(JSON.stringify(inventarios), { status: 200, headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("Error al obtener inventarios:", error);
+    const status = error.message.includes("autenticado") ? 401 : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function updateInventario(req) {
+  if (!req.body) return new Response(JSON.stringify({ message: "No hay body" }), { status: 400, headers: { "Content-Type": "application/json" } });
+  try {
+    const organizacionId = extractCognitoUserId(req.event);
+    const { idBox } = req.params;
+    const inventario = await req.json();
+    const updated = await boxService.updateInventario(idBox, inventario, organizacionId);
+    return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("Error al actualizar inventario:", error);
+    const status = error.message.includes("autenticado") ? 401 : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function deleteInventario(req) {
+  try {
+    const organizacionId = extractCognitoUserId(req.event);
+    const { idBox } = req.params;
+    const deleted = await boxService.deleteInventario(idBox, organizacionId);
+    return new Response(JSON.stringify(deleted), { status: 200, headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("Error al eliminar inventario:", error);
+    const status = error.message.includes("autenticado") ? 401 : 500;
     return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
