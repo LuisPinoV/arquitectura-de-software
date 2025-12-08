@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const apiUrl = process.env.BACKEND_ADDRESS;
+  const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
   const incomingToken = req.headers.get("authorization") ?? "";
 
   const box = req.nextUrl.searchParams.get("box") || "0";

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({});
   }
 
-  const apiUrl = process.env.BACKEND_ADDRESS;
+  const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
 
   const resSchedules = await fetch(`${apiUrl}/agendamientosFecha/${date}`, {
     headers: {

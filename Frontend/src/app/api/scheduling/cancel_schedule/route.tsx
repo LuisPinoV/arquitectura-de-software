@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   const idAgendamiento : string | null = req.nextUrl.searchParams.get("id") || "-1";
 
-  const apiUrl = process.env.BACKEND_ADDRESS;
+  const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
 
   const res = await fetch(
     `${apiUrl}/eliminarAgendamiento/${idAgendamiento}`,
