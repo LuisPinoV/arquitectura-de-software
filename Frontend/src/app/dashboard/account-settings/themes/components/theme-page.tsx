@@ -36,6 +36,7 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 import { useUserProfile } from "@/hooks/use-user";
 import { apiFetch, refreshTokens } from "@/lib/apiClient";
+import { Spinner } from "@/components/ui/spinner";
 
 const iconsStyle: React.CSSProperties = {
   height: "30px",
@@ -370,6 +371,7 @@ export function ThemePage() {
   }, [profile?.name, profile?.companyName, profile?.spaceName]);
 
   const handleSaveIdentity = async () => {
+    setLoadingSettingsState(true);
     try {
       const apiUrl = "/api/user-settings/update-user";
 
@@ -381,6 +383,8 @@ export function ThemePage() {
           spaceName: editableSpace,
         }),
       });
+
+      setLoadingSettingsState(false);
 
       const contentType = res?.headers.get("content-type") || "";
       let payload: any = null;
@@ -668,6 +672,8 @@ export function ThemePage() {
   const addNewTheme = async () => {
     const claims = await GetClaims();
 
+    setLoadingState(true);
+
     let userId: string | null = null;
     if (claims && typeof claims === "object") {
       if ((claims as any).sub) {
@@ -702,55 +708,14 @@ export function ThemePage() {
     };
 
     try {
-      // Resolve API URL: prefer runtime env on window, then build from env variable, else default to /profile
-      const raw =
-        (typeof window !== "undefined" &&
-          (window as any).__env &&
-          (window as any).__env.NEXT_PUBLIC_THEME_PROFILE) ||
-        process.env.NEXT_PUBLIC_THEME_PROFILE ||
-        "";
-      let apiUrl = "";
-      if (raw) {
-        try {
-          const parsed = new URL(raw);
-          apiUrl = parsed.toString();
-        } catch (e) {
-          // raw may be a relative path
-          if (raw.startsWith("/")) {
-            apiUrl =
-              (typeof window !== "undefined" ? window.location.origin : "") +
-              raw;
-          } else {
-            apiUrl = raw;
-          }
-        }
-      } else {
-        apiUrl =
-          (typeof window !== "undefined" ? window.location.origin : "") +
-          "/profile";
-      }
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
+      const apiUrl = "/api/user-settings/add-custom-theme";
 
       const res = await apiFetch(apiUrl, {
         method: "POST",
-        headers,
         body: JSON.stringify(body),
       });
 
-      const ct = res?.headers.get("content-type") || "";
-      let payload: any = null;
-      if (ct.includes("application/json")) {
-        try {
-          payload = await res?.json();
-        } catch (e) {
-          payload = { _raw: await res?.text() };
-        }
-      } else {
-        payload = { _raw: await res?.text() };
-      }
+      setLoadingState(false);
 
       if (res?.ok) {
         onCancelAddTheme();
@@ -771,6 +736,11 @@ export function ThemePage() {
       toast.error("Perfil no pudo ser creado");
     }
   };
+
+  const [loadingState, setLoadingState] = useState(false);
+
+  const confirmButton = <Button onClick={addNewTheme}>Confirmar</Button>;
+  const loadingButton = <Button><Spinner>Cargando...</Spinner></Button>;
 
   const addThemeHTML = (
     <section id="addTheme">
@@ -838,13 +808,17 @@ export function ThemePage() {
               >
                 Cancelar
               </Button>
-              <Button onClick={addNewTheme}>Confirmar</Button>
+              {loadingState ? loadingButton : confirmButton}
             </CardFooter>
           </Card>
         </motion.div>
       </Col>
     </section>
   );
+
+  const [loadingSettingsState, setLoadingSettingsState] = useState(false);
+
+  const confirmSettingsButton = <Button onClick={handleSaveIdentity}>Guardar</Button>
 
   return (
     <>
@@ -943,7 +917,7 @@ export function ThemePage() {
                 >
                   Cancelar
                 </Button>
-                <Button onClick={handleSaveIdentity}>Guardar</Button>
+                {loadingSettingsState ? loadingButton : confirmSettingsButton}
               </CardFooter>
             </Card>
           </motion.div>
@@ -1086,7 +1060,9 @@ function getThemeVariable(variable: string, theme: "light" | "dark") {
 
 async function getCustomThemesFromDB(id: string) {
   try {
-    const res = await apiFetch(`/api/user-settings/get-themes-from-db?id=${id}`);
+    const res = await apiFetch(
+      `/api/user-settings/get-themes-from-db?id=${id}`
+    );
 
     if (res?.ok) {
       console.log("Got profiles");
