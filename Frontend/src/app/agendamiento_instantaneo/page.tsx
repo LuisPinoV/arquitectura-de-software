@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { apiFetch } from "@/lib/apiClient";
+import { useUserProfile } from '@/hooks/use-user';
 
 export default function AutoFillPopupPage() {
   const [showPopup, setShowPopup] = useState(true);
@@ -13,20 +15,46 @@ export default function AutoFillPopupPage() {
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
   const [horaSalida, setHoraSalida] = useState("");
-const [idBox, setIdBox] = useState<string | null>(null);
+  const [idBox, setIdBox] = useState<string | null>(null);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const resUsuarios = await apiFetch("/api/agendamiento_instantaneo/get_paciente");
+        const dataUsuarios = await resUsuarios?.json();
+        setListaUsuarios(dataUsuarios as Paciente[]);
+      } catch (err) {
+        console.error("Error cargando a los usuarios", err);
+      }
 
-  const listaUsuarios = [
-    { id: "u1", nombre: "Usuario 1" },
-    { id: "u2", nombre: "Usuario 2" },
-    { id: "u3", nombre: "Usuario 3" },
-  ];
+      try {
+        const resFuncionarios = await apiFetch("/api/agendamiento_instantaneo/get_funcionarios");
+        const dataFuncionarios = await resFuncionarios?.json();
+        console.log("Funcionarios:", dataFuncionarios)
+        setListaFuncionarios(dataFuncionarios as Funcionario[])
+      } catch (error) {
+        console.error("Error cargando a los funcionarios", error)
+      }
+    };
 
-  const listaFuncionarios = [
-    { id: "f1", nombre: "Funcionario 1" },
-    { id: "f2", nombre: "Funcionario 2" },
-    { id: "f3", nombre: "Funcionario 3" },
-  ];
+    fetchData();
+  }, []);
+
+  interface Funcionario {
+    idFuncionario: string;
+    nombre: string;
+    rut: string;
+  }
+
+  interface Paciente {
+    idPaciente: string;
+    nombre: string;
+    apellido: string;
+    rut: string;
+  }
+
+  const [listaUsuarios, setListaUsuarios] = useState<Paciente[]>([]);
+  const [listaFuncionarios, setListaFuncionarios] = useState<Funcionario[]>([]);
 
   useEffect(() => {
     const now = new Date();
@@ -54,7 +82,8 @@ const [idBox, setIdBox] = useState<string | null>(null);
       idBox,
     };
 
-    await fetch("https://tuapi.com/agendamiento", {
+    // api para postear agendamiento
+    await apiFetch("/api/agendamiento_instantaneo/post_agendamiento", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -62,6 +91,8 @@ const [idBox, setIdBox] = useState<string | null>(null);
 
     setShowPopup(false);
   };
+  const profile = useUserProfile ? useUserProfile() as any : null;
+  const space = profile?.spaceName ?? 'Boxes';
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center p-6">
@@ -74,7 +105,7 @@ const [idBox, setIdBox] = useState<string | null>(null);
             <CardContent>
               <div className="space-y-3 text-base">
                 <div>
-                  <strong>ID Usuario:</strong>
+                  <strong>Seleccione su usuario</strong>
                   <select
                     className="w-full border rounded p-1 mt-1"
                     value={idUsuario}
@@ -82,13 +113,13 @@ const [idBox, setIdBox] = useState<string | null>(null);
                   >
                     <option value="">Seleccione...</option>
                     {listaUsuarios.map((u) => (
-                      <option key={u.id} value={u.id}>{u.nombre}</option>
+                      <option key={u.idPaciente} value={u.idPaciente}>{u.nombre}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <strong>ID Funcionario:</strong>
+                  <strong>Seleccione un funcionario</strong>
                   <select
                     className="w-full border rounded p-1 mt-1"
                     value={idFuncionario}
@@ -96,7 +127,7 @@ const [idBox, setIdBox] = useState<string | null>(null);
                   >
                     <option value="">Seleccione...</option>
                     {listaFuncionarios.map((f) => (
-                      <option key={f.id} value={f.id}>{f.nombre}</option>
+                      <option key={f.idFuncionario} value={f.idFuncionario}>{f.nombre}</option>
                     ))}
                   </select>
                 </div>
@@ -104,7 +135,7 @@ const [idBox, setIdBox] = useState<string | null>(null);
                 <p><strong>Fecha:</strong> {fecha}</p>
                 <p><strong>Hora entrada:</strong> {hora}</p>
                 <p><strong>Hora salida:</strong> {horaSalida}</p>
-                <p><strong>ID Box:</strong> {idBox}</p>
+                <p><strong>{space}:</strong> {idBox}</p>
               </div>
 
               <div className="mt-6 flex justify-center gap-4">

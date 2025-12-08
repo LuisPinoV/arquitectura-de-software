@@ -75,6 +75,7 @@ import {
 } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiFetch } from "@/lib/apiClient";
 
 export function GraficoConcentracionPorEspecialidad() {
   const { t } = useLanguage();
@@ -107,10 +108,10 @@ export function GraficoConcentracionPorEspecialidad() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/api/general/boxes_per_specialty?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
-        const data: any = await res.json();
+        const data: any = await res?.json();
         setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
