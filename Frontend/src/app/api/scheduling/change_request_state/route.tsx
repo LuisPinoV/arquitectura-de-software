@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const idAgendamiento = searchParams.get("id");
     const state = searchParams.get("estado");
 
-    const apiUrl = process.env.BACKEND_ADDRESS;
+    const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
 
     if (!idAgendamiento || !state) {
       return NextResponse.json({ error: "Missing idBox or fecha" }, { status: 400 });

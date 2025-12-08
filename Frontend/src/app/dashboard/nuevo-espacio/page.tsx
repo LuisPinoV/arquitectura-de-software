@@ -17,7 +17,18 @@ import {
 } from "@/components/ui/form";
 import { Row, Col } from "antd";
 import { apiFetch } from "@/lib/apiClient";
-import './nuevo_espacio.css';
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 
 const NuevoEspacioSchema = z.object({
   spaceName: z.string().min(1, "El nombre del espacio es requerido"),
@@ -29,6 +40,34 @@ const NuevoEspacioSchema = z.object({
 
 export default function NuevoEspacioPage() {
   const router = useRouter();
+
+  const [openAler, setOpenAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string>("");
+
+  const [loadingRegistration, setLoadingRegistration] =
+    useState<boolean>(false);
+
+  const showAlert = (msg: string) => {
+    setAlertMessage(msg);
+    setOpenAlert(true);
+  };
+
+  const closeAlert = () => {
+    setAlertMessage("");
+    setOpenAlert(false);
+  };
+
+  const registerButton = (
+    <Button type="submit" className="w-full">
+      Crear espacio
+    </Button>
+  );
+
+  const loadingButton = (
+    <Button type="submit" className="w-full">
+      <Spinner>Cargando...</Spinner>
+    </Button>
+  );
 
   const form = useForm<z.infer<typeof NuevoEspacioSchema>>({
     resolver: zodResolver(NuevoEspacioSchema),
@@ -43,35 +82,44 @@ export default function NuevoEspacioPage() {
 
   async function onSubmit(data: z.infer<typeof NuevoEspacioSchema>) {
     try {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-      const res = await apiFetch('/api/spaces/create', {
-        method: 'POST',
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      setLoadingRegistration(true);
+      const res = await apiFetch("/api/spaces/create", {
+        method: "POST",
         headers,
         body: JSON.stringify(data),
       });
 
       const json = await res?.json().catch(() => ({}));
-      // Log full response for easier debugging
-      // eslint-disable-next-line no-console
-      console.debug('Create espacio response', { status: res?.status, body: json });
+      console.debug("Create espacio response", {
+        status: res?.status,
+        body: json,
+      });
 
       if (res?.ok) {
-        // Backend returns created item (has `idBox`). Show it to the user so they can confirm.
-        const createdId = json.idBox || json.id || (typeof json === 'object' && json.idBox) || null;
+        const createdId =
+          json.idBox ||
+          json.id ||
+          (typeof json === "object" && json.idBox) ||
+          null;
         if (createdId) {
-          alert(`Espacio creado correctamente (id: ${createdId})`);
+          setLoadingRegistration(false);
+          showAlert(`Espacio creado correctamente (id: ${createdId})`);
         } else {
-          alert(json.message || 'Espacio creado correctamente');
+          setLoadingRegistration(false);
+          showAlert(json.message || "Espacio creado correctamente");
         }
-        router.push('/dashboard/agendamiento');
       } else {
-        alert(json.message || 'Error creando el espacio');
+        setLoadingRegistration(false);
+        showAlert(json.message || "Error creando el espacio");
       }
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
-      alert('Error creando el espacio');
+      setLoadingRegistration(false);
+      showAlert("Error creando el espacio");
     }
   }
 
@@ -85,7 +133,10 @@ export default function NuevoEspacioPage() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="flex flex-col gap-4"
+                >
                   <FormField
                     control={form.control}
                     name="spaceName"
@@ -149,7 +200,10 @@ export default function NuevoEspacioPage() {
                       <FormItem>
                         <FormLabel>Descripción</FormLabel>
                         <FormControl>
-                          <Input placeholder="Descripción breve..." {...field} />
+                          <Input
+                            placeholder="Descripción breve..."
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -157,9 +211,7 @@ export default function NuevoEspacioPage() {
                   />
 
                   <div className="mt-4">
-                    <Button type="submit" className="w-full">
-                      Crear espacio
-                    </Button>
+                    {loadingRegistration ? loadingButton : registerButton}
                   </div>
                 </form>
               </Form>
@@ -167,6 +219,19 @@ export default function NuevoEspacioPage() {
           </Card>
         </Col>
       </Row>
+      <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Creación espacio</AlertDialogTitle>
+            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={closeAlert}>
+              Entendido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

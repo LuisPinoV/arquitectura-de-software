@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const idBox = searchParams.get("idBox");
     const fecha = searchParams.get("fecha");
 
-    const apiUrl = process.env.BACKEND_ADDRESS;
+    const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
 
     if (!idBox || !fecha) {
       return NextResponse.json({ error: "Missing idBox or fecha" }, { status: 400 });

@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ThemeProvider } from "@/components/shadcn-provider";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/apiClient";
 
 import "./layoutDashboard.css";
 import { useEffect } from "react";
@@ -17,14 +18,18 @@ export default function DashboardLayout({
   useEffect(() => {
     async function RefreshSession(refreshToken: string) {
       try {
-        const res = await fetch(`/api/session/refresh`, {
+        const res = await apiFetch(`/api/session/refresh`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refreshToken }),
         });
 
+        if (!res) {
+          throw new Error("No response from refresh endpoint");
+        }
+
         const resJson = await res.json();
-        
+
         if (resJson.ok) {
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
@@ -41,10 +46,16 @@ export default function DashboardLayout({
         router.replace("/");
       }
     }
-    const refreshToken = localStorage.getItem("refreshToken");
-    
-    if (refreshToken) RefreshSession(refreshToken);
-    else router.replace("/");
+
+    const timeout = setTimeout(() => {
+      const refreshToken = localStorage.getItem("refreshToken");
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (isExpiringSoon(accessToken ?? "") || !accessToken)
+        RefreshSession(refreshToken ?? "");
+    }, 50);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   //Gets colors
@@ -137,4 +148,14 @@ export default function DashboardLayout({
       </div>
     </ThemeProvider>
   );
+}
+
+function isExpiringSoon(token: string) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const exp = payload.exp * 1000;
+    return exp - Date.now() < 60_000; // less than 1 minute
+  } catch {
+    return true;
+  }
 }

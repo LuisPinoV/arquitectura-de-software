@@ -1,20 +1,18 @@
 import { AutoRouter } from "itty-router";
-import { funcionarioRepository } from '../../infrastructure/db/funcionario.repository.js';
 import { FuncionarioService } from "../../application/services/funcionario.service.js";
 
-//Service
-
-const funcionarioService = new FuncionarioService(funcionarioRepository);
+const funcionarioService = new FuncionarioService();
 
 // Routing
 const router = AutoRouter();
 
 router
   .post("/funcionario", createFuncionario)
+  .get("/funcionario", getAllFuncionariosHandler)
+  .get("/funcionario/agendamientos/:funcionarioId", getFuncionarioAgendamientos)
   .get("/funcionario/:funcionarioId", getFuncionario)
   .put("/funcionario/:funcionarioId", updateFuncionario)
-  .delete("/funcionario/:funcionarioId", deleteFuncionario)
-  .get("/funcionario/agendamientos/:funcionarioId", getFuncionarioAgendamientos);
+  .delete("/funcionario/:funcionarioId", deleteFuncionario);
 
 router.all("*", () => new Response("Not Found", { status: 404 }));
 
@@ -44,10 +42,12 @@ export const funcionarioHandler = async (event) => {
     };
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: err.message }));
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
-
 // Handlers
 async function createFuncionario(req) {
   if (!req.body) {
@@ -127,5 +127,34 @@ async function getFuncionarioAgendamientos(req) {
   } catch (error) {
     console.error('Error al obtener agendamientos del funcionario:', error);
     return new Response(JSON.stringify({ message: 'Error interno del servidor' }), { status: 500, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function getAllFuncionariosHandler(req) {
+  try {
+    const data = await funcionarioService.getAllFuncionarios();
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data,
+        count: data.length
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        message: error?.message || "Internal Server Error",
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }),
+      {
+        status: error?.statusCode || 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }

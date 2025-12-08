@@ -32,6 +32,7 @@ import { Calendar } from "@/components/ui/calendar";
 
 import { es } from "react-day-picker/locale";
 import "./search-card.css";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 const chartConfig = {
   percentage: {
@@ -74,8 +75,14 @@ export function SearchCard({ data }: any) {
     router.push(`/dashboard/reportaje/${data.idBox}`);
   };
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Espacio';
+  const [profile, setClientProfile] = React.useState<any>(null)
+    
+      React.useEffect(() => {
+        const p = getUserProfile()
+        setClientProfile(p)
+      }, [])
+    
+      const space = profile?.spaceName ?? "Espacio"
 
   return (
     <Card className="search-card" style={{ marginTop: "20px" }}>

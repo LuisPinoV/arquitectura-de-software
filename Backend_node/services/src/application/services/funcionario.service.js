@@ -1,6 +1,7 @@
 //Use cases
 import { CreateFuncionarioUseCase } from "../useCases/funcionario/createFuncionario.useCase.js";
 import { GetAllDataFuncionariosUseCase } from "../useCases/funcionario/getAllDataFuncionarios.useCase.js";
+import { GetAllFuncionariosUseCase } from "../useCases/funcionario/getAllFuncionarios.useCase.js";
 import { GetFuncionariosUseCase } from "../useCases/funcionario/getFuncionarios.useCase.js";
 import { GetTiposFuncionariosUseCase } from "../useCases/funcionario/getTiposFuncionario.useCase.js";
 import { GetFuncionarioUseCase } from "../useCases/funcionario/getFuncionario.useCase.js";
@@ -79,4 +80,12 @@ export class FuncionarioService {
 
     return await getFuncionarioAgendamiento.execute(idFuncionario);
   }
+  async getAllFuncionarios() {
+    const getAllFuncionarios = new GetAllFuncionariosUseCase(
+      this.funcionarioRepository
+   );
+
+    return await getAllFuncionarios.execute();
+  }
+
 }

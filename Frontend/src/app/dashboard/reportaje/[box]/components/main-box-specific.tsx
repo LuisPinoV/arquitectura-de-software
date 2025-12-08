@@ -12,13 +12,16 @@ import {
 } from "@/components/ui/dialog";
 import { QRBox } from "./QR";
 import { useRef } from "react";
+import { TablaInventario } from "./inventario";
+
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 import { Separator } from "@/components/ui/separator";
 import { useUserProfile } from "@/hooks/use-user";
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
-
+import { getUserProfile } from "@/utils/get_user_profile";
 export default function MainBoxSpecific({ box }: { box: any }) {
   const router = useRouter();
   const [boxCurrentData, setBoxCurrentData] = useState<any>();
@@ -26,11 +29,11 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   useEffect(() => {
     async function fetchDataTodayBox() {
       try {
-        const res = await fetch(
-          `/dashboard/reportaje/boxes/api/get_data_today_box?idBox=${box}`
+        const res = await apiFetch(
+          `/api/reports/get_data_today_box?idBox=${box}`
         );
-        const data: any = await res.json();
-        setBoxCurrentData(data);
+        const data: any = await res?.json();
+        setBoxCurrentData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -39,16 +42,22 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   }, []);
   let nextTime = "--:--";
   if (boxCurrentData) {
-    if (boxCurrentData["proximoBloque"]) {
-      nextTime = `${boxCurrentData["proximoBloque"].split(":")[0]}:${
-        boxCurrentData["proximoBloque"].split(":")[1]
+    if (boxCurrentData.proximoBloque) {
+      nextTime = `${boxCurrentData.proximoBloque.split(":")[0]}:${
+        boxCurrentData.proximoBloque.split(":")[1]
       }`;
     }
   }
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  
+  const [clientProfile, setClientProfile] = useState<any>(null);
+  
+    useEffect(() => {
+      const p = getUserProfile();
+      setClientProfile(p);
+    }, []);
+  
+    const space = clientProfile?.spaceName ?? "Espacio";
 
-  // cositas QR
   const qrRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = () => {
@@ -200,7 +209,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
                     <DialogContent className="flex flex-col items-center">
                       <DialogHeader>
-                        <DialogTitle>Código QR del Box {box}</DialogTitle>
+                        <DialogTitle>Código QR del {space} {box}</DialogTitle>
                       </DialogHeader>
 
                       <div className="mt-4 flex justify-center">
@@ -240,9 +249,27 @@ export default function MainBoxSpecific({ box }: { box: any }) {
               <div>
                 Inventario {space} - {box}
               </div>
+              <Dialog>
+                <DialogTrigger asChild style={{ margin: "5px 5px" }} >
+                  <Button>
+                    Editar
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className="flex flex-col items-center" >
+                  <DialogHeader>
+                    <DialogTitle>Editar inventario del {space} {box} </DialogTitle>
+                  </DialogHeader>
+        
+                  <div>
+                    *Aca van los items del inventario*
+                  </div>
+
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
-              *Aca va el contenido*
+              <TablaInventario idBox={box}/>
             </CardContent>
           </Card>
         </Col>

@@ -4,6 +4,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Administración Hospital Padre Hurtado",
-  description: "Gestión de boxes para el Hospital Padre Hurtado",
+  title: "Agendín",
+  description: "Gestión de espacios físicos",
 };
 
 export default function RootLayout({children,}: Readonly<{children: React.ReactNode;}>) 
@@ -26,8 +27,10 @@ export default function RootLayout({children,}: Readonly<{children: React.ReactN
     <html lang="en" suppressHydrationWarning>
       
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <LanguageProvider>
           <AntdRegistry>{children}</AntdRegistry>
           <Toaster />
+        </LanguageProvider>
       </body>
     </html>
   );

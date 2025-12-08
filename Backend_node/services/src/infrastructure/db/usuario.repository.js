@@ -13,7 +13,7 @@ import {
 const client = new DynamoDBClient();
 const dynamo = DynamoDBDocumentClient.from(client);
 
-export class usuarioRepository {
+export class UsuarioRepository {
   constructor(tableName) {
     this.tableName = tableName;
     this.dynamo = dynamo;
@@ -25,7 +25,7 @@ export class usuarioRepository {
     const item = {
       PK: `PACIENTE#${idPaciente}`,
       SK: "PROFILE",
-      tipo: "Paciente",
+      tipo: "Usuario",
       idPaciente,
       nombre,
       apellido,
@@ -98,35 +98,35 @@ export class usuarioRepository {
   }
 
 
- async deleteUsuario(idPaciente) {
-  console.log("deletePaciente -> idPaciente:", idPaciente);
-  console.log("deletePaciente -> table:", this.tableName);
+  async deleteUsuario(idPaciente) {
+    console.log("deletePaciente -> idPaciente:", idPaciente);
+    console.log("deletePaciente -> table:", this.tableName);
 
-  const get = new GetCommand({
-    TableName: this.tableName,
-    Key: {
-      PK: `PACIENTE#${idPaciente}`,
-      SK: "PROFILE",
-    },
-  });
+    const get = new GetCommand({
+      TableName: this.tableName,
+      Key: {
+        PK: `PACIENTE#${idPaciente}`,
+        SK: "PROFILE",
+      },
+    });
 
-  const found = await this.dynamo.send(get);
-  console.log("Paciente encontrado antes de borrar:", found.Item);
+    const found = await this.dynamo.send(get);
+    console.log("Paciente encontrado antes de borrar:", found.Item);
 
-  const command = new DeleteCommand({
-    TableName: this.tableName,
-    Key: {
-      PK: `PACIENTE#${idPaciente}`,
-      SK: "PROFILE",
-    },
-    ReturnValues: "ALL_OLD",
-  });
+    const command = new DeleteCommand({
+      TableName: this.tableName,
+      Key: {
+        PK: `PACIENTE#${idPaciente}`,
+        SK: "PROFILE",
+      },
+      ReturnValues: "ALL_OLD",
+    });
 
-  const result = await this.dynamo.send(command);
-  console.log("deletePaciente result:", result);
+    const result = await this.dynamo.send(command);
+    console.log("deletePaciente result:", result);
 
-  return { idPaciente, deletedItem: result.Attributes || null };
-}
+    return { idPaciente, deletedItem: result.Attributes || null };
+  }
 
 
 
@@ -198,5 +198,5 @@ export class usuarioRepository {
   }
 }
 
-export const usuarioRepository = new UsuarioRepisitory("Agendamiento");
+export const usuarioRepository = new UsuarioRepository("Agendamiento");
 

@@ -32,7 +32,7 @@ export const QRBox = forwardRef(function QRBox({
     horaSalida: horaStr2
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"; 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://192.168.8.128:3000/"; 
   const url = `${baseUrl}/agendamiento_instantaneo?${query.toString()}`;
 
   return (

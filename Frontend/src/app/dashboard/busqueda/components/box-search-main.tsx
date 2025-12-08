@@ -4,6 +4,7 @@ import { Row, Col } from "antd";
 
 import { SearchCard } from "@/components/custom/search-card";
 import { useUserProfile } from "@/hooks/use-user";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import "./dropdown-boxes.css";
 import { Button } from "@/components/ui/button";
@@ -25,8 +26,10 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { apiFetch } from "@/lib/apiClient";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 export function BoxSearchMain() {
+  const { t } = useLanguage();
   const pagesPerDisplay = {
     name: "20",
     categories: ["5", "10", "20", "25", "50", "100"],
@@ -62,8 +65,14 @@ export function BoxSearchMain() {
     fetchData();
   }, []);
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Espacio";
+  const [profile, setClientProfile] = useState<any>(null)
+  
+    useEffect(() => {
+      const p = getUserProfile()
+      setClientProfile(p)
+    }, [])
+  
+    const space = profile?.spaceName ?? "Espacio"
 
   useEffect(() => {
     async function fetchData() {
@@ -87,8 +96,8 @@ export function BoxSearchMain() {
   }, []);
 
   const filter_specialties = {
-    name: "Tipo",
-    desc: `Elija tipo de ${space}...`,
+    name: t("search.type"),
+    desc: t("search.chooseType").replace("space", space),
     categories: pasillos,
     defaultAllSelected: false,
   };
@@ -118,7 +127,7 @@ export function BoxSearchMain() {
     toFilterData = toFilterData.filter((spaceData) => {
       const spaceName = `${space} - ${spaceData["idBox"]}`;
       const spaceType = spaceData["especialidad"];
-      const spaceState = spaceData["disponible"] ? "Libre" : "Ocupado";
+      const spaceState = spaceData["disponible"] ? t("dashboard.free") : t("dashboard.occupied");
       const spaceBusy = !Number.isNaN(parseFloat(spaceData["ocupancia"])) ? parseFloat(spaceData["ocupancia"]) : 100;
 
       if (
@@ -136,7 +145,7 @@ export function BoxSearchMain() {
   const startIndex = (curPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, dataArr.length);
 
-  const visibleData = dataArr.slice(startIndex, endIndex);
+  const visibleData = Array.isArray(dataArr) ? dataArr.slice(startIndex, endIndex) : [];
 
   const totalPages = Math.ceil(dataArr.length / itemsPerPage);
 
@@ -194,9 +203,9 @@ export function BoxSearchMain() {
   };
 
   const filter_state = {
-    name: "Estado actual",
-    desc: `Elija por estado de ${space}...`,
-    categories: ["Libre", "Ocupado"],
+    name: t("search.currentState"),
+    desc: t("search.chooseState").replace("space", space),
+    categories: [t("dashboard.free"), t("dashboard.occupied")],
     defaultAllSelected: false,
   };
 
@@ -259,7 +268,7 @@ export function BoxSearchMain() {
           <div>
             <div className="filterer-item-no-flex">
               <Input
-                placeholder={`Buscar un/a ${space}...`}
+                placeholder={t("search.searchSpace").replace("space", space)}
                 className="rounded-lg border"
                 onChange={(e) => setSearchInput(e.target.value)}
               />
@@ -284,7 +293,7 @@ export function BoxSearchMain() {
             </div>
             <div className="filterer-item-no-flex">
               <p style={{ margin: "5px 0" }}>
-                Porcentaje de uso - {usagePercentage}%
+                {t("search.usagePercentage")} - {usagePercentage}%
               </p>
               <Slider
                 defaultValue={[0]}
@@ -296,7 +305,7 @@ export function BoxSearchMain() {
             </div>
             <div className="filterer-item-flex">
               <Button style={{ flex: "1 1 100%" }} onClick={handleFilter}>
-                Filtrar
+                {t("search.filter")}
               </Button>
             </div>
           </div>
@@ -320,7 +329,7 @@ export function BoxSearchMain() {
                     paddingRight: "3%",
                   }}
                 >
-                  Items por página
+                  {t("search.itemsPerPage")}
                 </p>
                 <DropdownOneSelected
                   data={pagesPerDisplay}

@@ -42,12 +42,14 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Col, Row } from "antd";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/apiClient";
 import {
   getCurrentMonthRange,
   getCurrentWeekRange,
   getCurrentYearRange,
 } from "@/utils/get_current_dates";
 import { useUserProfile } from "@/hooks/use-user";
+import { getUserProfile } from "@/utils/get_user_profile";
 
 export function ChartBoxAcrossTime({
   idbox,
@@ -69,8 +71,14 @@ export function ChartBoxAcrossTime({
 
   const isMobile = useIsMobile();
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  const [clientProfile, setClientProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const p = getUserProfile();
+    setClientProfile(p);
+  }, []);
+
+  const space = clientProfile?.spaceName ?? "Espacio";
 
   const [chartData, setData] = useState<any[]>(dataArr ?? []);
   const [dateRangeType, setDateRangeType] = useState("semanal");
@@ -92,7 +100,6 @@ export function ChartBoxAcrossTime({
   const firstDateISO = dateRange[0].toISOString().split("T")[0];
 
   useEffect(() => {
-    // Only fetch if no external dataArr was passed
     if (dataArr) {
       setData(dataArr);
       return;
@@ -100,11 +107,11 @@ export function ChartBoxAcrossTime({
 
     async function fetchData() {
       try {
-        const res = await fetch(
-          `/dashboard/reportaje/boxes/api/get_box_ocupancy_data_by_date?idBox=${idbox}&startDate=${firstDateISO}&endDate=${lastDateISO}`
+        const res = await apiFetch(
+          `/api/reports/get_box_ocupancy_data_by_date?idBox=${idbox}&startDate=${firstDateISO}&endDate=${lastDateISO}`
         );
-        const data: any = await res.json();
-        setData(data);
+        const data: any = await res?.json();
+        setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -114,9 +121,9 @@ export function ChartBoxAcrossTime({
   }, [dateRangeType, idbox, firstDateISO, lastDateISO, dataArr]);
 
   const filteredData = chartData.map((item) => {
-    const date = new Date(item["date"]);
-    const ocupado = (parseFloat(item["ocupancia"]) * 100).toFixed(2);
-    const libre = (100 - parseFloat(ocupado)).toFixed(2);
+    const date = new Date(item.date ?? null);
+    const ocupado = (parseFloat(item["ocupancia"] ?? 0) * 100).toFixed(2);
+    const libre = (100 - parseFloat(ocupado ?? 0)).toFixed(2);
 
     return {
       date: date.toISOString().split("T")[0],
@@ -261,13 +268,25 @@ export function BoxSchedule({ idbox }: { idbox: string }) {
   >([]);
 
   useEffect(() => {
-    fetch(`/dashboard/reportaje/boxes/api/get_box_ocupancy_data?idBox=${idbox}`)
-      .then((res) => res.json())
-      .then((data) => setChartData(data));
+    async function fetchChartData() {
+      const res = await apiFetch(
+        `/api/reports/get_box_ocupancy_data?idBox=${idbox}`
+      );
+      const data = await res?.json();
+      setChartData(data ?? []);
+    }
+
+    fetchChartData();
   }, [idbox]);
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Box";
+  const [clientProfile, setClientProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const p = getUserProfile();
+    setClientProfile(p);
+  }, []);
+
+  const space = clientProfile?.spaceName ?? "Espacio";
 
   return (
     <Card>
@@ -288,11 +307,7 @@ export function BoxSchedule({ idbox }: { idbox: string }) {
               axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
             />
-            <YAxis
-              domain={[0, "dataMax"]} // 👈 scales up to the max bar value
-              tickLine={false}
-              axisLine={false}
-            />
+            <YAxis domain={[0, "dataMax"]} tickLine={false} axisLine={false} />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}

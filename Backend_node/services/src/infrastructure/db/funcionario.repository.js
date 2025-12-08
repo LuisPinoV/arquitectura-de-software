@@ -1,6 +1,7 @@
 import {
-  DynamoDBClient,
+  DynamoDBClient
 } from "@aws-sdk/client-dynamodb";
+import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -121,6 +122,21 @@ export class FuncionarioRepository {
       KeyConditionExpression: "FuncionarioId = :fid",
       ExpressionAttributeValues: {
         ":fid": `FUNCIONARIO#${idFuncionario}`,
+      },
+    });
+
+    const result = await this.dynamo.send(command);
+    return result.Items || [];
+  }
+
+    // funcionario.repository.js
+  async getAllFuncionarios() {
+    const command = new ScanCommand({
+      TableName: this.tableName,
+      FilterExpression: "begins_with(PK, :pkPrefix) AND SK = :sk",
+      ExpressionAttributeValues: {
+        ":pkPrefix": "FUNCIONARIO#",
+        ":sk": "PROFILE",
       },
     });
 

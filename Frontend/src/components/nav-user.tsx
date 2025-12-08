@@ -25,6 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function getInitials(name?: string) {
   if (!name) return "U";
@@ -42,6 +43,7 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const { t } = useLanguage();
 
   const logout = () => {
     localStorage.removeItem("refreshToken");
@@ -88,23 +90,23 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <BadgeCheck />
-                Cuenta
+                {t("auth.account")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
-                Notificaciones
+                {t("auth.notifications")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Settings />
                 <a href="/dashboard/account-settings">
-                  <span>Configuración</span>
+                  <span>{t("nav.settings")}</span>
                 </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               <LogOut />
-              Salir
+              {t("auth.logout")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

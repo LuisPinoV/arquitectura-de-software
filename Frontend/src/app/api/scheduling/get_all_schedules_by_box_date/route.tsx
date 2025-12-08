@@ -21,11 +21,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({});
   }
 
-  const apiUrl = process.env.BACKEND_ADDRESS;
+  const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
   const resSchedules = await fetch(`${apiUrl}/agendamientosFecha/${date}`, {
     headers: {
       "Content-Type": "application/json",
+      "Authorization": incomingToken,   // <-- Forward it to backend
     },
   });
   const dataSchedules = await resSchedules.json();

@@ -7,6 +7,7 @@ import Image from "next/image";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Sidebar,
   SidebarContent,
@@ -17,57 +18,54 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const data = {
-  navMain: [
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { t, language } = useLanguage();
+  const [companyName, setCompanyName] = React.useState<string | null>(null);
+  const [userName, setUserName] = React.useState<string | null>(null);
+  const [spaceName, setSpaceName] = React.useState<string | null>(null);
+
+  const navMainData = React.useMemo(() => [
     {
-      title: "General",
+      title: t("nav.general"),
       url: "/dashboard/general",
       icon: House,
       isActive: true,
     },
     {
-      title: "Búsqueda",
+      title: t("nav.search"),
       url: "/dashboard/busqueda",
       icon: Search,
     },
     {
-      title: "Reportaje",
+      title: t("nav.reports"),
       url: "/dashboard/reportaje",
       icon: BookOpen,
     },
     {
-      title: "Añadir espacio",
+      title: `${t("nav.addSpace")} ${spaceName ?? t("common.space")}`,
       url: "/dashboard/nuevo-espacio",
       icon: Plus,
     },
     {
-      title: "Agendamiento",
+      title: t("nav.scheduling"),
       url: "/dashboard/agendamiento",
       icon: NotebookPen,
       items: [
         {
-          title: "Calendario",
+          title: t("nav.calendar"),
           url: "/dashboard/agendamiento/calendario",
         },
         {
-          title: "Peticiones",
+          title: t("nav.requests"),
           url: "/dashboard/agendamiento/peticiones",
         },
         {
-          title: "Importar datos",
+          title: t("nav.importData"),
           url: "/dashboard/agendamiento/import_data",
         },
       ],
     },
-  ],
-};
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [companyName, setCompanyName] = React.useState<string | null>(null);
-  const [userName, setUserName] = React.useState<string | null>(null);
-  const [spaceName, setSpaceName] = React.useState<string | null>(null);
-
-  data.navMain[3].title = `Añadir ${spaceName}`;
+  ], [t, spaceName]);
 
   React.useEffect(() => {
     function parseJwt(token: string | null) {
@@ -117,8 +115,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // build navMain replacing Boxes title with spaceName when available
   const navMain = React.useMemo(() => {
-    const replacement = spaceName ?? "Boxes";
-    return data.navMain.map((item) => {
+    const replacement = spaceName ?? t("common.boxes");
+    return navMainData.map((item) => {
       // shallow copy to preserve icon (functions cannot be JSON.stringified)
       const newItem: any = { ...item };
       if (newItem.items && newItem.items.length) {
@@ -131,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
       return newItem;
     });
-  }, [spaceName]);
+  }, [spaceName, navMainData, t]);
 
   return (
     <Sidebar

@@ -53,8 +53,10 @@ import { useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import { apiFetch } from "@/lib/apiClient";
 import { getUserProfile } from "@/utils/get_user_profile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function ChartChangeByMonths() {
+  const { t } = useLanguage();
   const chartData = [
     { month: "January", hours: 186 },
     { month: "February", hours: 205 },
@@ -66,18 +68,24 @@ export function ChartChangeByMonths() {
 
   const chartConfig = {
     hours: {
-      label: "Horas",
+      label: t("dashboard.hours"),
     },
   } satisfies ChartConfig;
 
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "Espacio";
+  const [clientProfile, setClientProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const p = getUserProfile()
+    setClientProfile(p)
+  }, [])
+
+  const space = clientProfile?.spaceName ?? "Espacio"
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cambio en el uso de {space}</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>{t("dashboard.changeInUsage")} {space}</CardTitle>
+        <CardDescription>{t("dashboard.janToJune2024")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -104,7 +112,7 @@ export function ChartChangeByMonths() {
       </CardContent>
       <CardFooter>
         <div className="text-muted-foreground leading-none">
-          Como cambió el uso de {space} a través del tiempo
+          {t("dashboard.howUsageChanged")} {space} {t("dashboard.overTime")}
         </div>
       </CardFooter>
     </Card>
@@ -112,35 +120,42 @@ export function ChartChangeByMonths() {
 }
 
 export function ChartInfoCards() {
+  const { t } = useLanguage();
 
-  const userProfile = getUserProfile();
-  const space = userProfile?.spaceName ?? "Espacio";
+  const [clientProfile, setClientProfile] = useState<any>(null)
+
+  useEffect(() => {
+    const p = getUserProfile()
+    setClientProfile(p)
+  }, [])
+
+  const space = clientProfile?.spaceName ?? "Espacio"
 
   const defaultData = [
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
@@ -150,6 +165,9 @@ export function ChartInfoCards() {
   const [infoCardsData, setInfoCardsData] = useState<any[]>(defaultData);
 
   useEffect(() => {
+
+    if (!clientProfile) return
+
     async function fetchData() {
       const today = new Date();
       const yesterday = new Date(today);
@@ -161,19 +179,26 @@ export function ChartInfoCards() {
       const tomorrowISO = tomorrow.toISOString().split("T")[0];
 
       try {
-        const resBoxes = await fetch(`/api/reports/get_all_boxes_count`);
-        const countBoxes: any = await resBoxes.json();
-        const boxes: any = countBoxes["dataLength"];
+        const resSpaces = await apiFetch(`/api/reports/get_all_boxes_count`);
+        const countSpaces: any = await resSpaces?.json();
+        const boxes: any = countSpaces["dataLength"] ?? 1;
 
         const resUsageByDate = await apiFetch(
           `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
         );
         const dataUsageByDate: any = await resUsageByDate?.json();
-        const usageData1: any = dataUsageByDate[1]["uso"].toFixed(2);
-        const dataChart1 = {
-          Nombre: `Uso ${space} hoy`,
-          Descripcion: "Porcentaje",
-          Valor: parseFloat(usageData1),
+        let usageDataByDate: any = 0;
+
+        if (Array.isArray(dataUsageByDate)) {
+          if (dataUsageByDate[1]?.uso) {
+            usageDataByDate = dataUsageByDate[1].uso.toFixed(2) ?? 0;
+          }
+        }
+
+        const dataChartUsageByDate = {
+          Nombre: `${t("dashboard.usage")} ${space} ${t("dashboard.today")}`,
+          Descripcion: t("dashboard.percentage"),
+          Valor: parseFloat(usageDataByDate ?? 0),
           MaxValue: 100,
           fill: "var(--primary)",
         };
@@ -182,54 +207,66 @@ export function ChartInfoCards() {
           `/api/reports/get_all_scheduling_today_count`
         );
         const dataTodayCount: any = await resSchedulingCount?.json();
-        const lenData2: any = dataTodayCount["dataLength"];
-        const dataChart2 = {
-          Nombre: "Agendamientos hoy",
-          Descripcion: "Cantidad",
-          Valor: parseFloat(lenData2),
+        const lenDataTodayCount: any = dataTodayCount["dataLength"];
+
+        const dataChartSchedulingCount = {
+          Nombre: `${t("dashboard.scheduling")} ${t("dashboard.today")}`,
+          Descripcion: t("dashboard.quantity"),
+          Valor: parseFloat(lenDataTodayCount ?? 0),
           MaxValue: boxes * 31,
           fill: "var(--primary)",
         };
 
-        const res3 = await apiFetch(`/api/reports/get_all_pending_schedules`);
+        const resAllPendingSchedules = await apiFetch(
+          `/api/reports/get_all_pending_schedules`
+        );
+        if (!resAllPendingSchedules) {
+          console.error("No response from apiFetch for get_all_pending_schedules");
+          return;
+        }
 
-        const data3: any = await res3?.json();
+        const dataAllPendingSchedules: any =
+          await resAllPendingSchedules?.json();
 
-        const dataChart3 = {
-          Nombre: "Agendamientos por confirmar",
-          Descripcion: "Cantidad",
-          Valor: parseFloat(data3["pendingCount"]),
-          MaxValue: parseFloat(data3["allCount"]),
+        const dataChartAllPendingSchedules = {
+          Nombre: `${t("dashboard.scheduling")} ${t("dashboard.pendingConfirmation")}`,
+          Descripcion: t("dashboard.quantity"),
+          Valor: parseFloat(dataAllPendingSchedules.pendingCount ?? 0),
+          MaxValue: parseFloat(dataAllPendingSchedules.allCount ?? 0),
           fill: "var(--primary)",
         };
 
-        const res4 = await apiFetch(
+        const resCurrentlyAvailableCount = await apiFetch(
           `/api/reports/boxes_currently_available_count`
         );
 
-        const data4: any = await res4?.json();
+        const dataCurrentlyAvailableCount: any =
+          await resCurrentlyAvailableCount?.json();
 
-        const dataChart4 = {
-          Nombre: "Boxes libres",
-          Descripcion: "Cantidad",
-          Valor: parseFloat(data4["free"]),
-          MaxValue: parseFloat(data4["all"]),
+        const dataChartCurrentlyAvailableCount = {
+          Nombre: `${space} ${t("dashboard.free")}`,
+          Descripcion: t("dashboard.quantity"),
+          Valor: parseFloat(dataCurrentlyAvailableCount.free ?? 0),
+          MaxValue: parseFloat(dataCurrentlyAvailableCount.all ?? 0),
           fill: "var(--primary)",
         };
 
-        if (dataChart1 && dataChart2 && dataChart3 && dataChart4)
-          setInfoCardsData([dataChart1, dataChart2, dataChart3, dataChart4]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
+        setInfoCardsData([
+          dataChartUsageByDate,
+          dataChartSchedulingCount,
+          dataChartAllPendingSchedules,
+          dataChartCurrentlyAvailableCount,
+        ]);
+
+      } catch (error) {}
     }
 
     fetchData();
-  }, []);
+  }, [clientProfile]);
 
   const chartConfig = {
     amount: {
-      label: "Cantidad",
+      label: t("dashboard.quantity"),
     },
     boxes: {
       label: space,
@@ -240,7 +277,7 @@ export function ChartInfoCards() {
   return (
     <Card className="p-0 m-2 mb-4">
       <CardHeader className="mt-2 text-lg items-center text-center">
-        <CardTitle>Información sobre el uso de {space}</CardTitle>
+        <CardTitle>{t("dashboard.infoAboutUsage")} {space}</CardTitle>
       </CardHeader>
       <Row justify={"center"} align="middle">
         {infoCardsData.map((data: any, i: number) => (
@@ -266,11 +303,7 @@ export function ChartInfoCards() {
               <CardContent>
                 <Card
                   className="flex flex-col max-h-[250px] max-w-[250px]"
-                  style={{
-                    borderRadius: "50%",
-                    padding: "0",
-                    margin: "0",
-                  }}
+                  style={{ borderRadius: "50%", padding: "0", margin: "0" }}
                 >
                   <CardContent className="m-0 p-0">
                     <ChartContainer
@@ -304,11 +337,7 @@ export function ChartInfoCards() {
                         >
                           <Label
                             content={({ viewBox }) => {
-                              if (
-                                viewBox &&
-                                "cx" in viewBox &&
-                                "cy" in viewBox
-                              ) {
+                              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                                 return (
                                   <text
                                     x={viewBox.cx}
@@ -354,24 +383,30 @@ export function ChartInfoCards() {
   );
 }
 
+
 export function ChartBoxesAcrossTime() {
+  const { t } = useLanguage();
   const chartConfig = {
     libre: {
-      label: "Libre (%)",
+      label: `${t("dashboard.free")} (%)`,
       color: "var(--chart-days)",
     },
     ocupado: {
-      label: "Ocupado (%)",
+      label: `${t("dashboard.occupied")} (%)`,
       color: "var(--chart-days)",
     },
   } satisfies ChartConfig;
 
   const isMobile = useIsMobile();
 
+  const userProfile = useUserProfile();
+  const space = userProfile?.spaceName ?? "Espacio";
+
   const [chartData, setData] = useState<any[]>([]);
   const [dateRangeType, setDateRangeType] = useState("semanal");
 
   React.useEffect(() => {
+
     if (isMobile) {
       setDateRangeType("semanal");
     }
@@ -393,13 +428,14 @@ export function ChartBoxesAcrossTime() {
   const firstDateISO = dateRange[0].toISOString().split("T")[0];
 
   useEffect(() => {
+
     async function fetchData() {
       try {
-        const res = await fetch(
-          `/dashboard/general/api/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
+        const res = await apiFetch(
+          `/api/general/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
-        const data: any = await res.json();
-        setData(data["dataArr"]);
+        const data: any = await res?.json();
+        setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -409,7 +445,7 @@ export function ChartBoxesAcrossTime() {
   }, [dateRangeType]);
 
   const filteredData = chartData.map((item) => {
-    const date = new Date(item["fecha"]);
+    const date = item.fecha !== "message" ? new Date(item.fecha) : new Date();
     const ocupado = parseFloat(item["uso"]).toFixed(2);
     const libre = (100 - parseFloat(ocupado)).toFixed(2);
 
@@ -419,15 +455,15 @@ export function ChartBoxesAcrossTime() {
       libre: libre,
     };
   });
-  const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? "espacio";
+
+  
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Uso de {space} a través del tiempo</CardTitle>
+        <CardTitle>{t("dashboard.usage")} {space} {t("dashboard.overTime")}</CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/card:block">Total en el tiempo</span>
+          <span className="hidden @[540px]/card:block">{t("dashboard.totalOverTime")}</span>
         </CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
@@ -437,9 +473,9 @@ export function ChartBoxesAcrossTime() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[600px]/card:flex"
           >
-            <ToggleGroupItem value="semanal">Esta semana</ToggleGroupItem>
-            <ToggleGroupItem value="mensual">Este mes</ToggleGroupItem>
-            <ToggleGroupItem value="anual">Este año</ToggleGroupItem>
+            <ToggleGroupItem value="semanal">{t("dashboard.thisWeek")}</ToggleGroupItem>
+            <ToggleGroupItem value="mensual">{t("dashboard.thisMonth")}</ToggleGroupItem>
+            <ToggleGroupItem value="anual">{t("dashboard.thisYear")}</ToggleGroupItem>
           </ToggleGroup>
           <Select value={dateRangeType} onValueChange={setDateRangeType}>
             <SelectTrigger
@@ -451,13 +487,13 @@ export function ChartBoxesAcrossTime() {
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="semanal" className="rounded-lg">
-                Esta semana
+                {t("dashboard.thisWeek")}
               </SelectItem>
               <SelectItem value="mensual" className="rounded-lg">
-                Esta mes
+                {t("dashboard.thisMonth")}
               </SelectItem>
               <SelectItem value="anual" className="rounded-lg">
-                Esta año
+                {t("dashboard.thisYear")}
               </SelectItem>
             </SelectContent>
           </Select>

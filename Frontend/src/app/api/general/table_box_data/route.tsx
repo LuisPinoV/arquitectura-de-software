@@ -7,10 +7,12 @@ export async function GET(req: NextRequest) {
   const hour = today.split("T")[1];
 
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
   const res = await fetch(`${apiUrl}/tomah/query2/${date}/${hour}`, {
     headers: {
       "Content-Type": "application/json",
+      "Authorization": incomingToken,   // <-- Forward it to backend
     },
   });
   const data = await res.json();
