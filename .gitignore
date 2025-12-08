@@ -10,9 +10,15 @@ PruebaLoginCognito/
 .terraform/
 Backend_node/tf-outputs.json
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 Backend_node/node_modules
 *node_modules/*
+=======
+node_modules/
+.serverless/
+.vscode/
+>>>>>>> Stashed changes
 =======
 node_modules/
 .serverless/

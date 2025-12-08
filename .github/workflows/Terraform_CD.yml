@@ -1,27 +1,32 @@
-name: Terraform CD (deploy)
+name: Terraform CD and Serverless Deploy
 
 on:
   workflow_dispatch:
-    
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  terraform-apply:
+  deploy:
     runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: ./Backend_node
+        working-directory: ./Backend_node/infra
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -31,7 +36,15 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+
+      - name: Install npm deps (backend)
+        run: npm ci
+
+      - name: Install Serverless
+        run: npm install -g serverless@3
+
+      - name: Deploy Serverless
+        run: serverless deploy --verbose
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
