@@ -88,7 +88,7 @@ export function SearchCard({ data }: any) {
     <Card className="search-card" style={{ marginTop: "20px" }}>
       <CardHeader>
         <CardTitle className="text-center font-bold search-card-title">
-          {`${space} - ${data.idBox ?? "N/A"}`}
+          {`${space} - ${data.nombre ?? "N/A"}`}
         </CardTitle>
       </CardHeader>
       <CardContent
