@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useUserProfile } from '@/hooks/use-user';
+import { useUserProfile } from "@/hooks/use-user";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -37,6 +37,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { apiFetch } from "@/lib/apiClient";
 
 type Schedule = {
   idAgendamiento: number;
@@ -44,36 +45,36 @@ type Schedule = {
   status: "Libre" | "Ocupado";
 };
 
-type Box = {
-  idBox: number;
-  schedules: Record<string, Schedule[]>;
-};
-
 const PAGE_SIZE = 7;
 
 export default function BoxSchedulePage() {
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Box';
+  const space = profile?.spaceName ?? "Box";
   const spaceUpper = space.toUpperCase();
   const spaceLower = space.toLowerCase();
   const [open, setOpen] = React.useState(false);
-  const [selectedBoxId, setSelectedBoxId] = React.useState<number | null>(null);
+  const [selectedSpaceId, setSelectedSpaceId] = React.useState<string | null>(
+    null
+  );
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
     undefined
   );
 
   const [page, setPage] = React.useState(1);
-  const [allBoxes, setAllBoxes] = React.useState<string[]>([]);
+  const [allSpaces, setAllSpaces] = React.useState<any[]>([]);
   const [simpleAction, setSimpleAction] = React.useState<boolean>(true);
 
-  const [boxes, setBoxes] = React.useState<Box[]>([]);
+  const [spaceSchedules, setSpaceSchedules] = React.useState<Schedule[]>([]);
+  const [selectedSpace, setSelectedSpace] = React.useState<any | undefined>(
+    undefined
+  );
 
   React.useEffect(() => {
     setPage(1);
-  }, [selectedDate, selectedBoxId]);
+  }, [selectedDate, selectedSpaceId]);
 
   React.useEffect(() => {
-    if (!selectedBoxId) {
+    if (!selectedSpaceId) {
       return;
     }
 
@@ -81,27 +82,33 @@ export default function BoxSchedulePage() {
       const curDate = selectedDate ? selectedDate : new Date();
 
       try {
-        const res = await fetch(
-          `/dashboard/agendamiento/api/get_all_schedules_by_box_date?date=${
-            curDate.toISOString().split("T")[0]
-          }&box=${selectedBoxId}`
+        const dateOnly = curDate.toISOString().split("T")[0];
+        const res = await apiFetch(
+          `/api/scheduling/get_all_schedules_by_box_date?date=${dateOnly}&box=${selectedSpaceId}`
         );
-        const data: any = await res.json();
-        setBoxes(data);
+        const data: any = await res?.json();
+
+        setSpaceSchedules(
+          Array.isArray(data)
+            ? data[0].schedules
+              ? data[0].schedules[dateOnly]
+              : undefined
+            : undefined
+        );
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     }
 
     fetchScheduling();
-  }, [selectedDate, selectedBoxId, simpleAction]);
+  }, [selectedDate, selectedSpaceId, simpleAction]);
 
   React.useEffect(() => {
     async function fetchBoxes() {
       try {
-        const res = await fetch(`/dashboard/agendamiento/api/get_boxes`);
-        const data: any = await res.json();
-        setAllBoxes(data["boxes"]);
+        const res = await apiFetch(`/api/scheduling/get_boxes`);
+        const data: any = await res?.json();
+        setAllSpaces(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -110,23 +117,25 @@ export default function BoxSchedulePage() {
     fetchBoxes();
   }, []);
 
-  const selectedBox = boxes.find((b) => b.idBox === selectedBoxId);
+  const changeSelectedSpace = (idSpace: string) => {
+    setSelectedSpace(allSpaces.find((s) => s.idBox === idSpace));
+    setSelectedSpaceId(idSpace);
+  };
 
   const dateKey = selectedDate?.toISOString().split("T")[0] || "";
-  const schedules = selectedBox?.schedules[dateKey] || [];
+  //const schedules = spaceSchedules?.schedules[dateKey] || [];
 
   // Pagination logic
-  const totalPages = Math.ceil(schedules.length / PAGE_SIZE);
-  const paginatedSchedules = schedules.slice(
+  const totalPages = Math.ceil(spaceSchedules.length / PAGE_SIZE);
+  const paginatedSchedules = spaceSchedules.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE
   );
 
-  const handleCancelSchedule = (idAgendamiento:string) =>
-  {
-    async function cancelSchedule(idAgendamiento:string) {
+  const handleCancelSchedule = (idAgendamiento: string) => {
+    async function cancelSchedule(idAgendamiento: string) {
       try {
-        await fetch(`/dashboard/agendamiento/api/cancel_schedule?id=${idAgendamiento}`);
+        await apiFetch(`/api/scheduling/cancel_schedule?id=${idAgendamiento}`);
         setSimpleAction(!simpleAction);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -134,7 +143,7 @@ export default function BoxSchedulePage() {
     }
 
     cancelSchedule(idAgendamiento);
-  }
+  };
 
   return (
     <div className="container mx-auto py-10 space-y-6">
@@ -151,7 +160,15 @@ export default function BoxSchedulePage() {
                 aria-expanded={open}
                 className="w-[250px] justify-between"
               >
-                {selectedBoxId ? `${spaceUpper} - ${selectedBoxId}` : `Elige un ${spaceLower}...`}
+                {selectedSpaceId
+                  ? `${spaceUpper} - ${
+                      selectedSpace
+                        ? selectedSpace.nombre
+                          ? selectedSpace.nombre
+                          : "N/A"
+                        : "N/A"
+                    }`
+                  : `Elige un ${spaceLower}...`}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -159,25 +176,28 @@ export default function BoxSchedulePage() {
               <Command>
                 <CommandInput placeholder={`Buscar ${spaceLower}...`} />
                 <CommandEmpty>{`No se encontró ${spaceLower}.`}</CommandEmpty>
-                <CommandGroup className = "max-h-[150px]" style = {{overflowY:"scroll"}}>
-                  {allBoxes.map((box) => (
+                <CommandGroup
+                  className="max-h-[150px]"
+                  style={{ overflowY: "scroll" }}
+                >
+                  {allSpaces.map((curSpace, i) => (
                     <CommandItem
-                      key={box}
-                      value={box}
+                      key={curSpace.idBox}
+                      value={curSpace.nombre}
                       onSelect={() => {
-                        setSelectedBoxId(parseInt(box));
+                        changeSelectedSpace(curSpace.idBox);
                         setOpen(false);
                       }}
                     >
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          parseInt(box) === selectedBoxId
+                          curSpace.idBox === selectedSpaceId
                             ? "opacity-100"
                             : "opacity-0"
                         )}
                       />
-                      {`${spaceUpper} - ${box}`}
+                      {`${spaceUpper} - ${curSpace.nombre ?? `N/A - ${i}`}`}
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -187,10 +207,12 @@ export default function BoxSchedulePage() {
         </CardContent>
       </Card>
 
-      {selectedBox && (
+      {selectedSpace && (
         <Card>
           <CardHeader>
-            <CardTitle>{`Calendario de ${spaceUpper} - ${selectedBox.idBox}`}</CardTitle>
+            <CardTitle>{`Calendario de ${space} - ${
+              selectedSpace.nombre ? selectedSpace.nombre : "N/A"
+            }`}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row gap-6 w-full">
             <Row className="w-full" align={"middle"} justify={"center"}>
@@ -207,7 +229,7 @@ export default function BoxSchedulePage() {
                   <h3 className="font-semibold mb-2">
                     Horarios para {dateKey || "fecha no seleccionada"}
                   </h3>
-                  {schedules.length > 0 ? (
+                  {spaceSchedules.length > 0 ? (
                     <>
                       <Table>
                         <TableHeader>
@@ -218,7 +240,7 @@ export default function BoxSchedulePage() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {paginatedSchedules.map((sch, idx) => (
+                          {paginatedSchedules.map((sch: any, idx: any) => (
                             <TableRow key={idx}>
                               <TableCell>{sch.time}</TableCell>
                               <TableCell
@@ -255,7 +277,11 @@ export default function BoxSchedulePage() {
                                     </DialogHeader>
                                     <div className="flex items-center gap-2">
                                       <div className="grid flex-1 gap-2">
-                                        <div>{`${spaceUpper} - ${selectedBox?.idBox}`}</div>
+                                        <div>{`${space} - ${
+                                          selectedSpace?.nombre
+                                            ? selectedSpace.nombre
+                                            : "N/A"
+                                        }`}</div>
                                         <div>Hora - {sch.time}</div>
                                       </div>
                                     </div>
@@ -269,7 +295,18 @@ export default function BoxSchedulePage() {
                                         </Button>
                                       </DialogClose>
                                       <DialogClose asChild>
-                                        <Button type="button" variant="default" onClick={sch.status === "Ocupado" ? (_) => handleCancelSchedule(String(sch.idAgendamiento)) : (_) => {}}>
+                                        <Button
+                                          type="button"
+                                          variant="default"
+                                          onClick={
+                                            sch.status === "Ocupado"
+                                              ? (_) =>
+                                                  handleCancelSchedule(
+                                                    String(sch.idAgendamiento)
+                                                  )
+                                              : (_) => {}
+                                          }
+                                        >
                                           Confirmar
                                         </Button>
                                       </DialogClose>

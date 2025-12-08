@@ -318,10 +318,10 @@ export function GraficoUsoSemanal() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch(
+        const res = await apiFetch(
           `/api/general/usage_by_date?firstDate=${firstDateISO}&lastDate=${lastDateISO}`
         );
-        const data: any = await res.json();
+        const data: any = await res?.json();
         setData(data ?? []);
       } catch (error) {
         console.error("Error fetching data:", error);

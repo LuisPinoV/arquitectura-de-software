@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
   // Defensive handling: ensure we have an array before mapping
   const source = Array.isArray(data) ? data : Array.isArray(data?.funcionarios) ? data.funcionarios : [];
 
-  const personal = source.map((person: any) => {
-    return { id: person["idfuncionario"], name: person["nombre"] };
+
+  const personal:any[] = source.map((person: any) => {
+    return { id: person.id, name: person.name };
   });
 
-  return NextResponse.json(personal);
+  return NextResponse.json(personal.length != 0 ? personal : [{name:"Not needed", id:"01"}]);
 }

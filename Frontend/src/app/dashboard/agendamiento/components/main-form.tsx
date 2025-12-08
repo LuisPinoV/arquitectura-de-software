@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import React, { useEffect, useMemo, useState } from "react";
-import { useUserProfile } from '@/hooks/use-user';
+import { useEffect, useMemo, useState } from "react";
+import { useUserProfile } from "@/hooks/use-user";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
@@ -40,12 +40,15 @@ import {
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
 
-async function saveBooking(payload: {
-  date: string;
-  box: string;
-  hours: string[];
-  personal:string;
-}, t: any) {
+async function saveBooking(
+  payload: {
+    date: string;
+    box: string;
+    hours: string[];
+    personal: string;
+  },
+  t: any
+) {
   for (let i = 0; i < payload["hours"].length; i++) {
     const hour = payload["hours"][i];
     try {
@@ -66,17 +69,27 @@ async function saveBooking(payload: {
   });
 }
 
-export function MainFormScheduling({ box = null, newDate = new Date(),  selectedHour = null}: { box?: string | null; newDate?: Date |undefined, selectedHour?: string |null }) {
+export function MainFormScheduling({
+  box = null,
+  newDate = new Date(),
+  selectedHour = null,
+}: {
+  box?: string | null;
+  newDate?: Date | undefined;
+  selectedHour?: string | null;
+}) {
   const { t } = useLanguage();
   const profile = useUserProfile() as any;
-  const space = profile?.spaceName ?? 'Box';
-  const spaceUpper = space.toUpperCase();
+  const space = profile?.spaceName ?? "Box";
+  const spaceUpper = space;
   const spaceLower = space.toLowerCase();
   const [date, setDate] = useState<Date | undefined>(newDate);
   const [selectedBox, setSelectedBox] = useState<string | null>(box);
-  const [selectedHours, setSelectedHours] = useState<string[]>(selectedHour ? [selectedHour] : []);
+  const [selectedHours, setSelectedHours] = useState<string[]>(
+    selectedHour ? [selectedHour] : []
+  );
   const [availableHours, setAvailableHours] = useState<string[]>([]);
-  const [boxesArr, setBoxes] = useState<string[]>([]);
+  const [spacesArray, setSpaces] = useState<any[]>([]);
   const [searchBoxInput, setSearchBoxInput] = useState<string>("");
   const [curPageBox, setCurPageBoxes] = useState<number>(1);
   const [personalArr, setPersonal] = useState<{ name: string; id: string }[]>(
@@ -92,24 +105,25 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
     useState<boolean>(true);
 
   useEffect(() => {
-    async function fetchBoxes() {
+    async function fetchSpaces() {
       try {
-        const res = await apiFetch(`/dashboard/agendamiento/api/get_boxes`);
+        const res = await apiFetch(`/api/scheduling/get_boxes`);
         if (!res) {
           console.error("No response from apiFetch for get_boxes");
           return;
         }
-        const data: any = await res.json();
-        setBoxes(data["boxes"]);
+        const data: any = await res?.json();
+
+        setSpaces(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     }
 
-    fetchBoxes();
+    fetchSpaces();
   }, []);
 
-  let boxes = boxesArr;
+  let spaces = spacesArray;
 
   const timeSlots = useMemo(
     () =>
@@ -162,14 +176,14 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
       try {
         const curDate = date.toISOString().split("T")[0];
         const res = await apiFetch(
-          `/dashboard/agendamiento/api/get_available_times?box=${selectedBox}&date=${curDate}`
+          `/api/scheduling/get_available_times?box=${selectedBox}&date=${curDate}`
         );
         if (!res) {
           console.error("No response from apiFetch for get_available_times");
           return;
         }
-        const data: any = await res.json();
-        setAvailableHours(data);
+        const data: any = await res?.json();
+        setAvailableHours(Array.isArray(data) ? data : availableHours);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -180,10 +194,10 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
 
   //BoxSearch
   if (searchBoxInput !== "") {
-    boxes = boxesArr.filter((box) => {
-      const boxArr = `${spaceUpper} - ${box}`;
+    spaces = spacesArray.filter((space) => {
+      const boxArr = `${spaceUpper} - ${space.nombre}`;
       const input = searchBoxInput.toLowerCase();
-      if (boxArr.toLowerCase().includes(input)) return box;
+      if (boxArr.toLowerCase().includes(input)) return space;
     });
   }
 
@@ -191,11 +205,11 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
 
   const itemsPerPage = 10;
   const startIndex = (curPageBox - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, boxes.length);
+  const endIndex = Math.min(startIndex + itemsPerPage, spaces.length);
 
-  const visibleBoxes = boxes.slice(startIndex, endIndex);
+  const visibleSpaces = spaces.slice(startIndex, endIndex);
 
-  const totalPages = Math.ceil(boxes.length / itemsPerPage);
+  const totalPages = Math.ceil(spaces.length / itemsPerPage);
 
   //Calendar
   const startDate = new Date();
@@ -232,15 +246,15 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
   useEffect(() => {
     async function fetchPersonal() {
       try {
-        const res = await apiFetch(
-          `/dashboard/agendamiento/api/get_available_personal`
-        );
+        const res = await apiFetch(`/api/scheduling/get_available_personal`);
         if (!res) {
           console.error("No response from apiFetch for get_available_personal");
           return;
         }
-        const data: any = await res.json();
-        setPersonal(data);
+        const data: any = await res?.json();
+
+        console.log(data);
+        setPersonal(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -249,8 +263,8 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
     fetchPersonal();
   }, []);
 
-  const filteredPersonal = FilterPersonal(personalArr, searchPersonalInput);
-  const curPagePersonalArr = CurrentPagePersonal(
+  const filteredPersonal = filterPersonal(personalArr, searchPersonalInput);
+  const curPagePersonalArr = currentPagePersonal(
     filteredPersonal,
     curPagePersonal
   );
@@ -320,7 +334,9 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
       !selectedPersonal
     ) {
       toast(t("scheduling.missingRequirements"), {
-        description: `${t("scheduling.pleaseSelect")} ${spaceLower}, ${t("scheduling.staff")} ${t("scheduling.and")} ${t("scheduling.atLeastOneHour")}`,
+        description: `${t("scheduling.pleaseSelect")} ${spaceLower}, ${t(
+          "scheduling.staff"
+        )} ${t("scheduling.and")} ${t("scheduling.atLeastOneHour")}`,
         action: {
           label: t("common.dismiss"),
           onClick: () => console.log("Dismiss"),
@@ -333,7 +349,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
       date: date.toISOString().split("T")[0],
       box: selectedBox,
       hours: selectedHours,
-      personal: selectedPersonal["id"]
+      personal: selectedPersonal["id"],
     };
 
     await saveBooking(payload, t);
@@ -404,11 +420,16 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
           <Card className="max-w-[450px] h-[550px]">
             <CardHeader>
               <CardTitle>
-                <h2>{t("scheduling.selectSpace").replace("space", spaceLower)}</h2>
+                <h2>
+                  {t("scheduling.selectSpace").replace("space", spaceLower)}
+                </h2>
               </CardTitle>
               <Input
                 className="mt-2"
-                placeholder={t("scheduling.searchSpace").replace("space", spaceLower)}
+                placeholder={t("scheduling.searchSpace").replace(
+                  "space",
+                  spaceLower
+                )}
                 onChange={(e) => handleSearchBoxChange(e.target.value)}
               />
             </CardHeader>
@@ -423,17 +444,19 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
                     onValueChange={handleBoxChange}
                     asChild
                   >
-                    {visibleBoxes.map((box) => (
+                    {visibleSpaces.map((space, i) => (
                       <div
-                        key={box}
+                        key={space.idBox ?? i}
                         style={{ display: "flex", justifyContent: "center" }}
                       >
                         <ToggleGroupItem
-                          value={box}
+                          value={space.idBox}
                           className="m-2 flex-1"
                           data-orientation="vertical"
                         >
-                          <div className="text-md font-semibold">{`${spaceUpper} - ${box}`}</div>
+                          <div className="text-md font-semibold">{`${spaceUpper} - ${
+                            space.nombre ?? "N/A"
+                          }`}</div>
                         </ToggleGroupItem>
                       </div>
                     ))}
@@ -598,18 +621,30 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
                 {t("scheduling.bookingDetails")}
               </DialogDescription>
             </DialogHeader>
-            <div className="flex items-start gap-2" style = {{flexDirection:"column"}}>
+            <div
+              className="flex items-start gap-2"
+              style={{ flexDirection: "column" }}
+            >
               <div className="grid flex-1 gap-2">
-                {t("scheduling.staff")} - {selectedPersonal ? selectedPersonal["name"] : t("common.unknown")}
+                {t("scheduling.staff")} -{" "}
+                {selectedPersonal
+                  ? selectedPersonal["name"]
+                  : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
-                {t("common.date")} - {date ? date.toLocaleDateString() : t("common.unknown")}
+                {t("common.date")} -{" "}
+                {date ? date.toLocaleDateString() : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
-                {t("scheduling.times")} - {selectedHours ? selectedHours.map((hour) => `${hour} / `) : t("common.unknown")}
+                {t("scheduling.times")} -{" "}
+                {selectedHours
+                  ? selectedHours.map((hour) => `${hour} / `)
+                  : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
-                {`${spaceUpper} - ${selectedBox ? selectedBox : t("common.unknown")}`}
+                {`${spaceUpper} - ${
+                  selectedBox ? selectedBox : t("common.unknown")
+                }`}
               </div>
             </div>
             <DialogFooter className="sm:justify-start">
@@ -636,7 +671,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
   );
 }
 
-function FilterPersonal(
+function filterPersonal(
   data: { name: string; id: string }[],
   searchInput: string
 ): { name: string; id: string }[] {
@@ -650,7 +685,7 @@ function FilterPersonal(
   return filteredPersonalData;
 }
 
-function CurrentPagePersonal(
+function currentPagePersonal(
   data: { name: string; id: string }[],
   curPage: number
 ): [{ name: string; id: string }[], number] {

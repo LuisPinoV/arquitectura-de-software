@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const apiUrl = process.env.BACKEND_ADDRESS || process.env.SERVER_BACKEND_ADDRESS;
   const incomingToken = req.headers.get("authorization") ?? "";
 
-  const resSchedules = await fetch(`${apiUrl}/agendamientosFecha/${date}`, {
+  const resSchedules = await fetch(`${apiUrl}/agendamiento/box/${box}/fecha/${date}`, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": incomingToken,   // <-- Forward it to backend
@@ -39,13 +39,13 @@ export async function GET(req: NextRequest) {
 
   const dataSchedulesArr = Object.values(dataSchedules);
 
-  const dataBox: any = dataSchedulesArr.filter((data: any) => {
+  const dataBox: any = Array.isArray(dataSchedulesArr) ? dataSchedulesArr.filter((data: any) => {
     const id = parseInt(data["idbox"]);
 
     if (id === parseInt(box)) {
       return data;
     }
-  });
+  }) : [];
 
   const sortedData = dataBox.sort((dataA: any, dataB: any) => {
     const aDate = new Date(`${date ? date : today}T${dataA["horaentrada"]}Z`);
