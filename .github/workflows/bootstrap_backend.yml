@@ -1,0 +1,93 @@
+name: Bootstrap and Migrate Terraform Backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      state_bucket_name:
+        description: 'Optional S3 bucket name for terraform state (must be globally unique). If empty, generated.'
+        required: false
+      lock_table_name:
+        description: 'Optional DynamoDB table name for locking. If empty, generated.'
+        required: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Backend_node/infra
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Generate resource names (if not provided)
+        id: gen_names
+        run: |
+          owner_repo="$GITHUB_REPOSITORY"
+          owner="${owner_repo%%/*}"
+          repo="${owner_repo##*/}"
+          if [ -n "${{ github.event.inputs.state_bucket_name }}" ]; then
+            bucket_name="${{ github.event.inputs.state_bucket_name }}"
+          else
+            bucket_name="tf-state-${repo}-${owner}-${GITHUB_RUN_NUMBER}"
+            bucket_name=$(echo "$bucket_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9.-]/-/g')
+          fi
+          if [ -n "${{ github.event.inputs.lock_table_name }}" ]; then
+            lock_name="${{ github.event.inputs.lock_table_name }}"
+          else
+            lock_name="tf-lock-${repo}-${owner}-${GITHUB_RUN_NUMBER}"
+            lock_name=$(echo "$lock_name" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')
+          fi
+          echo "TF_STATE_BUCKET=$bucket_name" >> $GITHUB_ENV
+          echo "TF_LOCK_TABLE=$lock_name" >> $GITHUB_ENV
+          echo "Generated TF_STATE_BUCKET=$bucket_name"
+          echo "Generated TF_LOCK_TABLE=$lock_name"
+
+      - name: Terraform init (local backend)
+        run: terraform init
+
+      - name: Terraform Apply (create resources incl. state bucket & lock table)
+        run: |
+          terraform apply -auto-approve \
+            -var "create_tf_state_bucket=true" \
+            -var "tf_state_bucket_name=$TF_STATE_BUCKET" \
+            -var "create_tf_lock_table=true" \
+            -var "tf_lock_table_name=$TF_LOCK_TABLE"
+
+      - name: Capture outputs
+        run: |
+          bucket_output=$(terraform output -raw terraform_state_bucket 2>/dev/null || echo "$TF_STATE_BUCKET")
+          lock_output=$(terraform output -raw terraform_lock_table 2>/dev/null || echo "$TF_LOCK_TABLE")
+          echo "STATE_BUCKET=$bucket_output" >> $GITHUB_ENV
+          echo "LOCK_TABLE=$lock_output" >> $GITHUB_ENV
+          echo "Terraform state bucket: $bucket_output"
+          echo "Terraform lock table: $lock_output"
+
+      - name: Reconfigure backend and migrate state to S3/DynamoDB
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=${STATE_BUCKET}" \
+            -backend-config="key=backend/terraform.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="dynamodb_table=${LOCK_TABLE}" \
+            -force-copy
+
+      - name: Terraform plan and apply (ensure remote state in use)
+        run: |
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+
+      - name: Guidance
+        run: |
+          echo "Bootstrap completed. Recommended: add these repository secrets for CI: TF_STATE_BUCKET=${STATE_BUCKET}, TF_STATE_KEY=backend/terraform.tfstate, TF_STATE_LOCK_TABLE=${LOCK_TABLE}"
