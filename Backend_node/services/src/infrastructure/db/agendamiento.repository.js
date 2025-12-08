@@ -23,21 +23,14 @@ export class AgendamientoRepository {
   async createAgendamiento(agendamientoData, organizacionId) {
     const now = new Date().toISOString();
 
-    console.log(`[createAgendamiento] Starting - idBox: ${agendamientoData.idBox}, organizacionId: ${organizacionId}`);
-
     const box = await this.getBoxInfo(agendamientoData.idBox);
     if (!box) {
-      console.error(`[createAgendamiento] Box ${agendamientoData.idBox} not found in database`);
       throw new Error(`Box ${agendamientoData.idBox} no encontrado`);
     }
-
-    console.log(`[createAgendamiento] Box found:`, box);
 
     const duracionBloque = box.duracionBloqueMinutos || 30;
 
     const horaSalida = this.addMinutes(agendamientoData.horaEntrada, duracionBloque);
-
-    console.log(`[createAgendamiento] Validating time slot availability...`);
 
     const validacion = await this.validateTimeSlotAvailability({
       idBox: agendamientoData.idBox,
@@ -50,13 +43,11 @@ export class AgendamientoRepository {
     });
 
     if (!validacion.disponible) {
-      console.error(`[createAgendamiento] Time slot not available:`, validacion.conflictos);
+
       const error = new Error("El bloque de horario no está disponible");
       error.conflictos = validacion.conflictos;
       throw error;
     }
-
-    console.log(`[createAgendamiento] Creating item with organizacionId: ${organizacionId}`);
 
     const item = {
       PK: `AGENDAMIENTO#${agendamientoData.idConsulta}`,
@@ -85,7 +76,6 @@ export class AgendamientoRepository {
       Item: item
     }));
 
-    console.log(`[createAgendamiento] Successfully created agendamiento ${agendamientoData.idConsulta}`);
     return item;
   }
 

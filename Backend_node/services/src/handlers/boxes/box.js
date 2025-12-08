@@ -73,15 +73,19 @@ async function getDisponibilidadBox(req) {
   }
 
   try {
-    const result = await boxService.getDisponibilidadBox(idBox, fecha);
+    const organizacionId = extractCognitoUserId(req.event);
+    const result = await boxService.getDisponibilidadBox(idBox, fecha, organizacionId);
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error en getDisponibilidadBox:", error);
-    return new Response(JSON.stringify({ error: "Error interno" }), {
-      status: 500,
+    const status = error.message.includes("autenticado") ? 401
+      : error.message.includes("permiso") ? 403
+        : 500;
+    return new Response(JSON.stringify({ error: error.message }), {
+      status,
       headers: { "Content-Type": "application/json" },
     });
   }

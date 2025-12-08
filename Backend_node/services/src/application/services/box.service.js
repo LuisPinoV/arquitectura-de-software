@@ -27,9 +27,9 @@ export class BoxService {
     return await getBoxes.execute(organizacionId);
   }
 
-  async getDisponibilidadBox(idBox, fecha) {
+  async getDisponibilidadBox(idBox, fecha, organizacionId) {
     const getOccupancyBox = new GetOccupancyBoxUseCase(this.boxRepository);
-    return await getOccupancyBox.execute(idBox, fecha);
+    return await getOccupancyBox.execute(idBox, fecha, organizacionId);
   }
 
   async getOcupacionPorEspecialidad(fecha, hora) {

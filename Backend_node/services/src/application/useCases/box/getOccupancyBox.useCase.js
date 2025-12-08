@@ -3,12 +3,8 @@ export class GetOccupancyBoxUseCase {
     this.boxRepository = boxRepository;
   }
 
-  async execute(idBox, fecha) {
-    try {
-      const disponibilidad = await this.boxRepository.getDisponibilidadBox(idBox, fecha);
-      return disponibilidad;
-    } catch (error) {
-      throw new Error("Couldn't get box occupancy");
-    }
+  async execute(idBox, fecha, organizacionId) {
+    const disponibilidad = await this.boxRepository.getDisponibilidadBox(idBox, fecha, organizacionId);
+    return disponibilidad;
   }
 }

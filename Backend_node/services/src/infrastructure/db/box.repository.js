@@ -31,7 +31,7 @@ export class BoxRepository {
     this.dynamo = dynamo;
   }
 
-  async createBox({ idBox, especialidad, pasillo, capacidad, nombre, disponible = true, organizacionId }) {
+  async createBox({ idBox, especialidad, pasillo, capacidad, nombre, disponible = true, organizacionId, duracionBloqueMinutos, horaApertura, horaCierre }) {
     const now = new Date().toISOString();
     const item = {
       PK: `BOX#${idBox}`,
@@ -44,6 +44,9 @@ export class BoxRepository {
       capacidad,
       disponible,
       organizacionId,
+      duracionBloqueMinutos: Number(duracionBloqueMinutos) || 30,
+      horaApertura: horaApertura || '08:00',
+      horaCierre: horaCierre || '20:00',
       inventario: {},
       createdAt: now,
       updatedAt: now,
@@ -195,24 +198,77 @@ export class BoxRepository {
     return result.Items || [];
   }
 
-  async getDisponibilidadBox(idBox, fecha) {
+  async getDisponibilidadBox(idBox, fecha, organizacionId) {
+    const box = await this.getBox(idBox, organizacionId);
+    if (!box) {
+      throw new Error(`Box ${idBox} no encontrado`);
+    }
+
+    const { duracionBloqueMinutos = 30, horaApertura = '08:00', horaCierre = '20:00' } = box;
+
+    console.log(`[getDisponibilidadBox] Buscando agendamientos para Box ${idBox} y fecha ${fecha}`);
+
     const params = {
       TableName: this.tableName,
-      FilterExpression: "BoxId = :box AND FechaBox = :fecha",
+      IndexName: "AgendamientosPorBox",
+      KeyConditionExpression: "BoxId = :box AND FechaBox = :fecha",
       ExpressionAttributeValues: {
         ":box": `BOX#${idBox}`,
         ":fecha": `FECHA#${fecha}`,
       },
     };
 
-    const result = await this.dynamo.send(new ScanCommand(params));
-
+    const result = await this.dynamo.send(new QueryCommand(params));
     const agendamientos = result.Items || [];
-    const total = agendamientos.length;
-    const ocupados = agendamientos.filter(a => a.estado !== "Cancelada").length;
+    console.log(`[getDisponibilidadBox] Encontrados ${agendamientos.length} agendamientos`);
+    if (agendamientos.length > 0) {
+      console.log(`[getDisponibilidadBox] Ejemplo:`, JSON.stringify(agendamientos[0]));
+      console.log(`[getDisponibilidadBox] Horas ocupadas:`, agendamientos.map(a => `${a.horaEntrada}-${a.horaSalida}`));
+    }
+
+    const bloques = [];
+    let horaActual = horaApertura;
+
+    while (horaActual < horaCierre) {
+      const horaFinBloque = this.addMinutes(horaActual, duracionBloqueMinutos);
+
+
+      if (horaFinBloque > horaCierre) break;
+
+      const ocupado = agendamientos.some(a =>
+        a.estado !== "Cancelada" && a.horaEntrada === horaActual
+      );
+
+      bloques.push({
+        hora: horaActual,
+        disponible: !ocupado
+      });
+
+      horaActual = horaFinBloque;
+    }
+
+    const total = bloques.length;
+    const ocupados = bloques.filter(b => !b.disponible).length;
     const disponibles = total - ocupados;
 
-    return { idBox, fecha, total, ocupados, disponibles };
+    return {
+      idBox,
+      fecha,
+      total,
+      ocupados,
+      disponibles,
+      bloques,
+      configuracion: { duracionBloqueMinutos, horaApertura, horaCierre }
+    };
+  }
+
+  addMinutes(time, mins) {
+    const [h, m] = time.split(":").map(Number);
+    const date = new Date(2000, 0, 1, h, m);
+    date.setMinutes(date.getMinutes() + mins);
+    const hh = String(date.getHours()).padStart(2, "0");
+    const mm = String(date.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
   }
 
   async getPorcentajeUsoBoxes(fecha, hora) {
