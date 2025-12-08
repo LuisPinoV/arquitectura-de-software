@@ -41,7 +41,13 @@ import { Spinner } from "@/components/ui/spinner";
 const RegisterSchema = z.object({
   name: z.string().min(1, "Nombre es requerido"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  password: z
+    .string()
+    .min(8, "Debe tener al menos 8 caracteres")
+    .regex(/[A-Z]/, "Debe incluir al menos una mayúscula")
+    .regex(/[a-z]/, "Debe incluir al menos una minúscula")
+    .regex(/[0-9]/, "Debe incluir al menos un número")
+    .regex(/[^A-Za-z0-9]/, "Debe incluir al menos un carácter especial"),
   companyName: z.string().min(1, "Nombre de la empresa es requerido"),
   spaceName: z.string().min(1, "Nombre del espacio es requerido"),
 });
@@ -94,7 +100,7 @@ export default function RegisterPage() {
       if (!res) {
         throw new Error("No response from create user endpoint");
       }
-      
+
       const resJson = await res.json();
       setLoadingRegister(false);
 
