@@ -9,6 +9,10 @@ import { CreateBoxUseCase } from "../useCases/box/createBox.useCase.js";
 import { UpdateBoxUseCase } from "../useCases/box/updateBox.useCase.js";
 import { DeleteBoxUseCase } from "../useCases/box/deleteBox.useCase.js";
 import { GetAgendamientoBoxUseCase } from "../useCases/box/getAgendamientosBox.useCase.js";
+import { GetBoxInventarioUseCase } from "../useCases/box/getBoxInventario.useCase.js";
+import { GetAllBoxInventariosUseCase } from "../useCases/box/getAllBoxInventarios.useCase.js";
+import { UpdateBoxInventarioUseCase } from "../useCases/box/updateBoxInventario.useCase.js";
+import { DeleteBoxInventarioUseCase } from "../useCases/box/deleteBoxInventario.useCase.js";
 
 // Repositories
 import { boxRepository } from "../../infrastructure/db/box.repository.js";
@@ -69,5 +73,25 @@ export class BoxService {
   async getAgendamientosByBox(idBox) {
     const agendamientosBox = new GetAgendamientoBoxUseCase(this.boxRepository);
     return await agendamientosBox.execute(idBox);
+  }
+
+  async getInventario(idBox, organizacionId) {
+    const getInventario = new GetBoxInventarioUseCase(this.boxRepository);
+    return await getInventario.execute(idBox, organizacionId);
+  }
+
+  async getAllInventarios(organizacionId) {
+    const getAllInventarios = new GetAllBoxInventariosUseCase(this.boxRepository);
+    return await getAllInventarios.execute(organizacionId);
+  }
+
+  async updateInventario(idBox, inventario, organizacionId) {
+    const updateInventario = new UpdateBoxInventarioUseCase(this.boxRepository);
+    return await updateInventario.execute(idBox, inventario, organizacionId);
+  }
+
+  async deleteInventario(idBox, organizacionId) {
+    const deleteInventario = new DeleteBoxInventarioUseCase(this.boxRepository);
+    return await deleteInventario.execute(idBox, organizacionId);
   }
 }

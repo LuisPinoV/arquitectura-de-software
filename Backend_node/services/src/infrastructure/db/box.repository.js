@@ -44,6 +44,7 @@ export class BoxRepository {
       capacidad,
       disponible,
       organizacionId,
+      inventario: {},
       createdAt: now,
       updatedAt: now,
     };
@@ -82,7 +83,6 @@ export class BoxRepository {
   }
 
   async updateBox(idBox, updates, organizacionId) {
-    // Primero validar que el box pertenece a la organización
     const boxActual = await this.getBox(idBox, organizacionId);
     if (!boxActual) {
       throw new Error(`Box ${idBox} no encontrado`);
@@ -127,6 +127,61 @@ export class BoxRepository {
       ReturnValues: "ALL_OLD",
     }));
     return { idBox, deletedItem: result.Attributes || null };
+  }
+
+  async getInventario(idBox, organizacionId) {
+    const box = await this.getBox(idBox, organizacionId);
+    if (!box) return null;
+    return box.inventario || {};
+  }
+
+  async updateInventario(idBox, inventario, organizacionId) {
+    const box = await this.getBox(idBox, organizacionId);
+    if (!box) throw new Error("Box no encontrado o sin permisos");
+
+    const now = new Date().toISOString();
+    const command = new UpdateCommand({
+      TableName: this.tableName,
+      Key: { PK: `BOX#${idBox}`, SK: "METADATA" },
+      UpdateExpression: "SET inventario = :inv, updatedAt = :u",
+      ExpressionAttributeValues: {
+        ":inv": inventario,
+        ":u": now,
+      },
+      ReturnValues: "ALL_NEW",
+    });
+
+    const result = await this.dynamo.send(command);
+    return result.Attributes?.inventario;
+  }
+
+  async deleteInventario(idBox, organizacionId) {
+    const box = await this.getBox(idBox, organizacionId);
+    if (!box) throw new Error("Box no encontrado o sin permisos");
+
+    const now = new Date().toISOString();
+    const command = new UpdateCommand({
+      TableName: this.tableName,
+      Key: { PK: `BOX#${idBox}`, SK: "METADATA" },
+      UpdateExpression: "SET inventario = :inv, updatedAt = :u",
+      ExpressionAttributeValues: {
+        ":inv": {},
+        ":u": now,
+      },
+      ReturnValues: "ALL_NEW",
+    });
+
+    const result = await this.dynamo.send(command);
+    return result.Attributes?.inventario;
+  }
+
+  async getAllInventarios(organizacionId) {
+    const boxes = await this.getAllBoxes(organizacionId);
+    return boxes.map(box => ({
+      idBox: box.idBox,
+      nombre: box.nombre,
+      inventario: box.inventario || {}
+    }));
   }
 
   async getAgendamientosByBox(idBox) {
