@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
 
     const incomingToken = req.headers.get("authorization") ?? "";
 
-    const res = await fetch(`${apiUrl}/paciente`, {
+    const res = await fetch(`${apiUrl}/usuario`, {
         headers: {
             "Content-Type": "application/json",
             "Authorization": incomingToken,

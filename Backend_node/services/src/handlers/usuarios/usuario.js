@@ -11,6 +11,7 @@ const router = AutoRouter();
 
 router
   .post("/usuario", createUsuario)
+  .get("/usuario", getAllUsuariosHandler)
   .get("/usuario/:usuarioId", getUsuario)
   .put("/usuario/:usuarioId", updateUsuario)
   .delete("/usuario/:usuarioId", deleteUsuario)
@@ -89,6 +90,21 @@ async function getUsuario(req) {
     const status = error.message.includes("autenticado") ? 401
       : error.message.includes("permiso") ? 403
         : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function getAllUsuariosHandler(req) {
+  try {
+    const organizacionId = extractCognitoUserId(req.event);
+    const usuarios = await usuarioService.getUsuarios(organizacionId);
+    return new Response(JSON.stringify(usuarios), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error al obtener usuarios:", error);
+    const status = error.message.includes("autenticado") ? 401 : 500;
     return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }
 }
