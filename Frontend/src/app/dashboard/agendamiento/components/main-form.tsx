@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import React, { useEffect, useMemo, useState } from "react";
 import { useUserProfile } from '@/hooks/use-user';
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -44,7 +45,7 @@ async function saveBooking(payload: {
   box: string;
   hours: string[];
   personal:string;
-}) {
+}, t: any) {
   for (let i = 0; i < payload["hours"].length; i++) {
     const hour = payload["hours"][i];
     try {
@@ -55,17 +56,18 @@ async function saveBooking(payload: {
       console.error("Error fetching data:", error);
     }
   }
-  toast("Horario creado", {
+  toast(t("scheduling.scheduleCreated"), {
     description: new Date().toLocaleString(),
     style: { color: "black" },
     action: {
-      label: "Descartar",
-      onClick: () => console.log("Descartar"),
+      label: t("common.dismiss"),
+      onClick: () => console.log("Dismiss"),
     },
   });
 }
 
 export function MainFormScheduling({ box = null, newDate = new Date(),  selectedHour = null}: { box?: string | null; newDate?: Date |undefined, selectedHour?: string |null }) {
+  const { t } = useLanguage();
   const profile = useUserProfile() as any;
   const space = profile?.spaceName ?? 'Box';
   const spaceUpper = space.toUpperCase();
@@ -317,12 +319,11 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
       selectedHours.length === 0 ||
       !selectedPersonal
     ) {
-      toast("Faltan requerimientos", {
-        description:
-          `Por favor selecciona fecha, ${spaceLower}, funcionario y al menos un horario.`,
+      toast(t("scheduling.missingRequirements"), {
+        description: `${t("scheduling.pleaseSelect")} ${spaceLower}, ${t("scheduling.staff")} ${t("scheduling.and")} ${t("scheduling.atLeastOneHour")}`,
         action: {
-          label: "Descartar",
-          onClick: () => console.log("Descartar"),
+          label: t("common.dismiss"),
+          onClick: () => console.log("Dismiss"),
         },
       });
       return;
@@ -335,7 +336,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
       personal: selectedPersonal["id"]
     };
 
-    await saveBooking(payload);
+    await saveBooking(payload, t);
 
     handleDateChange(undefined);
   };
@@ -370,7 +371,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
             }}
           >
             <CardHeader style={{ minWidth: "200px" }}>
-              <CardTitle>Elige una fecha disponible</CardTitle>
+              <CardTitle>{t("scheduling.selectDate")}</CardTitle>
             </CardHeader>
             <CardContent className="px-0">
               <div className="flex flex-col gap-1 p-0 m-0">
@@ -403,11 +404,11 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
           <Card className="max-w-[450px] h-[550px]">
             <CardHeader>
               <CardTitle>
-                <h2>{`Elige una ${spaceLower}`}</h2>
+                <h2>{t("scheduling.selectSpace").replace("space", spaceLower)}</h2>
               </CardTitle>
               <Input
                 className="mt-2"
-                placeholder={`Buscar ${spaceLower}...`}
+                placeholder={t("scheduling.searchSpace").replace("space", spaceLower)}
                 onChange={(e) => handleSearchBoxChange(e.target.value)}
               />
             </CardHeader>
@@ -470,7 +471,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
           <Card className="max-w-[450px] h-[550px]">
             <CardHeader>
               <CardTitle>
-                <h2>Elige uno o más horarios disponible</h2>
+                <h2>{t("scheduling.selectTime")}</h2>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -522,11 +523,11 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
           <Card className="max-w-[450px] h-[550px]">
             <CardHeader>
               <CardTitle>
-                <h2>Elige un funcionario/a</h2>
+                <h2>{t("scheduling.selectStaff")}</h2>
               </CardTitle>
               <Input
                 className="mt-2"
-                placeholder="Buscar personal..."
+                placeholder={t("scheduling.searchStaff")}
                 onChange={(e) => handleSearchPersonalChange(e.target.value)}
               />
             </CardHeader>
@@ -587,34 +588,34 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
         <Dialog>
           <DialogTrigger asChild>
             <Button className="min-w-[150px]" disabled={confirmButtonVariant}>
-              Confirmar
+              {t("common.confirm")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>¿Desea confirmar?</DialogTitle>
+              <DialogTitle>{t("scheduling.confirmBooking")}</DialogTitle>
               <DialogDescription>
-                Estos son los datos entregados
+                {t("scheduling.bookingDetails")}
               </DialogDescription>
             </DialogHeader>
             <div className="flex items-start gap-2" style = {{flexDirection:"column"}}>
               <div className="grid flex-1 gap-2">
-                Funcionario - {selectedPersonal ? selectedPersonal["name"] : "Desconocido"}
+                {t("scheduling.staff")} - {selectedPersonal ? selectedPersonal["name"] : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
-                Fecha - {date ? date.toLocaleDateString() : "Desconocido"}
+                {t("common.date")} - {date ? date.toLocaleDateString() : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
-                Horas - {selectedHours ? selectedHours.map((hour) => `${hour} / `) : "Desconocido"}
+                {t("scheduling.times")} - {selectedHours ? selectedHours.map((hour) => `${hour} / `) : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
-                {`${spaceUpper} - ${selectedBox ? selectedBox : "Desconocido"}`}
+                {`${spaceUpper} - ${selectedBox ? selectedBox : t("common.unknown")}`}
               </div>
             </div>
             <DialogFooter className="sm:justify-start">
               <DialogClose asChild>
                 <Button type="button" variant="secondary" className="mx-1">
-                  Cerrar
+                  {t("common.close")}
                 </Button>
               </DialogClose>
               <DialogClose asChild>
@@ -624,7 +625,7 @@ export function MainFormScheduling({ box = null, newDate = new Date(),  selected
                   className="mx-1"
                   onClick={handleAgendar}
                 >
-                  Aceptar
+                  {t("common.accept")}
                 </Button>
               </DialogClose>
             </DialogFooter>

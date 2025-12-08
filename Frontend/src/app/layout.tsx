@@ -4,6 +4,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +27,10 @@ export default function RootLayout({children,}: Readonly<{children: React.ReactN
     <html lang="en" suppressHydrationWarning>
       
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <LanguageProvider>
           <AntdRegistry>{children}</AntdRegistry>
           <Toaster />
+        </LanguageProvider>
       </body>
     </html>
   );

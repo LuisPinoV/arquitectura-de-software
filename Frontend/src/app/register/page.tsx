@@ -91,6 +91,9 @@ export default function RegisterPage() {
         }),
       });
 
+      if (!res) {
+        throw new Error("No response from create user endpoint");
+      }
       
       const resJson = await res.json();
       setLoadingRegister(false);

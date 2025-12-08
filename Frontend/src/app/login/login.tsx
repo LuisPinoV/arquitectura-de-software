@@ -93,6 +93,10 @@ export default function LoginPage() {
           body: JSON.stringify({ refreshToken: refreshToken }),
         });
 
+        if (!res) {
+          throw new Error("No response from refresh endpoint");
+        }
+
         const resJson = await res.json();
 
         setLoadingLogin(false);
@@ -123,6 +127,10 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+
+      if (!res) {
+        throw new Error("No response from login endpoint");
+      }
 
       const resJson = await res.json();
 

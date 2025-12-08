@@ -53,8 +53,10 @@ import { useEffect, useState } from "react";
 import { Col, Row } from "antd";
 import { apiFetch } from "@/lib/apiClient";
 import { getUserProfile } from "@/utils/get_user_profile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function ChartChangeByMonths() {
+  const { t } = useLanguage();
   const chartData = [
     { month: "January", hours: 186 },
     { month: "February", hours: 205 },
@@ -66,7 +68,7 @@ export function ChartChangeByMonths() {
 
   const chartConfig = {
     hours: {
-      label: "Horas",
+      label: t("dashboard.hours"),
     },
   } satisfies ChartConfig;
 
@@ -82,8 +84,8 @@ export function ChartChangeByMonths() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cambio en el uso de {space}</CardTitle>
-        <CardDescription>Enero - Junio 2024</CardDescription>
+        <CardTitle>{t("dashboard.changeInUsage")} {space}</CardTitle>
+        <CardDescription>{t("dashboard.janToJune2024")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -110,7 +112,7 @@ export function ChartChangeByMonths() {
       </CardContent>
       <CardFooter>
         <div className="text-muted-foreground leading-none">
-          Como cambió el uso de {space} a través del tiempo
+          {t("dashboard.howUsageChanged")} {space} {t("dashboard.overTime")}
         </div>
       </CardFooter>
     </Card>
@@ -118,6 +120,7 @@ export function ChartChangeByMonths() {
 }
 
 export function ChartInfoCards() {
+  const { t } = useLanguage();
 
   const [clientProfile, setClientProfile] = useState<any>(null)
 
@@ -130,29 +133,29 @@ export function ChartInfoCards() {
 
   const defaultData = [
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
-      Nombre: `Uso de ${space}`,
-      Descripcion: "Cantidad",
+      Nombre: `${t("dashboard.usageOf")} ${space}`,
+      Descripcion: t("dashboard.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
@@ -193,8 +196,8 @@ export function ChartInfoCards() {
         }
 
         const dataChartUsageByDate = {
-          Nombre: `Uso ${space} hoy`,
-          Descripcion: "Porcentaje",
+          Nombre: `${t("dashboard.usage")} ${space} ${t("dashboard.today")}`,
+          Descripcion: t("dashboard.percentage"),
           Valor: parseFloat(usageDataByDate ?? 0),
           MaxValue: 100,
           fill: "var(--primary)",
@@ -207,8 +210,8 @@ export function ChartInfoCards() {
         const lenDataTodayCount: any = dataTodayCount["dataLength"];
 
         const dataChartSchedulingCount = {
-          Nombre: "Agendamientos hoy",
-          Descripcion: "Cantidad",
+          Nombre: `${t("dashboard.scheduling")} ${t("dashboard.today")}`,
+          Descripcion: t("dashboard.quantity"),
           Valor: parseFloat(lenDataTodayCount ?? 0),
           MaxValue: boxes * 31,
           fill: "var(--primary)",
@@ -217,7 +220,7 @@ export function ChartInfoCards() {
         const resAllPendingSchedules = await apiFetch(
           `/api/reports/get_all_pending_schedules`
         );
-        if (!res3) {
+        if (!resAllPendingSchedules) {
           console.error("No response from apiFetch for get_all_pending_schedules");
           return;
         }
@@ -226,8 +229,8 @@ export function ChartInfoCards() {
           await resAllPendingSchedules?.json();
 
         const dataChartAllPendingSchedules = {
-          Nombre: "Agendamientos por confirmar",
-          Descripcion: "Cantidad",
+          Nombre: `${t("dashboard.scheduling")} ${t("dashboard.pendingConfirmation")}`,
+          Descripcion: t("dashboard.quantity"),
           Valor: parseFloat(dataAllPendingSchedules.pendingCount ?? 0),
           MaxValue: parseFloat(dataAllPendingSchedules.allCount ?? 0),
           fill: "var(--primary)",
@@ -241,8 +244,8 @@ export function ChartInfoCards() {
           await resCurrentlyAvailableCount?.json();
 
         const dataChartCurrentlyAvailableCount = {
-          Nombre: `${space} libres`,
-          Descripcion: "Cantidad",
+          Nombre: `${space} ${t("dashboard.free")}`,
+          Descripcion: t("dashboard.quantity"),
           Valor: parseFloat(dataCurrentlyAvailableCount.free ?? 0),
           MaxValue: parseFloat(dataCurrentlyAvailableCount.all ?? 0),
           fill: "var(--primary)",
@@ -263,7 +266,7 @@ export function ChartInfoCards() {
 
   const chartConfig = {
     amount: {
-      label: "Cantidad",
+      label: t("dashboard.quantity"),
     },
     boxes: {
       label: space,
@@ -274,7 +277,7 @@ export function ChartInfoCards() {
   return (
     <Card className="p-0 m-2 mb-4">
       <CardHeader className="mt-2 text-lg items-center text-center">
-        <CardTitle>Información sobre el uso de {space}</CardTitle>
+        <CardTitle>{t("dashboard.infoAboutUsage")} {space}</CardTitle>
       </CardHeader>
       <Row justify={"center"} align="middle">
         {infoCardsData.map((data: any, i: number) => (
@@ -382,13 +385,14 @@ export function ChartInfoCards() {
 
 
 export function ChartBoxesAcrossTime() {
+  const { t } = useLanguage();
   const chartConfig = {
     libre: {
-      label: "Libre (%)",
+      label: `${t("dashboard.free")} (%)`,
       color: "var(--chart-days)",
     },
     ocupado: {
-      label: "Ocupado (%)",
+      label: `${t("dashboard.occupied")} (%)`,
       color: "var(--chart-days)",
     },
   } satisfies ChartConfig;
@@ -457,9 +461,9 @@ export function ChartBoxesAcrossTime() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Uso de {space} a través del tiempo</CardTitle>
+        <CardTitle>{t("dashboard.usage")} {space} {t("dashboard.overTime")}</CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/card:block">Total en el tiempo</span>
+          <span className="hidden @[540px]/card:block">{t("dashboard.totalOverTime")}</span>
         </CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
@@ -469,9 +473,9 @@ export function ChartBoxesAcrossTime() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[600px]/card:flex"
           >
-            <ToggleGroupItem value="semanal">Esta semana</ToggleGroupItem>
-            <ToggleGroupItem value="mensual">Este mes</ToggleGroupItem>
-            <ToggleGroupItem value="anual">Este año</ToggleGroupItem>
+            <ToggleGroupItem value="semanal">{t("dashboard.thisWeek")}</ToggleGroupItem>
+            <ToggleGroupItem value="mensual">{t("dashboard.thisMonth")}</ToggleGroupItem>
+            <ToggleGroupItem value="anual">{t("dashboard.thisYear")}</ToggleGroupItem>
           </ToggleGroup>
           <Select value={dateRangeType} onValueChange={setDateRangeType}>
             <SelectTrigger
@@ -483,13 +487,13 @@ export function ChartBoxesAcrossTime() {
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="semanal" className="rounded-lg">
-                Esta semana
+                {t("dashboard.thisWeek")}
               </SelectItem>
               <SelectItem value="mensual" className="rounded-lg">
-                Esta mes
+                {t("dashboard.thisMonth")}
               </SelectItem>
               <SelectItem value="anual" className="rounded-lg">
-                Esta año
+                {t("dashboard.thisYear")}
               </SelectItem>
             </SelectContent>
           </Select>

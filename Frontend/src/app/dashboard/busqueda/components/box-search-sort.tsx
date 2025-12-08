@@ -2,6 +2,7 @@ import { Row, Col } from "antd";
 import {
   DropdownMenuCheckboxes,
 } from "@/components/custom/dropdown";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,15 +14,16 @@ import {
 
 import "./dropdown-boxes.css";
 
-const sortBy = {
-  name: "Ordenar",
-  desc: "Ordenar por...",
-  categories: ["Mayor a menor", "Menor a mayor", "Alfabético"],
-  default: false,
-  defaultAllSelected:false,
-};
-
 export function BoxSorterer() {
+  const { t } = useLanguage();
+  
+  const sortBy = {
+    name: t("search.sort"),
+    desc: t("search.sortBy"),
+    categories: [t("search.highestToLowest"), t("search.lowestToHighest"), t("search.alphabetical")],
+    default: false,
+    defaultAllSelected:false,
+  };
   return (
     <Row justify="center" align="top" style={{ marginTop: "30px" }}>
       <Col className="options-col" xs={24} md={24} lg={8} xl={8} xxl={8}>

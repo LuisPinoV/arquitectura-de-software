@@ -13,8 +13,10 @@ import {
 import DynamicSpaceLabel from '@/components/dynamic-space-label';
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/apiClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function InfoCards() {
+  const { t } = useLanguage();
 
   const [percentageUsage, setPercentageUsage] = useState<string>("");
   const [countData, setCountData] = useState<string>("");
@@ -34,12 +36,14 @@ export function InfoCards() {
           const resBoxes = await apiFetch(
             `/api/reports/get_all_boxes_count`
           );
+          if (!resBoxes) return;
           const countBoxes: any = await resBoxes.json();
           const boxes: any = countBoxes["dataLength"];
   
           const res1 = await apiFetch(
             `/api/general/usage_by_date?firstDate=${yesterdayISO}&lastDate=${tomorrowISO}`
           );
+          if (!res1) return;
           const data1: any = await res1.json();
           let usageData1 = "0%";
           if (
@@ -56,6 +60,7 @@ export function InfoCards() {
           const res2 = await apiFetch(
             `/api/reports/get_all_scheduling_today_count`
           );
+          if (!res2) return;
           const data2: any = await res2.json();
           const lenData2: any = data2 ?? 0;
 
@@ -65,7 +70,6 @@ export function InfoCards() {
           console.error("Error fetching data:", error);
         }
       }
-  
       fetchData();
     }, []);
   return (
@@ -73,12 +77,12 @@ export function InfoCards() {
       <Col className="general-col" xs={24} sm={12} md={12} lg={12} xl={12}>
         <Card className="@container/card info-card">
             <CardHeader>
-            <CardDescription><DynamicSpaceLabel template="Uso boxes hoy" /></CardDescription>
+            <CardDescription><DynamicSpaceLabel template={t("dashboard.usageToday")} /></CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {percentageUsage}
             </CardTitle>
             <CardAction>
-              <Link href="#">Ver más</Link>
+              <Link href="#">{t("common.viewMore")}</Link>
             </CardAction>
           </CardHeader>
         </Card>
@@ -86,12 +90,12 @@ export function InfoCards() {
       <Col className="general-col" xs={24} sm={12} md={12} lg={12} xl={12}>
         <Card className="@container/card info-card">
           <CardHeader>
-            <CardDescription>Peticiones de agendamiento</CardDescription>
+            <CardDescription>{t("dashboard.schedulingRequests")}</CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {countData}
             </CardTitle>
             <CardAction>
-              <Link href="#">Ver más</Link>
+              <Link href="#">{t("common.viewMore")}</Link>
             </CardAction>
           </CardHeader>
         </Card>

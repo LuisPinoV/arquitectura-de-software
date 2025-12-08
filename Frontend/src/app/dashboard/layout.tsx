@@ -24,6 +24,10 @@ export default function DashboardLayout({
           body: JSON.stringify({ refreshToken }),
         });
 
+        if (!res) {
+          throw new Error("No response from refresh endpoint");
+        }
+
         const resJson = await res.json();
 
         if (resJson.ok) {
