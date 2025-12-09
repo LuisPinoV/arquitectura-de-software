@@ -36,7 +36,7 @@ import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function LoginPage() {
-  const [openAler, setOpenAlert] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
 
   const [loadingLogin, setLoadingLogin] = useState<boolean>(false);
@@ -228,7 +228,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
-      <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
+      <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>

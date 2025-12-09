@@ -16,9 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname, useParams } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useUserProfile } from "@/hooks/use-user";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiFetch } from "@/lib/apiClient";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
@@ -86,12 +87,32 @@ export function SiteHeader() {
   const spaceName = profile?.spaceName ?? null;
   const displaySpace = spaceName ?? "Espacio";
 
+  const [curSpaceName, setCurSpaceName] = useState<string>("");
+
   if (pathname.startsWith("/dashboard/reportaje") && params?.box) {
+    //Get Space Name
+    useEffect(() => {
+      async function fetchSpaceName() {
+        try {
+          const res = await apiFetch(`/api/scheduling/get_boxes`);
+          const data: any = await res?.json();
+          if (Array.isArray(data)) {
+            const curSpace = data.find((s) => s.idBox === params.box);
+
+            setCurSpaceName(curSpace.nombre ? curSpace.nombre : "N/A");
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+      }
+      fetchSpaceName();
+    }, []);
+
     items.push(
       { label: "Inicio", href: "#" },
       { label: "Dashboard", href: "/dashboard/general" },
       { label: "Reportaje", href: "/dashboard/reportaje" },
-      { label: `${displaySpace} - ${params.box}` }
+      { label: `${displaySpace} - ${curSpaceName}` }
     );
   }
 
