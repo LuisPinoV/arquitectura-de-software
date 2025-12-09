@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  terraform-deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -20,26 +20,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
-
-      - name: Export Secrets
-        run: |
-          echo "TF_ORG=${{ secrets.TF_CLOUD_ORGANIZATION }}" >> $GITHUB_ENV
-          echo "TF_WS=${{ secrets.TF_CLOUD_WORKSPACE }}" >> $GITHUB_ENV
-
-      - name: Create backend.tf
-        run: |
-          cat > ./Backend_node/infra/backend.tf << EOF
-          terraform {
-            backend "remote" {
-              hostname     = "app.terraform.io"
-              organization = "$TF_ORG"
-
-              workspaces {
-                name = "$TF_WS"
-              }
-            }
-          }
-          EOF
 
       - name: Configure Terraform Cloud credentials
         run: |
@@ -59,6 +39,3 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
-
-      - name: Cleanup backend.tf
-        run: rm -f ./Backend_node/infra/backend.tf

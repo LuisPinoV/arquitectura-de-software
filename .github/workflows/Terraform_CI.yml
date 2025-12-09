@@ -13,33 +13,13 @@ jobs:
         working-directory: ./Backend_node/infra
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
-
-      - name: Export Secrets
-        run: |
-          echo "TF_ORG=${{ secrets.TF_CLOUD_ORGANIZATION }}" >> $GITHUB_ENV
-          echo "TF_WS=${{ secrets.TF_CLOUD_WORKSPACE }}" >> $GITHUB_ENV
-
-      - name: Create backend.tf
-        run: |
-          cat > ./Backend_node/infra/backend.tf << EOF
-          terraform {
-            backend "remote" {
-              hostname     = "app.terraform.io"
-              organization = "$TF_ORG"
-
-              workspaces {
-                name = "$TF_WS"
-              }
-            }
-          }
-          EOF
 
       - name: Configure Terraform Cloud credentials
         run: |
@@ -63,11 +43,8 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
 
-      - name: Upload terraform plan
+      - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: ./Backend_node/infra/tfplan
-
-      - name: Cleanup backend.tf
-        run: rm -f ./Backend_node/infra/backend.tf
