@@ -136,21 +136,21 @@ export function ChartInfoCards() {
   const defaultData = [
     {
       Nombre: `${t("dashboard.usageOf")} ${space}`,
-      Descripcion: t("dashboard.quantity"),
+      Descripcion: t("common.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
       Nombre: `${t("dashboard.usageOf")} ${space}`,
-      Descripcion: t("dashboard.quantity"),
+      Descripcion: t("common.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
     },
     {
       Nombre: `${t("dashboard.usageOf")} ${space}`,
-      Descripcion: t("dashboard.quantity"),
+      Descripcion: t("common.quantity"),
       Valor: 0,
       MaxValue: 3600,
       fill: "var(--primary)",
@@ -205,7 +205,7 @@ export function ChartInfoCards() {
 
         const dataChartSchedulingCount = {
           Nombre: `${t("dashboard.scheduling")} ${t("dashboard.today")}`,
-          Descripcion: t("dashboard.quantity"),
+          Descripcion: t("common.quantity"),
           Valor: parseFloat(lenDataTodayCount ?? 0),
           MaxValue: boxes * 31,
           fill: "var(--primary)",
@@ -220,7 +220,7 @@ export function ChartInfoCards() {
 
         const dataChartCurrentlyAvailableCount = {
           Nombre: `${space} ${t("dashboard.free")}`,
-          Descripcion: t("dashboard.quantity"),
+          Descripcion: t("common.quantity"),
           Valor: parseFloat(dataCurrentlyAvailableCount.free ?? 0),
           MaxValue: parseFloat(dataCurrentlyAvailableCount.all ?? 0),
           fill: "var(--primary)",
@@ -239,7 +239,7 @@ export function ChartInfoCards() {
 
   const chartConfig = {
     amount: {
-      label: t("dashboard.quantity"),
+      label: t("common.quantity"),
     },
     boxes: {
       label: space,
