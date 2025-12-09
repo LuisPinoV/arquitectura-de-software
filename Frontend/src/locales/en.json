@@ -293,7 +293,7 @@
     "tipoFuncionario": "Employee type",
     "tipoFuncionarioPlaceholder": "administrator",
     "funcionarioCreation": "Employee creation",
-
+    "successCreatingFuncionario": "Funcionario created!",
     "funcionarioName":"Name of the employee"
   }
 }

@@ -293,6 +293,7 @@
     "tipoFuncionario": "Tipo Oficial",
     "tipoFuncionarioPlaceholder": "administrador",
     "funcionarioCreation": "Criação de oficial",
-    "funcionarioName":"Nome do oficial"
+    "funcionarioName":"Nome do oficial",
+    "successCreatingFuncionario": "oficial criado!"
   }
 }

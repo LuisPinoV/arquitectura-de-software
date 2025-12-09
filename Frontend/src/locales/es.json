@@ -294,7 +294,7 @@
     "tipoFuncionario": "Tipo Funcionario",
     "tipoFuncionarioPlaceholder": "administrador",
     "funcionarioCreation": "Creación de funcionario",
-
+    "successCreatingFuncionario": "Funcionario creado!",
     "funcionarioName":"Nombre del funcionario"
   }
 }

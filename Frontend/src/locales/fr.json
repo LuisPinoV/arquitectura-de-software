@@ -294,7 +294,7 @@
     "tipoFuncionario": "Type officiel",
     "tipoFuncionarioPlaceholder": "administrateur",
     "funcionarioCreation": "Création d'un fonctionnaire",
-
+    "successCreatingFuncionario": "fonctionnaire créé!",
     "funcionarioName":"Nom du fonctionnaire"
   }
 }

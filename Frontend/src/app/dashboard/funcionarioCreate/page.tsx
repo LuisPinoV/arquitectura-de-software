@@ -45,7 +45,7 @@ export default function NuevoFuncionario() {
         tipoFuncionario: z.string().optional(),
     });
 
-    const [openAler, setOpenAlert] = useState(false);
+    const [openAlert, setOpenAlert] = useState(false);
     const [alertMessage, setAlertMessage] = useState<string>("");
 
     const [loadingRegistration, setLoadingRegistration] =
@@ -96,6 +96,7 @@ export default function NuevoFuncionario() {
         });
 
         const json = await res?.json().catch(() => ({}));
+        showAlert(t("newFuncionario.successCreatingFuncionario"));
         } catch (e) {
         showAlert(t("newFuncionario.errorCreatingFuncionario"));
         }
@@ -167,7 +168,7 @@ export default function NuevoFuncionario() {
             </Card>
             </Col>
         </Row>
-        <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
+        <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
             <AlertDialogContent>
             <AlertDialogHeader>
                 <AlertDialogTitle>{t("newFuncionario.funcionarioCreation")}</AlertDialogTitle>

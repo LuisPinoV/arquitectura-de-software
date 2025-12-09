@@ -127,6 +127,7 @@ export default function NuevoEspacioPage() {
       });
 
       const json = await res?.json().catch(() => ({}));
+      showAlert(t("newFuncionario.successCreatingFuncionario"));
     } catch (e) {
       showAlert(t("newUser.errorCreatingUser"));
     }
