@@ -676,7 +676,7 @@ function filterPersonal(
 ): { name: string; id: string }[] {
   const filteredPersonalData: { name: string; id: string }[] = data.filter(
     (personal) => {
-      const personalName = personal["name"].toLowerCase();
+      const personalName = personal.name ? String(personal.name).toLowerCase() : "";
       if (personalName.includes(searchInput)) return personal;
     }
   );
