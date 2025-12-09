@@ -425,7 +425,8 @@ async function agendamientoTotalHoyBox(req) {
   }
 
   try {
-    const agendamientos = await agendamientoService.agendamientoTotalHoyBox(idBox, fecha);
+    const organizacionId = extractCognitoUserId(req.event);
+    const agendamientos = await agendamientoService.getAgendamientosByFecha(fecha, organizacionId);
     return new Response(JSON.stringify(agendamientos), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener agendamientos por box y fecha:", error);
@@ -493,7 +494,8 @@ async function ocupacionTotalSegunDiaEntreFechas(req) {
   }
 
   try {
-    const resultado = await agendamientoService.ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin);
+    const organizacionId = extractCognitoUserId(req.event);
+    const resultado = await agendamientoService.ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin, organizacionId);
     return new Response(JSON.stringify(resultado), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al obtener ocupación por día:", error);

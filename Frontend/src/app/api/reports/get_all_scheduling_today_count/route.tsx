@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const incomingToken = req.headers.get("authorization") ?? "";
 
   const res = await fetch(
-    `${apiUrl}/agendamientosFecha/${todayISO}`,
+    `${apiUrl}/agendamiento/box/105/fecha/${todayISO}`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   );
   const data = await res.json();
 
-  const dataLength = Object.keys(data).length;
-  
-  return NextResponse.json({dataLength});
+  const dataLength = data ? Object.keys(data).length : 0;
+
+  return NextResponse.json(dataLength);
 }

@@ -13,31 +13,31 @@ export async function GET(req: NextRequest) {
     today.toISOString().split("T")[0];
 
   const apiUrl = process.env.BACKEND_ADDRESS;
+  const incomingToken = req.headers.get("authorization") ?? "";
 
   const res = await fetch(
-    `${apiUrl}/tomah/query1/${firstDate}/${lastDate}`,
+    `${apiUrl}/agendamiento/estadisticas/ocupacion-diaria/${firstDate}/${lastDate}`,
     {
       headers: {
         "Content-Type": "application/json",
+        Authorization: incomingToken,
       },
     }
   );
   const data = await res.json();
 
-  if(!data)
-  {
+  if (!data) {
     return NextResponse.json({});
   }
-  
+
   const keys = Object.keys(data);
   const values = Object.values(data);
 
-  const dataArr:any[] = [];
-  for(let i = 0; i < keys.length; i++)
-  {
+  const dataArr: any[] = [];
+  for (let i = 0; i < keys.length; i++) {
     dataArr.push({
-        fecha:keys[i],
-        uso:parseFloat(String(values[i])) * 100
+      fecha: keys[i],
+      uso: parseFloat(String(values[i])) * 100
     })
   }
 
