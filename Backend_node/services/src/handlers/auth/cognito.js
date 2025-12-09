@@ -213,7 +213,7 @@ export async function createUser(req) {
   const name = body.name ?? null;
   const companyName = body.companyName ?? null;
   const spaceName = body.spaceName ?? null;
-  const group = body.group ?? null;
+  const group = body.group ?? "Administradores";
 
   if (!username || !password) {
     return {
