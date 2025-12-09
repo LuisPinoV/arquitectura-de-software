@@ -86,7 +86,7 @@ export function EditarInventario({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // 1. Cargar inventario al abrir
+  // Cargar inventario al abrir
   useEffect(() => {
     async function fetchData() {
       try {
@@ -113,7 +113,7 @@ export function EditarInventario({
     fetchData();
   }, [idBox]);
 
-  // 2. Editar campo
+  // Editar campo
   const updateField = (index: number, field: "key" | "value", value: any) => {
     setItems((prev) => {
       const copy = [...prev];
@@ -122,17 +122,17 @@ export function EditarInventario({
     });
   };
 
-  // 3. Agregar item
+  // Agregar item
   const addItem = () => {
     setItems((prev) => [...prev, { key: "", value: 0 }]);
   };
 
-  // 4. Eliminar item
+  // Eliminar item
   const deleteItem = (index: number) => {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 5. Guardar
+  // Guardar
   const saveChanges = async () => {
     try {
       setSaving(true);
@@ -170,12 +170,9 @@ export function EditarInventario({
         console.error("Error posteando inventario:", postRes);
       }
 
-      // REFRESH del router (App Router)
-      // REFRESCO 100% GARANTIZADO
       if (typeof window !== "undefined") {
         window.location.reload();
       }
-
 
       // Notificar y cerrar
       onSaved();
