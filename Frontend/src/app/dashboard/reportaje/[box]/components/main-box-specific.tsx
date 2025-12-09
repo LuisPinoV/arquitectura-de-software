@@ -134,12 +134,10 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
   const onCloseEditInventory = () => {
     setOpenInventoryDialog(false);
-    console.log("B");
   };
 
   const onOpenEditInventory = () => {
     setOpenInventoryDialog(true);
-    console.log("A");
   };
 
   return (
@@ -152,7 +150,9 @@ export default function MainBoxSpecific({ box }: { box: any }) {
       <Row justify={"center"} align={"middle"}>
         <Col
           xs={22}
-          lg={10}
+          md={22}
+          lg={20}
+          xl={10}
           style={{
             margin: "10px 0px",
           }}
@@ -161,7 +161,9 @@ export default function MainBoxSpecific({ box }: { box: any }) {
         </Col>
         <Col
           xs={22}
-          lg={8}
+          md={22}
+          lg={14}
+          xl={8}
           style={{
             margin: "10px 30px",
           }}
@@ -170,7 +172,9 @@ export default function MainBoxSpecific({ box }: { box: any }) {
         </Col>
         <Col
           xs={22}
-          lg={3}
+          md={22}
+          lg={6}
+          xl={3}
           style={{
             margin: "10px 0px",
           }}
@@ -266,8 +270,10 @@ export default function MainBoxSpecific({ box }: { box: any }) {
           </Row>
         </Col>
         <Col
-          xs={18}
-          lg={18}
+          xs={22}
+          md={18}
+          lg={13}
+          xl={18}
           style={{
             margin: "10px 0px 10px 10px",
           }}
@@ -284,10 +290,10 @@ export default function MainBoxSpecific({ box }: { box: any }) {
           </Card>
         </Col>
         <Col
-          xs={4}
+          xs={22}
           sm={8}
           md={8}
-          lg={4}
+          lg={6}
           xl={4}
           style={{
             margin: "10px 0px 10px 10px",
@@ -314,7 +320,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
         </Col>
       </Row>
       <Dialog open={openInventoryDialog}>
-        <DialogContent className="flex flex-col items-center">
+        <DialogContent className="flex flex-col items-center" onPointerDownOutside={onCloseEditInventory} onEscapeKeyDown={onCloseEditInventory}>
           <DialogHeader>
             <DialogTitle>
               Editar inventario del {space} - {spaceName}{" "}
