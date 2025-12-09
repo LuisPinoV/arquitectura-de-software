@@ -201,6 +201,13 @@ CognitoUserPoolGroup:
     UserPoolId: !Ref CognitoUserPool
     Description: "Grupo de administradores del sistema"
 
+CognitoUserPoolGroupUsers:
+  Type: AWS::Cognito::UserPoolGroup
+  Properties:
+    GroupName: Usuario
+    UserPoolId: !Ref CognitoUserPool
+    Description: "Grupo de usuarios del sistema"
+
 CreatedUserTopic:
   Type: AWS::SNS::Topic
   Properties:
