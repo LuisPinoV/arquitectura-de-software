@@ -83,8 +83,8 @@ export function BoxSearchMain() {
         const data: any = await res?.json();
 
         if (Array.isArray(data) && data) {
-          setType(data.map((type: any) => type["especialidad"]));
-          setTypesToFilter(data.map((type: any) => type["especialidad"]));
+          setType(data);
+          setTypesToFilter(data);
         } else {
           setType([]);
           setTypesToFilter([]);
