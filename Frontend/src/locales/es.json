@@ -241,5 +241,19 @@
     "scheduleTable": "Tabla agendamiento de",
     "inventory": "Inventario",
     "editInventory": "Editar inventario del"
+  },
+  "newUser": {
+    "name":"Nombre",
+    "email":"Correo Electrónico",
+    "password":"Contraseña",
+    "createUser":"Crear usuario",
+    "loading": "Cargando",
+    "errorCreatingUser": "Error creando el usuario",
+    "title": "Nuevo usuario",
+    "namePlaceholder": "Tomás Solano",
+    "emailPlaceholder": "ejemplo@ejemplo.cl",
+    "passwordPlaceholder": "********",
+    "userCreation": "Creación de usuario",
+    "understood": "Entendido"
   }
 }

@@ -241,5 +241,19 @@
     "scheduleTable": "Schedule table for",
     "inventory": "Inventory",
     "editInventory": "Edit inventory of"
+  },
+  "newUser": {
+    "name":"Name",
+    "email":"Email",
+    "password":"Password",
+    "createUser":"Create user",
+    "loading": "Loading",
+    "errorCreatingUser": "Error creating the user",
+    "title": "New user",
+    "namePlaceholder": "Jhon Doe",
+    "emailPlaceholder": "example@example.com",
+    "passwordPlaceholder": "********",
+    "userCreation": "User creation",
+    "understood": "Understood"
   }
 }

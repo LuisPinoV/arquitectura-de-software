@@ -241,5 +241,19 @@
     "scheduleTable": "Tableau de planification de",
     "inventory": "Inventaire",
     "editInventory": "Modifier l'inventaire de"
+  },
+  "newUser": {
+    "name":"Nom",
+    "email":"Email",
+    "password":"Mot de passe",
+    "createUser":"Créer un utilisateur",
+    "loading": "Chargement",
+    "errorCreatingUser": "Erreur lors de la création de l'utilisateur",
+    "title": "Nouvel utilisateur",
+    "namePlaceholder": "Gabriel Dubois",
+    "emailPlaceholder": "exemple@exemple.fr",
+    "passwordPlaceholder": "********",
+    "userCreation": "Création d'utilisateur",
+    "understood": "Compris"
   }
 }
