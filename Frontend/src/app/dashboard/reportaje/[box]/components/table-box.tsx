@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { apiFetch } from "@/lib/apiClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   ColumnDef,
   flexRender,
@@ -40,6 +41,7 @@ export type Schedule = {
 };
 
 export function ScheduleTable({ box }: { box: any }) {
+  const { t } = useLanguage();
   const columns: ColumnDef<Schedule>[] = [
     {
       accessorKey: "date",
@@ -49,7 +51,7 @@ export function ScheduleTable({ box }: { box: any }) {
           className="flex items-center gap-1"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Fecha
+          {t("common.date")}
           <ArrowUpDown className="w-4 h-4" />
         </Button>
       ),
@@ -64,7 +66,7 @@ export function ScheduleTable({ box }: { box: any }) {
           className="flex items-center gap-1"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Hora
+          {t("common.time")}
           <ArrowUpDown className="w-4 h-4" />
         </Button>
       ),
@@ -77,12 +79,12 @@ export function ScheduleTable({ box }: { box: any }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menú</span>
+              <span className="sr-only">{t("common.openMenu")}</span>
               <MoreHorizontal />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600"
@@ -91,7 +93,7 @@ export function ScheduleTable({ box }: { box: any }) {
                 // TODO: call cancel API here
               }}
             >
-              Cancelar hora
+              {t("common.cancelSchedule")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -141,7 +143,7 @@ export function ScheduleTable({ box }: { box: any }) {
     <div className="w-full">
       <div className="flex items-center py-2">
         <Input
-          placeholder="Buscar..."
+          placeholder={t("common.search")}
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm"
@@ -186,7 +188,7 @@ export function ScheduleTable({ box }: { box: any }) {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No hubo resultados.
+                  {t("common.noResults")}
                 </TableCell>
               </TableRow>
             )}
@@ -202,7 +204,7 @@ export function ScheduleTable({ box }: { box: any }) {
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Anterior
+          {t("common.previous")}
         </Button>
         <Button
           variant="outline"
@@ -210,10 +212,10 @@ export function ScheduleTable({ box }: { box: any }) {
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Siguiente
+          {t("common.next")}
         </Button>
         <span className="ml-4 text-sm">
-          Página {table.getState().pagination.pageIndex + 1} de{" "}
+          {t("common.page")} {table.getState().pagination.pageIndex + 1} {t("common.of")}{" "}
           {table.getPageCount()}
         </span>
       </div>

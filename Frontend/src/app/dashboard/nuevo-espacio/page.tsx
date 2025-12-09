@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Row, Col } from "antd";
 import { apiFetch } from "@/lib/apiClient";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import {
   AlertDialog,
@@ -30,16 +31,17 @@ import {
 import { useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 
-const NuevoEspacioSchema = z.object({
-  spaceName: z.string().min(1, "El nombre del espacio es requerido"),
-  pasillo: z.string().optional(),
-  capacidad: z.string().optional(),
-  category: z.string().optional(),
-  description: z.string().optional(),
-});
-
 export default function NuevoEspacioPage() {
+  const { t } = useLanguage();
   const router = useRouter();
+
+  const NuevoEspacioSchema = z.object({
+    spaceName: z.string().min(1, t("newSpace.spaceNameRequired")),
+    pasillo: z.string().optional(),
+    capacidad: z.string().optional(),
+    category: z.string().optional(),
+    description: z.string().optional(),
+  });
 
   const [openAler, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
@@ -59,13 +61,13 @@ export default function NuevoEspacioPage() {
 
   const registerButton = (
     <Button type="submit" className="w-full">
-      Crear espacio
+      {t("newSpace.createSpace")}
     </Button>
   );
 
   const loadingButton = (
     <Button type="submit" className="w-full">
-      <Spinner>Cargando...</Spinner>
+      <Spinner>{t("newSpace.loading")}</Spinner>
     </Button>
   );
 
@@ -106,20 +108,20 @@ export default function NuevoEspacioPage() {
           null;
         if (createdId) {
           setLoadingRegistration(false);
-          showAlert(`Espacio creado correctamente (id: ${createdId})`);
+          showAlert(`${t("newSpace.spaceCreatedSuccess")} (id: ${createdId})`);
         } else {
           setLoadingRegistration(false);
-          showAlert(json.message || "Espacio creado correctamente");
+          showAlert(json.message || t("newSpace.spaceCreatedSuccess"));
         }
       } else {
         setLoadingRegistration(false);
-        showAlert(json.message || "Error creando el espacio");
+        showAlert(json.message || t("newSpace.errorCreatingSpace"));
       }
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
       setLoadingRegistration(false);
-      showAlert("Error creando el espacio");
+      showAlert(t("newSpace.errorCreatingSpace"));
     }
   }
 
@@ -129,7 +131,7 @@ export default function NuevoEspacioPage() {
         <Col xs={24} sm={18} md={14} lg={10} xl={8}>
           <Card>
             <CardHeader>
-              <CardTitle>Nuevo espacio</CardTitle>
+              <CardTitle>{t("newSpace.title")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -142,9 +144,9 @@ export default function NuevoEspacioPage() {
                     name="spaceName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre del espacio</FormLabel>
+                        <FormLabel>{t("newSpace.spaceName")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Sala A, Box 12" {...field} />
+                          <Input placeholder={t("newSpace.spaceNamePlaceholder")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -156,9 +158,9 @@ export default function NuevoEspacioPage() {
                     name="category"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoría</FormLabel>
+                        <FormLabel>{t("newSpace.category")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Opcional" {...field} />
+                          <Input placeholder={t("newSpace.optional")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -170,9 +172,9 @@ export default function NuevoEspacioPage() {
                     name="pasillo"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Pasillo</FormLabel>
+                        <FormLabel>{t("newSpace.hallway")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: P1" {...field} />
+                          <Input placeholder={t("newSpace.hallwayPlaceholder")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -184,7 +186,7 @@ export default function NuevoEspacioPage() {
                     name="capacidad"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Capacidad</FormLabel>
+                        <FormLabel>{t("newSpace.capacity")}</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="1" {...field} />
                         </FormControl>
@@ -198,10 +200,10 @@ export default function NuevoEspacioPage() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Descripción</FormLabel>
+                        <FormLabel>{t("newSpace.description")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Descripción breve..."
+                            placeholder={t("newSpace.descriptionPlaceholder")}
                             {...field}
                           />
                         </FormControl>
@@ -222,12 +224,12 @@ export default function NuevoEspacioPage() {
       <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Creación espacio</AlertDialogTitle>
+            <AlertDialogTitle>{t("newSpace.spaceCreation")}</AlertDialogTitle>
             <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeAlert}>
-              Entendido
+              {t("newSpace.understood")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -33,6 +33,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { es } from "react-day-picker/locale";
 import "./search-card.css";
 import { getUserProfile } from "@/utils/get_user_profile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const chartConfig = {
   percentage: {
@@ -49,6 +50,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function SearchCard({ data }: any) {
+  const { t } = useLanguage();
 
   const busyTime = parseFloat(data["ocupancia"]);
   
@@ -122,21 +124,21 @@ export function SearchCard({ data }: any) {
           </PieChart>
         </ChartContainer>
         <CardDescription className="text-center font-semibold m-2 search-card-subtitle">
-          Ocupancia hoy
+          {t("common.occupancyToday")}
         </CardDescription>
         <Separator className="my-4 mx-0 px-0 w-100" />
         <div className="card-text">
           <p>
-            <span className="font-bold card-text-subtitle">Categoría </span>{" "}
+            <span className="font-bold card-text-subtitle">{t("common.category")} </span>{" "}
             {data.especialidad} <br />
-            <span className="font-bold card-text-subtitle">Estado </span>{" "}
-            {data.disponible ? "Libre" : "Ocupado"} <br />
+            <span className="font-bold card-text-subtitle">{t("common.status")} </span>{" "}
+            {data.disponible ? t("dashboard.free") : t("dashboard.occupied")} <br />
           </p>
         </div>
       </CardContent>
       <CardFooter className="flex-col gap-2">
         <Button type="submit" className="w-full" onClick={handleVisit}>
-          Visitar
+          {t("common.visit")}
         </Button>
       </CardFooter>
     </Card>

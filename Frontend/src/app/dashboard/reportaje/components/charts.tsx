@@ -420,17 +420,23 @@ export function ChartBoxesAcrossTime() {
     fetchData();
   }, [dateRangeType]);
 
-  const filteredData = chartData.map((item) => {
-    const date = item.fecha !== "message" ? new Date(item.fecha) : new Date();
-    const ocupado = parseFloat(item["uso"]).toFixed(2);
-    const libre = (100 - parseFloat(ocupado)).toFixed(2);
+  const filteredData = chartData
+    .filter((item) => item.fecha && item.fecha !== "message")
+    .map((item) => {
+      const date = new Date(item.fecha);
+      if (isNaN(date.getTime())) {
+        return null;
+      }
+      const ocupado = parseFloat(item["uso"] || 0).toFixed(2);
+      const libre = (100 - parseFloat(ocupado)).toFixed(2);
 
-    return {
-      date: date.toISOString().split("T")[0],
-      ocupado: ocupado,
-      libre: libre,
-    };
-  });
+      return {
+        date: date.toISOString().split("T")[0],
+        ocupado: ocupado,
+        libre: libre,
+      };
+    })
+    .filter((item) => item !== null);
 
   return (
     <Card className="@container/card">

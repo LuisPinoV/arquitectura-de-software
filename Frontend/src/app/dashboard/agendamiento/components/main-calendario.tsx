@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useUserProfile } from "@/hooks/use-user";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -48,6 +49,7 @@ type Schedule = {
 const PAGE_SIZE = 7;
 
 export default function BoxSchedulePage() {
+  const { t } = useLanguage();
   const profile = useUserProfile() as any;
   const space = profile?.spaceName ?? "Box";
   const spaceUpper = space.toUpperCase();
@@ -149,7 +151,7 @@ export default function BoxSchedulePage() {
     <div className="container mx-auto py-10 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{`Selecciona un ${space}`}</CardTitle>
+          <CardTitle>{t("scheduling.selectSpace")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Popover open={open} onOpenChange={setOpen}>
@@ -168,14 +170,14 @@ export default function BoxSchedulePage() {
                           : "N/A"
                         : "N/A"
                     }`
-                  : `Elige un ${spaceLower}...`}
+                  : t("scheduling.searchSpace")}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[250px] p-0">
               <Command>
-                <CommandInput placeholder={`Buscar ${spaceLower}...`} />
-                <CommandEmpty>{`No se encontró ${spaceLower}.`}</CommandEmpty>
+                <CommandInput placeholder={t("scheduling.searchSpace")} />
+                <CommandEmpty>{`${t("scheduling.noSpaceFound")} ${spaceLower}.`}</CommandEmpty>
                 <CommandGroup
                   className="max-h-[150px]"
                   style={{ overflowY: "scroll" }}
@@ -210,7 +212,7 @@ export default function BoxSchedulePage() {
       {selectedSpace && (
         <Card>
           <CardHeader>
-            <CardTitle>{`Calendario de ${space} - ${
+            <CardTitle>{`${t("scheduling.calendarOf")} ${space} - ${
               selectedSpace.nombre ? selectedSpace.nombre : "N/A"
             }`}</CardTitle>
           </CardHeader>
@@ -227,16 +229,16 @@ export default function BoxSchedulePage() {
               <Col xl={16} sm={24} style={{ margin: "10px 0px" }}>
                 <div className="flex-1 w-full">
                   <h3 className="font-semibold mb-2">
-                    Horarios para {dateKey || "fecha no seleccionada"}
+                    {t("scheduling.schedulesFor")} {dateKey || t("scheduling.dateNotSelected")}
                   </h3>
                   {spaceSchedules.length > 0 ? (
                     <>
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Hora</TableHead>
-                            <TableHead>Estado</TableHead>
-                            <TableHead>Acción</TableHead>
+                            <TableHead>{t("scheduling.hour")}</TableHead>
+                            <TableHead>{t("common.status")}</TableHead>
+                            <TableHead>{t("common.actions")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -263,16 +265,16 @@ export default function BoxSchedulePage() {
                                       }
                                     >
                                       {sch.status === "Ocupado"
-                                        ? "Cancelar"
-                                        : "Ver"}
+                                        ? t("scheduling.cancel")
+                                        : t("scheduling.view")}
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="sm:max-w-md">
                                     <DialogHeader>
                                       <DialogTitle>
                                         {sch.status === "Ocupado"
-                                          ? "¿Cancelar agendamiento?"
-                                          : "Información agendamiento"}
+                                          ? t("scheduling.cancelScheduling")
+                                          : t("scheduling.schedulingInfo")}
                                       </DialogTitle>
                                     </DialogHeader>
                                     <div className="flex items-center gap-2">
@@ -282,7 +284,7 @@ export default function BoxSchedulePage() {
                                             ? selectedSpace.nombre
                                             : "N/A"
                                         }`}</div>
-                                        <div>Hora - {sch.time}</div>
+                                        <div>{t("scheduling.hour")} - {sch.time}</div>
                                       </div>
                                     </div>
                                     <DialogFooter className="sm:justify-start">
@@ -291,7 +293,7 @@ export default function BoxSchedulePage() {
                                           type="button"
                                           variant="secondary"
                                         >
-                                          Cerrar
+                                          {t("scheduling.close")}
                                         </Button>
                                       </DialogClose>
                                       <DialogClose asChild>
@@ -307,7 +309,7 @@ export default function BoxSchedulePage() {
                                               : (_) => {}
                                           }
                                         >
-                                          Confirmar
+                                          {t("scheduling.confirm")}
                                         </Button>
                                       </DialogClose>
                                     </DialogFooter>
@@ -325,10 +327,10 @@ export default function BoxSchedulePage() {
                           disabled={page === 1}
                           onClick={() => setPage((p) => p - 1)}
                         >
-                          ← Anterior
+                          ← {t("common.previous")}
                         </Button>
                         <span>
-                          Página {page} de {totalPages}
+                          {t("common.page")} {page} {t("common.of")} {totalPages}
                         </span>
                         <Button
                           variant="outline"
@@ -336,13 +338,13 @@ export default function BoxSchedulePage() {
                           disabled={page === totalPages}
                           onClick={() => setPage((p) => p + 1)}
                         >
-                          Siguiente →
+                          {t("common.next")} →
                         </Button>
                       </div>
                     </>
                   ) : (
                     <p className="text-muted-foreground">
-                      No hay horarios para esta fecha.
+                      {t("scheduling.noSchedulesForDate")}
                     </p>
                   )}
                 </div>
