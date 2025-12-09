@@ -32,7 +32,24 @@ jobs:
             }
           }
           EOF
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.9.8
 
+      - name: Configure Terraform Cloud credentials
+        run: |
+          mkdir -p ~/.terraform.d
+          cat > ~/.terraform.d/credentials.tfrc.json <<EOF
+          {
+            "credentials": {
+              "app.terraform.io": {
+                "token": "${{ secrets.TF_TOKEN_app_terraform_io }}"
+              }
+            }
+          }
+          EOF
+          
       - name: Terraform Init
         run: terraform init
         env:

@@ -33,12 +33,21 @@ jobs:
           }
           EOF
 
+      - name: Configure Terraform Cloud credentials
+        run: |
+          mkdir -p ~/.terraform.d
+          cat > ~/.terraform.d/credentials.tfrc.json <<EOF
+          {
+            "credentials": {
+              "app.terraform.io": {
+                "token": "${{ secrets.TF_TOKEN_app_terraform_io }}"
+              }
+            }
+          }
+          EOF
+
       - name: Terraform Init
         run: terraform init
-        env:
-          TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
-          TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
-          TF_CLOUD_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
