@@ -365,25 +365,67 @@ export class BoxRepository {
     return { fecha, hora, ocupacionPorEspecialidad };
   }
 
-  async getUsoBox(idBox, fecha, hora) {
+  async getUsoBox(idBox, fecha, hora, organizacionId) {
+    const box = await this.getBox(idBox, organizacionId);
+    if (!box) {
+      throw new Error(`Box ${idBox} no encontrado o sin permisos`);
+    }
+
+    const { horaApertura = '08:00', horaCierre = '20:00', especialidad = 'General' } = box;
+
+
+    const start = new Date(`2000-01-01T${horaApertura}:00`);
+    const end = new Date(`2000-01-01T${horaCierre}:00`);
+    const totalMinutosPosibles = (end - start) / 1000 / 60;
+
     const params = {
       TableName: this.tableName,
-      FilterExpression: "BoxId = :box AND FechaBox = :fecha",
+      IndexName: "AgendamientosPorBox",
+      KeyConditionExpression: "BoxId = :box AND FechaBox = :fecha",
       ExpressionAttributeValues: {
         ":box": `BOX#${idBox}`,
         ":fecha": `FECHA#${fecha}`,
       },
     };
 
-    const result = await this.dynamo.send(new ScanCommand(params));
+    const result = await this.dynamo.send(new QueryCommand(params));
+    const agendamientos = result.Items || [];
 
-    const agendamiento = (result.Items || []).find(
-      a => a.horaEntrada <= hora && a.horaSalida > hora
+    let minutosOcupados = 0;
+    agendamientos.forEach(a => {
+      if (a.estado !== 'Cancelada') {
+        const agStart = new Date(`2000-01-01T${a.horaEntrada}:00`);
+        const agEnd = new Date(`2000-01-01T${a.horaSalida}:00`);
+        minutosOcupados += (agEnd - agStart) / 1000 / 60;
+      }
+    });
+
+    const ocupancia = totalMinutosPosibles > 0
+      ? parseFloat(((minutosOcupados / totalMinutosPosibles) * 100).toFixed(2))
+      : 0;
+
+
+    const agendamientoActual = agendamientos.find(
+      a => a.estado !== 'Cancelada' && a.horaEntrada <= hora && a.horaSalida > hora
     );
+    const libreAhora = !agendamientoActual;
 
-    return agendamiento
-      ? { ocupado: true, agendamiento }
-      : { ocupado: false };
+
+    const sortedAgendamientos = agendamientos
+      .filter(a => a.estado !== 'Cancelada' && a.horaEntrada > hora)
+      .sort((a, b) => a.horaEntrada.localeCompare(b.horaEntrada));
+
+    const proximaHora = sortedAgendamientos.length > 0
+      ? `${sortedAgendamientos[0].horaEntrada}-${sortedAgendamientos[0].horaSalida}`
+      : "No hay más agendamientos";
+
+    return {
+      id: idBox,
+      ocupancia,
+      especialidad,
+      libreAhora,
+      proximaHora
+    };
   }
 }
 
