@@ -56,15 +56,15 @@ export default function NuevoEspacioPage() {
   });
 
   const NuevoUsuarioSchema = z.object({
-    name: z.string().min(3, t("newUsers.name")),
-    email: z.string().email("Email inválido"),
+    name: z.string().min(3, t("newUser.nameMissing")),
+    email: z.string().email(t("newUser.wrongEmail")),
     password: z
       .string()
-      .min(8, "Debe tener al menos 8 caracteres")
-      .regex(/[A-Z]/, "Debe incluir al menos una mayúscula")
-      .regex(/[a-z]/, "Debe incluir al menos una minúscula")
-      .regex(/[0-9]/, "Debe incluir al menos un número")
-      .regex(/[^A-Za-z0-9]/, "Debe incluir al menos un carácter especial"),
+      .min(8, t("newUser.passwordRequirements.characters"))
+      .regex(/[A-Z]/, t("newUser.passwordRequirements.mayus"))
+      .regex(/[a-z]/, t("newUser.passwordRequirements.minus"))
+      .regex(/[0-9]/, t("newUser.passwordRequirements.number"))
+      .regex(/[^A-Za-z0-9]/, t("newUser.passwordRequirements.special")),
     companyName: z.string(),
     spaceName: z.string(),
     group: z.string(),

@@ -8,7 +8,8 @@ import {
   NotebookPen,
   Plus,
   Calendar1,
-  PersonStanding
+  PersonStanding,
+  IdCardLanyard
 } from "lucide-react";
 
 import Image from "next/image";
@@ -69,6 +70,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: `${t("nav.userCreate")}`,
         url: "/dashboard/userCreate",
         icon: PersonStanding,
+      },
+      {
+        title: `${t("nav.funcionarioCreate")}`,
+        url: "/dashboard/funcionarioCreate",
+        icon: IdCardLanyard,
       }
     ],
     [t, spaceName]

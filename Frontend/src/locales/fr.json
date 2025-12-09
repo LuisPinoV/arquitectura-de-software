@@ -11,7 +11,9 @@
     "requests": "Demandes",
     "importData": "Importer les Données",
     "settings": "Paramètres",
-    "userCreate": "Créer Utilisateur"
+    "userCreate": "Créer Utilisateur",
+    "funcionarioCreate": "Créer Officiel"
+
   },
   "auth": {
     "login": "Connexion",
@@ -272,6 +274,27 @@
     "emailPlaceholder": "exemple@exemple.fr",
     "passwordPlaceholder": "********",
     "userCreation": "Création d'utilisateur",
-    "understood": "Compris"
+    "understood": "Compris",
+    "nameMissing":"Le nom manque",
+    "wrongEmail":"E-mail invalide",
+    "passwordRequirements": {
+      "characters":"Il doit comporter au moins 8 caractères",
+      "mayus": "Il doit comporter au moins une lettre majuscule",
+      "minus": "Elle doit inclure au moins une lettre minuscule",
+      "number": "Il doit inclure au moins un nombre",
+      "special": "Il doit inclure au moins un caractère spécial"
+    }
+  },
+  "newFuncionario": {
+    "createFuncionario":"Créer un officiel",
+    "errorCreatingFuncionario": "Erreur lors de la création du compte officiel",
+    "title": "Nouveau fonctionnaire",
+    "rut": "Rut",
+    "rutPlaceholder": "11.111.111-1",
+    "tipoFuncionario": "Type officiel",
+    "tipoFuncionarioPlaceholder": "administrateur",
+    "funcionarioCreation": "Création d'un fonctionnaire",
+
+    "funcionarioName":"Nom du fonctionnaire"
   }
 }

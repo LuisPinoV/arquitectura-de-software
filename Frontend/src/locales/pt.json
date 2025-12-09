@@ -11,7 +11,7 @@
     "requests": "Solicitações",
     "importData": "Importar Dados",
     "settings": "Configurações",
-    "userCreate": "Criar Usuário"
+    "userCreate": "Criar Oficial"
   },
   "auth": {
     "login": "Entrar",
@@ -272,6 +272,27 @@
     "emailPlaceholder": "exemplo@exemplo.br",
     "passwordPlaceholder": "********",
     "userCreation": "Criação de usuário",
-    "understood": "Entendido"
+    "understood": "Entendido",
+    "nameMissing":"falta o nome",
+    "wrongEmail":"E-mail inválido",
+    "passwordRequirements": {
+      "characters":"Deve ter pelo menos 8 caracteres.",
+      "mayus": "Deve incluir pelo menos uma letra maiúscula.",
+      "minus": "Deve incluir pelo menos uma letra minúscula.",
+      "number": "Deve incluir pelo menos um número.",
+      "special": "Deve incluir pelo menos um caractere especial."
+    }
+  },
+  "newFuncionario": {
+    "createFuncionario":"Criar oficial",
+    "errorCreatingFuncionario": "Erro ao criar o oficial",
+    "title": "Novo oficial",
+    "rut": "Rut",
+    "rutPlaceholder": "11.111.111-1",
+    "tipoFuncionario": "Tipo Oficial",
+    "tipoFuncionarioPlaceholder": "administrador",
+    "funcionarioCreation": "Criação de oficial",
+
+    "funcionarioName":"Nome do oficial"
   }
 }

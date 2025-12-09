@@ -11,7 +11,8 @@
     "requests": "Requests",
     "importData": "Import Data",
     "settings": "Settings",
-    "userCreate": "Create User"
+    "userCreate": "Create User",
+    "funcionarioCreate": "Create Employee"
   },
   "auth": {
     "login": "Login",
@@ -272,6 +273,27 @@
     "emailPlaceholder": "example@example.com",
     "passwordPlaceholder": "********",
     "userCreation": "User creation",
-    "understood": "Understood"
+    "understood": "Understood",
+    "nameMissing": "Name missing",
+    "wrongEmail":"Invalid Email",
+    "passwordRequirements": {
+      "characters":"You must have 8 or more characters",
+      "mayus": "You must include at least 1 upper case letter",
+      "minus": "You must include at least 1 lower case letter",
+      "number": "You must include at least 1 number",
+      "special": "You must include at least 1 special character"
+    }
+  },
+  "newFuncionario": {
+    "createFuncionario":"Create employee",
+    "errorCreatingFuncionario": "Error creating the employee",
+    "title": "New employee",
+    "rut": "Rut",
+    "rutPlaceholder": "11.111.111-1",
+    "tipoFuncionario": "Employee type",
+    "tipoFuncionarioPlaceholder": "administrator",
+    "funcionarioCreation": "Employee creation",
+
+    "funcionarioName":"Name of the employee"
   }
 }

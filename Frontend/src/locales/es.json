@@ -11,7 +11,9 @@
     "requests": "Peticiones",
     "importData": "Importar datos",
     "settings": "Configuración",
-    "userCreate": "Crear Usuario"
+    "userCreate": "Crear Usuario",
+    "funcionarioCreate": "Crear Funcionario"
+
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -272,6 +274,27 @@
     "emailPlaceholder": "ejemplo@ejemplo.cl",
     "passwordPlaceholder": "********",
     "userCreation": "Creación de usuario",
-    "understood": "Entendido"
+    "understood": "Entendido",
+    "nameMissing": "Falta el nombre",
+    "wrongEmail":"Email inválido",
+    "passwordRequirements": {
+      "characters":"Debe tener al menos 8 caracteres",
+      "mayus": "Debe incluir al menos una mayúscula",
+      "minus": "Debe incluir al menos una minúscula",
+      "number": "Debe incluir al menos un número",
+      "special": "Debe incluir al menos un carácter especial"
+    }
+  },
+  "newFuncionario": {
+    "createFuncionario":"Crear funcionario",
+    "errorCreatingFuncionario": "Error creando al funcionario",
+    "title": "Nuevo funcionario",
+    "rut": "Rut",
+    "rutPlaceholder": "11.111.111-1",
+    "tipoFuncionario": "Tipo Funcionario",
+    "tipoFuncionarioPlaceholder": "administrador",
+    "funcionarioCreation": "Creación de funcionario",
+
+    "funcionarioName":"Nombre del funcionario"
   }
 }
