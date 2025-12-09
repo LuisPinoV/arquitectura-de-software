@@ -13,6 +13,7 @@ import { GetBoxInventarioUseCase } from "../useCases/box/getBoxInventario.useCas
 import { GetAllBoxInventariosUseCase } from "../useCases/box/getAllBoxInventarios.useCase.js";
 import { UpdateBoxInventarioUseCase } from "../useCases/box/updateBoxInventario.useCase.js";
 import { DeleteBoxInventarioUseCase } from "../useCases/box/deleteBoxInventario.useCase.js";
+import { GetAllBoxEspecialidadesUseCase } from "../useCases/box/getAllBoxEspecialidades.useCase.js";
 
 // Repositories
 import { boxRepository } from "../../infrastructure/db/box.repository.js";
@@ -93,5 +94,10 @@ export class BoxService {
   async deleteInventario(idBox, organizacionId) {
     const deleteInventario = new DeleteBoxInventarioUseCase(this.boxRepository);
     return await deleteInventario.execute(idBox, organizacionId);
+  }
+
+  async getAllEspecialidades(organizacionId) {
+    const useCase = new GetAllBoxEspecialidadesUseCase(this.boxRepository);
+    return await useCase.execute(organizacionId);
   }
 }
