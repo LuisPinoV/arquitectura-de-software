@@ -28,6 +28,25 @@ export default function MainBoxSpecific({ box }: { box: any }) {
   const { t } = useLanguage();
   const router = useRouter();
   const [boxCurrentData, setBoxCurrentData] = useState<any>();
+  const [spaceName, setSpaceName] = useState<string>("");
+
+  //Get Space Name
+  useEffect(() => {
+    async function fetchSpaceName() {
+      try {
+        const res = await apiFetch(`/api/scheduling/get_boxes`);
+        const data: any = await res?.json();
+        if (Array.isArray(data)) {
+          const curSpace = data.find((s) => s.idBox === box);
+
+          setSpaceName(curSpace.nombre ? curSpace.nombre : "N/A");
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    fetchSpaceName();
+  }, []);
 
   useEffect(() => {
     async function fetchDataTodayBox() {
@@ -51,32 +70,32 @@ export default function MainBoxSpecific({ box }: { box: any }) {
       }`;
     }
   }
-  
+
   const [clientProfile, setClientProfile] = useState<any>(null);
-  
-    useEffect(() => {
-      const p = getUserProfile();
-      setClientProfile(p);
-    }, []);
-  
-    const space = clientProfile?.spaceName ?? "Espacio";
+
+  useEffect(() => {
+    const p = getUserProfile();
+    setClientProfile(p);
+  }, []);
+
+  const space = clientProfile?.spaceName ?? "Espacio";
 
   const qrRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = () => {
     if (!qrRef.current) {
-      return
+      return;
     }
 
     const svg = qrRef.current.querySelector("svg");
-    if (!svg){
-      return
+    if (!svg) {
+      return;
     }
 
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const image = new Image()
+    const image = new Image();
 
     image.onload = () => {
       canvas.width = image.width;
@@ -85,7 +104,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
       const pngFile = canvas.toDataURL("image/png");
 
-      const link = document.createElement("a")
+      const link = document.createElement("a");
       link.download = `qr_box_${box}.png`;
       link.href = pngFile;
       link.click();
@@ -96,13 +115,13 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
   const handlePrint = () => {
     if (!qrRef.current) {
-      return
+      return;
     }
 
     const printWindow = window.open("", "PRINT", "height=600, with=800");
 
     if (!printWindow) {
-      return
+      return;
     }
 
     printWindow.document.writeln(`<html><head><title>QR</title></head><body>`);
@@ -112,13 +131,25 @@ export default function MainBoxSpecific({ box }: { box: any }) {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
-  }
+  };
+
+  const [openInventoryDialog, setOpenInventoryDialog] = useState(false);
+
+  const onCloseEditInventory = () => {
+    setOpenInventoryDialog(false);
+    console.log("B");
+  };
+
+  const onOpenEditInventory = () => {
+    setOpenInventoryDialog(true);
+    console.log("A");
+  };
 
   return (
     <div>
       <div className="text-bold">
         <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
-          Reporte {space} - {box}
+          Reporte {space} - {spaceName}
         </h1>
       </div>
       <Row justify={"center"} align={"middle"}>
@@ -190,7 +221,9 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                   <Button
                     style={{ margin: "0px 5px" }}
                     onClick={() =>
-                      router.replace(`/dashboard/agendamiento/peticiones/${box}`)
+                      router.replace(
+                        `/dashboard/agendamiento/peticiones/${box}`
+                      )
                     }
                   >
                     {t("common.requests")}
@@ -212,11 +245,18 @@ export default function MainBoxSpecific({ box }: { box: any }) {
 
                     <DialogContent className="flex flex-col items-center">
                       <DialogHeader>
-                        <DialogTitle>Código QR del {space} {box}</DialogTitle>
+                        <DialogTitle>
+                          Código QR del {space} {box}
+                        </DialogTitle>
                       </DialogHeader>
 
                       <div className="mt-4 flex justify-center">
-                        <QRBox idbox={box} idPaciente="1" userId="1" ref={qrRef} />
+                        <QRBox
+                          idbox={box}
+                          idPaciente="1"
+                          userId="1"
+                          ref={qrRef}
+                        />
                       </div>
 
                       <div className="mt-6 flex gap-4">
@@ -230,9 +270,13 @@ export default function MainBoxSpecific({ box }: { box: any }) {
             </Col>
           </Row>
         </Col>
-        <Col xs={18} lg={18} style={{
+        <Col
+          xs={18}
+          lg={18}
+          style={{
             margin: "10px 0px 10px 10px",
-          }}>
+          }}
+        >
           <Card>
             <CardHeader className="mx-2">
               <div className="text-muted-foreground leading-none">
@@ -244,24 +288,31 @@ export default function MainBoxSpecific({ box }: { box: any }) {
             </CardContent>
           </Card>
         </Col>
-        <Col xs={4} lg={4} style={{
+        <Col
+          xs={4}
+          sm={8}
+          md={8}
+          lg={4}
+          xl={4}
+          style={{
             margin: "10px 0px 10px 10px",
-          }}>
+          }}
+        >
           <Card>
             <CardHeader>
               <div>
-                {t("common.inventory")} {space} - {box}
+                {t("common.inventory")} {space} - {spaceName}
               </div>
               <Dialog>
                 <DialogTrigger asChild style={{ margin: "5px 5px" }} >
                   <Button>
-                    {t("common.edit")}
+                    Editar
                   </Button>
                 </DialogTrigger>
 
                 <DialogContent className="flex flex-col items-center" >
                   <DialogHeader>
-                    <DialogTitle>{t("common.editInventory")} {space} {box}</DialogTitle>
+                    <DialogTitle>Editar inventario del {space} {box} </DialogTitle>
                   </DialogHeader>
         
                   <EditarInventario idBox={box} onClose={() => {}} onSaved={() => {}}/>
@@ -269,12 +320,26 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                 </DialogContent>
               </Dialog>
             </CardHeader>
-            <CardContent>
-              <TablaInventario idBox={box}/>
+            <CardContent style={{ maxHeight: "185px", overflowY: "scroll" }}>
+              <TablaInventario idBox={box} />
             </CardContent>
           </Card>
         </Col>
       </Row>
+      <Dialog open={openInventoryDialog}>
+        <DialogContent className="flex flex-col items-center">
+          <DialogHeader>
+            <DialogTitle>
+              Editar inventario del {space} - {spaceName}{" "}
+            </DialogTitle>
+          </DialogHeader>
+            <EditarInventario
+              idBox={box}
+              onClose={onCloseEditInventory}
+              onSaved={() => {}}
+            />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
