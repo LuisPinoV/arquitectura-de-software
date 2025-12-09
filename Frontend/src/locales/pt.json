@@ -11,7 +11,8 @@
     "requests": "Solicitações",
     "importData": "Importar Dados",
     "settings": "Configurações",
-    "userCreate": "Criar Oficial"
+    "userCreate": "Criar Utilizador",
+    "funcionarioCreate": "Criar Oficial"
   },
   "auth": {
     "login": "Entrar",
@@ -292,7 +293,6 @@
     "tipoFuncionario": "Tipo Oficial",
     "tipoFuncionarioPlaceholder": "administrador",
     "funcionarioCreation": "Criação de oficial",
-
     "funcionarioName":"Nome do oficial"
   }
 }
