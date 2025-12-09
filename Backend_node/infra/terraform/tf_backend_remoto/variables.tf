@@ -1,2 +1,6 @@
-variable "organization" {}
-variable "workspace" {}
+variable "organization" {
+    type = string
+}
+variable "workspace" {
+    type = string
+}
