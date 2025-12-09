@@ -43,6 +43,19 @@ jobs:
           }
           EOF
 
+      - name: Configure Remote Backend
+        run: |
+          cat > backend.tf <<EOF
+          terraform {
+            backend "remote" {
+              organization = "Donde_Tomas"
+              workspaces {
+                name = "arquitectura-de-software"
+              }
+            }
+          }
+          EOF
+
       - name: Terraform Init
         run: terraform init
 
