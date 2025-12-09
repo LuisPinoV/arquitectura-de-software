@@ -12,13 +12,16 @@ export async function GET(req: NextRequest) {
   });
   const data = await res.json();
 
-  // Defensive handling: ensure we have an array before mapping
-  const source = Array.isArray(data) ? data : Array.isArray(data?.funcionarios) ? data.funcionarios : [];
+  console.log(data);
 
+  const personal:any[] = Array.isArray(data) ? data.map((person: any) => {
+    return { id: person.idFuncionario, name: person.nombre };
+  }) : [];
 
-  const personal:any[] = source.map((person: any) => {
-    return { id: person.id, name: person.name };
-  });
+  if(personal.length > 0)
+  {
+    personal.push({id:"01", name:"N/A"});
+  }
 
-  return NextResponse.json(personal.length != 0 ? personal : [{name:"Not needed", id:"01"}]);
+  return NextResponse.json(personal.length != 0 ? personal : [{id:"01", name:"N/A"}]);
 }

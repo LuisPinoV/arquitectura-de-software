@@ -20,10 +20,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json([]);
   }
 
-  const filtered_hours = Array.isArray(data)
-    ? data.map((hour: string) =>
-        hour.split(":")[0].concat(":", hour.split(":")[1])
-      )
+  //hour.split(":")[0].concat(":", hour.split(":")[1])
+  const filtered_hours = Array.isArray(data.bloques)
+    ? data.bloques
+        .filter(
+          (hour: { hora: string; disponible: boolean }) => hour.disponible
+        )
+        .map((hour: { hora: string; disponible: boolean }) => hour.hora)
     : [
         "08:00",
         "08:30",

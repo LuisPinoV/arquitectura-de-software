@@ -37,8 +37,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { v4 as uuidv4 } from "uuid";
+
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/apiClient";
+import { parseJwt } from "@/lib/utils";
 
 async function saveBooking(
   payload: {
@@ -49,12 +52,32 @@ async function saveBooking(
   },
   t: any
 ) {
-  for (let i = 0; i < payload["hours"].length; i++) {
-    const hour = payload["hours"][i];
+  for (let i = 0; i < payload.hours.length; i++) {
+    const hour = payload.hours[i];
+
+    const curDate = new Date(`${payload.date}T${hour}:00.000Z`);
+    curDate.setMinutes(curDate.getMinutes() + 30);
+    const exitHour = curDate.toISOString().split("T")[1].slice(0, 8);
+
+    const token = localStorage.getItem("idToken") ?? "";
+
+    const idUsuario = parseJwt(token)?.sub;
+
+    const curPayload = {
+      idConsulta: uuidv4(),
+      idPaciente: idUsuario,
+      idFuncionario: payload.personal,
+      fecha: payload.date,
+      horaEntrada: hour,
+      horaSalida: exitHour,
+      idBox: payload.box,
+    };
     try {
-      await apiFetch(
-        `/dashboard/agendamiento/api/schedule?date=${payload["date"]}&time=${hour}&box=${payload["box"]}&funcionario=${payload["personal"]}`
-      );
+      await apiFetch(`/api/scheduling/schedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(curPayload),
+      });
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -85,6 +108,7 @@ export function MainFormScheduling({
   const spaceLower = space.toLowerCase();
   const [date, setDate] = useState<Date | undefined>(newDate);
   const [selectedBox, setSelectedBox] = useState<string | null>(box);
+  const [selectedBoxName, setSelectedBoxName] = useState("");
   const [selectedHours, setSelectedHours] = useState<string[]>(
     selectedHour ? [selectedHour] : []
   );
@@ -157,7 +181,11 @@ export function MainFormScheduling({
       setConfirmButtonDisabled(true);
       return;
     }
+
+    const curSpace = visibleSpaces.find((s) => s.idBox === value);
+
     setSelectedBox(value);
+    setSelectedBoxName(curSpace.nombre)
     setSelectedHours([]);
   };
 
@@ -183,6 +211,7 @@ export function MainFormScheduling({
           return;
         }
         const data: any = await res?.json();
+
         setAvailableHours(Array.isArray(data) ? data : availableHours);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -564,9 +593,9 @@ export function MainFormScheduling({
                     onValueChange={handlePersonalChange}
                     asChild
                   >
-                    {curPagePersonalArr[0].map((person) => (
+                    {curPagePersonalArr[0].map((person, i) => (
                       <div
-                        key={person["id"]}
+                        key={i}
                         style={{ display: "flex", justifyContent: "center" }}
                       >
                         <ToggleGroupItem
@@ -627,7 +656,7 @@ export function MainFormScheduling({
               <div className="grid flex-1 gap-2">
                 {t("scheduling.staff")} -{" "}
                 {selectedPersonal
-                  ? selectedPersonal["name"]
+                  ? selectedPersonal.name
                   : t("common.unknown")}
               </div>
               <div className="grid flex-1 gap-2">
@@ -642,7 +671,7 @@ export function MainFormScheduling({
               </div>
               <div className="grid flex-1 gap-2">
                 {`${spaceUpper} - ${
-                  selectedBox ? selectedBox : t("common.unknown")
+                  selectedBox ? selectedBoxName : t("common.unknown")
                 }`}
               </div>
             </div>
@@ -676,7 +705,9 @@ function filterPersonal(
 ): { name: string; id: string }[] {
   const filteredPersonalData: { name: string; id: string }[] = data.filter(
     (personal) => {
-      const personalName = personal.name ? String(personal.name).toLowerCase() : "";
+      const personalName = personal.name
+        ? String(personal.name).toLowerCase()
+        : "";
       if (personalName.includes(searchInput)) return personal;
     }
   );
