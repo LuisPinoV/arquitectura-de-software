@@ -50,6 +50,7 @@ import {
 } from "@/utils/get_current_dates";
 import { useUserProfile } from "@/hooks/use-user";
 import { getUserProfile } from "@/utils/get_user_profile";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function ChartBoxAcrossTime({
   idbox,
@@ -58,13 +59,14 @@ export function ChartBoxAcrossTime({
   idbox: string;
   dataArr?: any[];
 }) {
+  const { t } = useLanguage();
   const chartConfig = {
     libre: {
-      label: "Libre (%)",
+      label: t("dashboard.freePercent"),
       color: "var(--chart-days)",
     },
     ocupado: {
-      label: "Ocupado (%)",
+      label: t("dashboard.occupiedPercent"),
       color: "var(--chart-days)",
     },
   } satisfies ChartConfig;
@@ -135,9 +137,9 @@ export function ChartBoxAcrossTime({
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Uso de {space} a través del tiempo</CardTitle>
+        <CardTitle>{`${t("dashboard.usage")} ${space} ${t("dashboard.acrossTime")}`}</CardTitle>
         <CardDescription>
-          <span className="hidden @[540px]/card:block">Total en el tiempo</span>
+          <span className="hidden @[540px]/card:block">{t("dashboard.totalTime")}</span>
         </CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
@@ -147,9 +149,9 @@ export function ChartBoxAcrossTime({
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[600px]/card:flex"
           >
-            <ToggleGroupItem value="semanal">Esta semana</ToggleGroupItem>
-            <ToggleGroupItem value="mensual">Este mes</ToggleGroupItem>
-            <ToggleGroupItem value="anual">Este año</ToggleGroupItem>
+            <ToggleGroupItem value="semanal">{t("dashboard.thisWeek")}</ToggleGroupItem>
+            <ToggleGroupItem value="mensual">{t("dashboard.thisMonth")}</ToggleGroupItem>
+            <ToggleGroupItem value="anual">{t("dashboard.thisYear")}</ToggleGroupItem>
           </ToggleGroup>
           <Select value={dateRangeType} onValueChange={setDateRangeType}>
             <SelectTrigger
@@ -161,13 +163,13 @@ export function ChartBoxAcrossTime({
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="semanal" className="rounded-lg">
-                Esta semana
+                {t("dashboard.thisWeek")}
               </SelectItem>
               <SelectItem value="mensual" className="rounded-lg">
-                Este mes
+                {t("dashboard.thisMonth")}
               </SelectItem>
               <SelectItem value="anual" className="rounded-lg">
-                Este año
+                {t("dashboard.thisYear")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -263,6 +265,7 @@ export function ChartBoxAcrossTime({
 }
 
 export function BoxSchedule({ idbox }: { idbox: string }) {
+  const { t } = useLanguage();
   const [chartData, setChartData] = useState<
     { month: string; ocupancia: number }[]
   >([]);
@@ -291,11 +294,11 @@ export function BoxSchedule({ idbox }: { idbox: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Agendamiento de {space} en el año</CardTitle>
+        <CardTitle>{`${t("dashboard.scheduling")} ${space} ${t("dashboard.inTheYear")}`}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer
-          config={{ ocupancia: { label: "Cantidad", color: "var(--chart-1)" } }}
+          config={{ ocupancia: { label: t("common.quantity"), color: "var(--chart-1)" } }}
           className="aspect-auto h-[330px] w-full"
         >
           <BarChart accessibilityLayer data={chartData}>

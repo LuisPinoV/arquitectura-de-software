@@ -22,7 +22,10 @@ import { useUserProfile } from "@/hooks/use-user";
 import { ScheduleTable } from "./table-box";
 import { useRouter } from "next/navigation";
 import { getUserProfile } from "@/utils/get_user_profile";
+import { useLanguage } from "@/contexts/LanguageContext";
+
 export default function MainBoxSpecific({ box }: { box: any }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [boxCurrentData, setBoxCurrentData] = useState<any>();
 
@@ -148,7 +151,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
             <Col xs={24}>
               <Card className="h-[160px]">
                 <CardHeader className="mt-1 text-lg items-center text-center">
-                  <CardTitle>Siguiente Hora</CardTitle>
+                  <CardTitle>{t("common.nextHour")}</CardTitle>
                 </CardHeader>
                 <Separator />
                 <CardContent
@@ -174,7 +177,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
             <Col xs={24} style={{ marginTop: "10px" }}>
               <Card className="h-[250px]">
                 <CardHeader className="mt-2 text-lg items-center text-center">
-                  <CardTitle>Opciones</CardTitle>
+                  <CardTitle>{t("common.options")}</CardTitle>
                 </CardHeader>
                 <Separator />
                 <CardContent
@@ -190,7 +193,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                       router.replace(`/dashboard/agendamiento/peticiones/${box}`)
                     }
                   >
-                    Peticiones
+                    {t("common.requests")}
                   </Button>
                   <Button
                     style={{ margin: "5px 5px" }}
@@ -198,12 +201,12 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                       router.replace(`/dashboard/agendamiento/${box}`)
                     }
                   >
-                    Agendar
+                    {t("common.schedule")}
                   </Button>
                   <Dialog>
                     <DialogTrigger asChild style={{ margin: "5px 5px" }}>
                       <Button>
-                        Agendamiento QR
+                        {t("common.qrScheduling")}
                       </Button>
                     </DialogTrigger>
 
@@ -217,8 +220,8 @@ export default function MainBoxSpecific({ box }: { box: any }) {
                       </div>
 
                       <div className="mt-6 flex gap-4">
-                        <Button onClick={handleDownload}>Descargar</Button>
-                        <Button onClick={handlePrint}>Imprimir</Button>
+                        <Button onClick={handleDownload}>{t("common.download")}</Button>
+                        <Button onClick={handlePrint}>{t("common.print")}</Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -233,7 +236,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
           <Card>
             <CardHeader className="mx-2">
               <div className="text-muted-foreground leading-none">
-                Tabla agendamiento de {space}
+                {t("common.scheduleTable")} {space}
               </div>
             </CardHeader>
             <CardContent>
@@ -247,18 +250,18 @@ export default function MainBoxSpecific({ box }: { box: any }) {
           <Card>
             <CardHeader>
               <div>
-                Inventario {space} - {box}
+                {t("common.inventory")} {space} - {box}
               </div>
               <Dialog>
                 <DialogTrigger asChild style={{ margin: "5px 5px" }} >
                   <Button>
-                    Editar
+                    {t("common.edit")}
                   </Button>
                 </DialogTrigger>
 
                 <DialogContent className="flex flex-col items-center" >
                   <DialogHeader>
-                    <DialogTitle>Editar inventario del {space} {box} </DialogTitle>
+                    <DialogTitle>{t("common.editInventory")} {space} {box}</DialogTitle>
                   </DialogHeader>
         
                   <EditarInventario idBox={box} onClose={() => {}} onSaved={() => {}}/>

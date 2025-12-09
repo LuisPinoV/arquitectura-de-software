@@ -124,7 +124,7 @@ export function GraficoConcentracionPorEspecialidad() {
   const specialties = chartData.map((val: any) => val["specialty"]);
 
   const chartConfig: ChartConfig = {
-    percentage: { label: "Ocupancia (%)" },
+    percentage: { label: t("dashboard.occupancy") },
     ...specialties.reduce((acc, specialty) => {
       const key = specialty;
       acc[key] = { label: specialty };
@@ -168,7 +168,7 @@ export function GraficoConcentracionPorEspecialidad() {
   return (
     <Card className="@container/card chart-card">
       <CardHeader>
-        <CardDescription><DynamicSpaceLabel template="Uso boxes por categoría" /></CardDescription>
+        <CardDescription><DynamicSpaceLabel template={t("dashboard.boxUsageByCategory")} /></CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
             type="single"
@@ -282,9 +282,10 @@ export function GraficoConcentracionPorEspecialidad() {
 }
 
 export function GraficoUsoSemanal() {
+  const { t } = useLanguage();
   const chartConfig = {
     percentage: {
-      label: "Porcentaje (%)",
+      label: t("dashboard.percentage"),
       color: "var(--chart-days)",
     },
   } satisfies ChartConfig;
@@ -334,7 +335,7 @@ export function GraficoUsoSemanal() {
   return (
     <Card className="@container/card chart-card">
       <CardHeader>
-        <CardDescription><DynamicSpaceLabel template="Uso porcentual de boxes" /></CardDescription>
+        <CardDescription><DynamicSpaceLabel template={t("dashboard.percentageUsageOfBoxes")} /></CardDescription>
         <CardAction className="w-full">
           <ToggleGroup
             type="single"
@@ -343,9 +344,9 @@ export function GraficoUsoSemanal() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[600px]/card:flex"
           >
-            <ToggleGroupItem value="semanal">Esta semana</ToggleGroupItem>
-            <ToggleGroupItem value="mensual">Este mes</ToggleGroupItem>
-            <ToggleGroupItem value="anual">Esta año</ToggleGroupItem>
+            <ToggleGroupItem value="semanal">{t("dashboard.thisWeek")}</ToggleGroupItem>
+            <ToggleGroupItem value="mensual">{t("dashboard.thisMonth")}</ToggleGroupItem>
+            <ToggleGroupItem value="anual">{t("dashboard.thisYear")}</ToggleGroupItem>
           </ToggleGroup>
           <Select value={dateRangeType} onValueChange={setDateRangeType}>
             <SelectTrigger
@@ -357,13 +358,13 @@ export function GraficoUsoSemanal() {
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="semanal" className="rounded-lg">
-                Esta semana
+                {t("dashboard.thisWeek")}
               </SelectItem>
               <SelectItem value="mensual" className="rounded-lg">
-                Esta mes
+                {t("dashboard.thisMonth")}
               </SelectItem>
               <SelectItem value="anual" className="rounded-lg">
-                Esta año
+                {t("dashboard.thisYear")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -444,6 +445,7 @@ export function GraficoUsoSemanal() {
 }
 
 export function BoxesSpeficicChart() {
+  const { t } = useLanguage();
   const profile = useUserProfile ? useUserProfile() as any : null;
   const space = profile?.spaceName ?? 'Boxes';
 
@@ -608,18 +610,18 @@ export function BoxesSpeficicChart() {
               {value
                 ? specialtes_dict.find((framework) => framework.value === value)
                     ?.label
-                : "Elige categoría"}
+                : t("common.selectCategory")}
               <ChevronsUpDown className="opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-1  ">
             <Command>
               <CommandInput
-                placeholder="Buscar categoría..."
+                placeholder={t("common.searchCategory")}
                 className="h-9"
               />
               <CommandList>
-                <CommandEmpty>No especilidad encontrada.</CommandEmpty>
+                <CommandEmpty>{t("common.noSpecialtyFound")}</CommandEmpty>
                 <CommandGroup>
                   {specialtes_dict.map((framework) => (
                     <CommandItem
@@ -655,7 +657,7 @@ export function BoxesSpeficicChart() {
               id="date"
               className="justify-between font-normal mx-4 me-4"
             >
-              {date ? date.toLocaleDateString() : "Elige fecha"}
+              {date ? date.toLocaleDateString() : t("common.selectDate")}
               <ChevronDownIcon />
             </Button>
           </PopoverTrigger>

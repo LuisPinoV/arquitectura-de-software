@@ -29,7 +29,7 @@ export default async function GeneralDashboardPage()
                 <Col className = "general-col"  xs={24} sm={24} md={24} lg={24} xl={12} xxl = {12}>
                     <Card className="@container/card calendar-card">
                         <CardHeader>
-                                <CardDescription><DynamicSpaceLabel template="Tabla boxes" /></CardDescription>
+                                <CardDescription><DynamicSpaceLabel template="dashboard.boxTable" /></CardDescription>
                             </CardHeader>
                         <CardContent>
                             <BoxesTable/>
@@ -39,7 +39,7 @@ export default async function GeneralDashboardPage()
                 <Col className = "general-col"  xs={24} sm={24} md={24} lg={24} xl={12} xxl = {12}>
                     <Card className="@container/card donut-card">
                         <CardHeader>
-                            <CardDescription><DynamicSpaceLabel template="Uso boxes por categoría" /></CardDescription>
+                            <CardDescription><DynamicSpaceLabel template="dashboard.boxUsageByCategory" /></CardDescription>
                         </CardHeader>
                         <CardContent className = "p-0 m-0">
                             <Row justify="center">

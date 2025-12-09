@@ -359,7 +359,7 @@ export function MainFormScheduling({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Formulario de agendamiento</CardTitle>
+        <CardTitle>{t("scheduling.schedulingForm")}</CardTitle>
       </CardHeader>
       <Row align="middle" justify="center" style={{ marginTop: "40px" }}>
         <Col

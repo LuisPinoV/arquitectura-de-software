@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table"
 import { apiFetch } from "@/lib/apiClient";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const boxes = [
   {
@@ -23,6 +24,7 @@ const boxes = [
 ]
 
 export function BoxesTable() {
+  const { t } = useLanguage();
   const [tableData, setData] = useState<any[]>(boxes);
   
     useEffect(() => {
@@ -45,9 +47,9 @@ export function BoxesTable() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Número</TableHead>
-          <TableHead>Estado</TableHead>
-          <TableHead>Uso Hoy</TableHead>
+          <TableHead>{t("common.number")}</TableHead>
+          <TableHead>{t("common.status")}</TableHead>
+          <TableHead>{t("common.usageToday")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
