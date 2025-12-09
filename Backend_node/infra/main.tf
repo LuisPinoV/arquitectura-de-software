@@ -23,3 +23,8 @@ module "VPC" {
   region = var.region
 }
 
+module "Remote_Backend" {
+  source = "./terraform/tf_backend_remoto"
+  region = var.region
+}
+
