@@ -282,7 +282,8 @@
       "minus": "You must include at least 1 lower case letter",
       "number": "You must include at least 1 number",
       "special": "You must include at least 1 special character"
-    }
+    },
+    "successCreatingUser": "User created!"
   },
   "newFuncionario": {
     "createFuncionario":"Create employee",

@@ -283,7 +283,8 @@
       "minus": "Elle doit inclure au moins une lettre minuscule",
       "number": "Il doit inclure au moins un nombre",
       "special": "Il doit inclure au moins un caractère spécial"
-    }
+    },
+    "successCreatingUser": "Usuário créé!"
   },
   "newFuncionario": {
     "createFuncionario":"Créer un officiel",

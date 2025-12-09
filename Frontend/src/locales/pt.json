@@ -282,7 +282,8 @@
       "minus": "Deve incluir pelo menos uma letra minúscula.",
       "number": "Deve incluir pelo menos um número.",
       "special": "Deve incluir pelo menos um caractere especial."
-    }
+    },
+    "successCreatingUser": "Usuário criado!"
   },
   "newFuncionario": {
     "createFuncionario":"Criar oficial",

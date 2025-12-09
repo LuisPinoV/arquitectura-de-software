@@ -283,7 +283,8 @@
       "minus": "Debe incluir al menos una minúscula",
       "number": "Debe incluir al menos un número",
       "special": "Debe incluir al menos un carácter especial"
-    }
+    },
+    "successCreatingUser": "Usuario creado!"
   },
   "newFuncionario": {
     "createFuncionario":"Crear funcionario",
