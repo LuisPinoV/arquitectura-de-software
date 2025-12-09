@@ -103,10 +103,9 @@ export default function LoginPage() {
 
         if (resJson.ok) {
           showAlert("Sesión Iniciada!");
-          const redirectTo = new URLSearchParams(window.location.search).get("redirect") || "/agendamiento_instantaneo";
-          router.replace(redirectTo);
           localStorage.setItem("idToken", resJson.idToken);
           localStorage.setItem("accessToken", resJson.accessToken);
+          router.replace("/agendamiento_instantaneo");
 
         } else {
           localStorage.removeItem("refreshToken");
@@ -142,8 +141,7 @@ export default function LoginPage() {
         localStorage.setItem("idToken", resJson.idToken);
         localStorage.setItem("refreshToken", resJson.refreshToken);
 
-        const redirectTo = new URLSearchParams(window.location.search).get("redirect") || "/agendamiento_instantaneo";
-        router.replace(redirectTo);
+        router.replace("/agendamiento_instantaneo");
 
       } else {
         showAlert("Hubo un error de conexión \n aprete 'Entiendo' para cerrar esta pestaña");
