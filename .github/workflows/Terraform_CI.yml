@@ -18,24 +18,26 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Export Secrets
+        run: |
+          echo "TF_ORG=${{ secrets.TF_CLOUD_ORGANIZATION }}" >> $GITHUB_ENV
+          echo "TF_WS=${{ secrets.TF_CLOUD_WORKSPACE }}" >> $GITHUB_ENV
 
       - name: Create backend.tf
         run: |
           cat > backend.tf << EOF
           terraform {
             backend "remote" {
-              organization = "${{ secrets.TF_CLOUD_ORGANIZATION }}"
-
+              organization = "$TF_ORG"
               workspaces {
-                name = "${{ secrets.TF_CLOUD_WORKSPACE }}"
+                name = "$TF_WS"
               }
             }
           }
           EOF
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.9.8
 
       - name: Configure Terraform Cloud credentials
         run: |
@@ -49,13 +51,9 @@ jobs:
             }
           }
           EOF
-          
+
       - name: Terraform Init
         run: terraform init
-        env:
-          TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_app_terraform_io }}
-          TF_CLOUD_ORGANIZATION: ${{ secrets.TF_CLOUD_ORGANIZATION }}
-          TF_CLOUD_WORKSPACE: ${{ secrets.TF_CLOUD_WORKSPACE }}
 
       - name: Terraform Validate
         run: terraform validate
