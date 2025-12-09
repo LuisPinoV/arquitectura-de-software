@@ -136,7 +136,7 @@
     "noSpaceFound": "Non trouvé"
   },
   "reports": {
-    "title": "Rapports",
+    "title": "Rapport",
     "boxUsage": "Utilisation des Boxes",
     "boxReport": "Rapport Box",
     "todayUsage": "Utilisation Aujourd'hui",
@@ -157,7 +157,8 @@
     "previous": "Précédent",
     "next": "Suivant",
     "page": "Page",
-    "of": "de"
+    "of": "de",
+    "boxTable": "Tableau de"
   },
   "search": {
     "type": "Type",
@@ -249,7 +250,15 @@
     "print": "Imprimer",
     "scheduleTable": "Tableau de planification de",
     "inventory": "Inventaire",
-    "editInventory": "Modifier l'inventaire de"
+    "editInventory": "Modifier l'inventaire de",
+    "home": "Accueil",
+    "themes": "Thèmes",
+    "general": "Général",
+    "dataSaved": "Données enregistrées",
+    "errorSaving": "Erreur lors de l'enregistrement",
+    "themeCreated": "Nouveau thème créé",
+    "profileNotCreated": "Le profil n'a pas pu être créé",
+    "restored": "Restauré"
   },
   "newUser": {
     "name":"Nom",

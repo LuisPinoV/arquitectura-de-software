@@ -136,7 +136,7 @@
     "noSpaceFound": "No se encontró"
   },
   "reports": {
-    "title": "Reportes",
+    "title": "Reporte",
     "boxUsage": "Uso de Boxes",
     "boxReport": "Reporte Box",
     "todayUsage": "Uso Hoy",
@@ -157,7 +157,8 @@
     "previous": "Anterior",
     "next": "Siguiente",
     "page": "Página",
-    "of": "de"
+    "of": "de",
+    "boxTable": "Tabla de"
   },
   "search": {
     "type": "Tipo",
@@ -249,7 +250,15 @@
     "print": "Imprimir",
     "scheduleTable": "Tabla agendamiento de",
     "inventory": "Inventario",
-    "editInventory": "Editar inventario del"
+    "editInventory": "Editar inventario del",
+    "home": "Inicio",
+    "themes": "Temas",
+    "general": "General",
+    "dataSaved": "Datos guardados",
+    "errorSaving": "Error al guardar",
+    "themeCreated": "Se ha creado nuevo tema",
+    "profileNotCreated": "Perfil no pudo ser creado",
+    "restored": "Restaurado"
   },
   "newUser": {
     "name":"Nombre",

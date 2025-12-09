@@ -147,7 +147,7 @@ export default function MainBoxSpecific({ box }: { box: any }) {
     <div>
       <div className="text-bold">
         <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
-          Reporte {space} - {spaceName}
+          {t("reports.title")} {space} - {spaceName}
         </h1>
       </div>
       <Row justify={"center"} align={"middle"}>

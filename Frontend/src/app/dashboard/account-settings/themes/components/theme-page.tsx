@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { useUserProfile } from "@/hooks/use-user";
 import { apiFetch, refreshTokens } from "@/lib/apiClient";
 import { Spinner } from "@/components/ui/spinner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const iconsStyle: React.CSSProperties = {
   height: "30px",
@@ -328,6 +329,7 @@ export function ExistingThemesCarousel({
 
 export function ThemePage() {
   const { setTheme } = useTheme();
+  const { t } = useLanguage();
   const profile = useUserProfile() as any;
   const [editableName, setEditableName] = useState<string>(profile?.name ?? "");
   const [editableCompany, setEditableCompany] = useState<string>(
@@ -401,18 +403,18 @@ export function ThemePage() {
       }
 
       if (res?.ok) {
-        toast.success("Datos guardados");
+        toast.success(t("common.dataSaved"));
         await refreshTokens();
 
         setTimeout(() => {
           if (typeof window !== "undefined") window.location.reload();
         }, 800);
       } else {
-        toast.error("Error al guardar");
+        toast.error(t("common.errorSaving"));
       }
     } catch (err) {
       console.error("Error al guardar");
-      toast.error("Error al guardar");
+      toast.error(t("common.errorSaving"));
     }
   };
 
@@ -720,20 +722,20 @@ export function ThemePage() {
       if (res?.ok) {
         onCancelAddTheme();
         await GetThemes();
-        toast("Se ha creado nuevo tema", {
+        toast(t("common.themeCreated"), {
           description: new Date().toLocaleString(),
           action: {
-            label: "Descartar",
-            onClick: () => console.log("Descartar"),
+            label: t("common.dismiss"),
+            onClick: () => console.log(t("common.dismiss")),
           },
         });
       } else {
-        console.error("Perfil no pudo ser creado");
-        toast.error("Perfil no pudo ser creado");
+        console.error(t("common.profileNotCreated"));
+        toast.error(t("common.profileNotCreated"));
       }
     } catch (err) {
       console.error("addNewTheme error");
-      toast.error("Perfil no pudo ser creado");
+      toast.error(t("common.profileNotCreated"));
     }
   };
 
@@ -912,7 +914,7 @@ export function ThemePage() {
                     setEditableName(profile?.name ?? "");
                     setEditableCompany(profile?.companyName ?? "");
                     setEditableSpace(profile?.spaceName ?? "");
-                    toast("Restaurado");
+                    toast(t("common.restored"));
                   }}
                 >
                   Cancelar

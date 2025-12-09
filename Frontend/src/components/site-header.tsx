@@ -70,13 +70,13 @@ export function SiteHeader() {
       { label: t("nav.dashboard"), href: "/dashboard/general" },
       { label: t("nav.dashboard"), href: "/dashboard/general" },
       { label: t("settings.title"), href: "/dashboard/account-settings" },
-      { label: "Temas" },
+      { label: t("common.themes") },
     ],
     "/dashboard/account-settings/general": [
       { label: t("nav.dashboard"), href: "/dashboard/general" },
       { label: t("nav.dashboard"), href: "/dashboard/general" },
       { label: t("settings.title"), href: "/dashboard/account-settings" },
-      { label: "General" },
+      { label: t("common.general") },
     ],
   };
 
@@ -109,9 +109,9 @@ export function SiteHeader() {
 
   if (pathname.startsWith("/dashboard/reportaje") && params?.box) {
     items.push(
-      { label: "Inicio", href: "#" },
-      { label: "Dashboard", href: "/dashboard/general" },
-      { label: "Reportaje", href: "/dashboard/reportaje" },
+      { label: t("common.home"), href: "#" },
+      { label: t("nav.dashboard"), href: "/dashboard/general" },
+      { label: t("nav.reports"), href: "/dashboard/reportaje" },
       { label: `${displaySpace} - ${curSpaceName}` }
     );
   }

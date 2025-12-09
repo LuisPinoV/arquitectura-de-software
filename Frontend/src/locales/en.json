@@ -136,7 +136,7 @@
     "noSpaceFound": "Not found"
   },
   "reports": {
-    "title": "Reports",
+    "title": "Report",
     "boxUsage": "Box Usage",
     "boxReport": "Box Report",
     "todayUsage": "Today's Usage",
@@ -157,7 +157,8 @@
     "previous": "Previous",
     "next": "Next",
     "page": "Page",
-    "of": "of"
+    "of": "of",
+    "boxTable": "Table of"
   },
   "search": {
     "type": "Type",
@@ -247,9 +248,17 @@
     "qrScheduling": "QR Scheduling",
     "download": "Download",
     "print": "Print",
-    "scheduleTable": "Schedule table for",
+    "scheduleTable": "Scheduling table of",
     "inventory": "Inventory",
-    "editInventory": "Edit inventory of"
+    "editInventory": "Edit inventory of",
+    "home": "Home",
+    "themes": "Themes",
+    "general": "General",
+    "dataSaved": "Data saved",
+    "errorSaving": "Error saving",
+    "themeCreated": "New theme created",
+    "profileNotCreated": "Profile could not be created",
+    "restored": "Restored"
   },
   "newUser": {
     "name":"Name",

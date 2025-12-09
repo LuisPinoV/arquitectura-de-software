@@ -8,16 +8,18 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { BoxesDataTable } from "./components/table-boxes";
 import { useUserProfile } from "@/hooks/use-user";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Page() {
   const userProfile = useUserProfile();
+  const { t } = useLanguage();
 
   const space = userProfile?.spaceName ?? "Espacio";
 
   return (
     <div className="boxes-dashboard-container">
       <h1 style={{ margin: "0px 0px 10px 0px", fontSize: "130%" }}>
-        Reporte {space}
+        {t("reports.title")} {space}
       </h1>
 
       <Row justify="center" align="middle">
@@ -33,7 +35,7 @@ export default function Page() {
           <Card>
             <CardHeader>
               <div className="text-muted-foreground leading-none">
-                Tabla de {space}
+                {t("reports.boxTable")} {space}
               </div>
             </CardHeader>
             <CardContent>

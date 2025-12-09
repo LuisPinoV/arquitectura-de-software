@@ -192,7 +192,7 @@ export function BoxesDataTable() {
       {/* Search input */}
       <div className="flex items-center py-2">
         <Input
-          placeholder="Buscar..."
+          placeholder={t("common.search")}
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm"
@@ -238,7 +238,7 @@ export function BoxesDataTable() {
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No hubo resultados.
+                  {t("common.noResults")}
                 </TableCell>
               </TableRow>
             )}
@@ -254,7 +254,7 @@ export function BoxesDataTable() {
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Anterior
+          {t("common.previous")}
         </Button>
         <Button
           variant="outline"
@@ -262,10 +262,10 @@ export function BoxesDataTable() {
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Siguiente
+          {t("common.next")}
         </Button>
         <span className="ml-4 text-sm">
-          Página {table.getState().pagination.pageIndex + 1} de{" "}
+          {t("common.page")} {table.getState().pagination.pageIndex + 1} {t("common.of")}{" "}
           {table.getPageCount()}
         </span>
       </div>
