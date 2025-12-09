@@ -283,6 +283,7 @@ export class AgendamientoRepository {
   }
 
   async getAgendamientosByBox(idBox, organizacionId) {
+    console.log(`[getAgendamientosByBox] idBox: ${idBox}, orgId: ${organizacionId}`);
     const command = new QueryCommand({
       TableName: this.tableName,
       IndexName: "AgendamientosPorBox",
@@ -312,16 +313,18 @@ export class AgendamientoRepository {
 
 
   async getAgendamientosByEspecialidad(especialidadNombre, organizacionId) {
+    console.log(`[getAgendamientosByEspecialidad] esp: ${especialidadNombre}, orgId: ${organizacionId}`);
     try {
       const especialidadNormalizada = this.normalizarEspecialidad(especialidadNombre);
       const boxesCommand = new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#tipo = :tipoBox",
+        FilterExpression: "#tipo = :tipoBox AND organizacionId = :orgId",
         ExpressionAttributeNames: {
           "#tipo": "tipo"
         },
         ExpressionAttributeValues: {
-          ":tipoBox": "Box"
+          ":tipoBox": "Box",
+          ":orgId": organizacionId
         },
       });
 
@@ -366,9 +369,12 @@ export class AgendamientoRepository {
 
       const boxesCommand = new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#tipo = :tipoBox",
+        FilterExpression: "#tipo = :tipoBox AND organizacionId = :orgId",
         ExpressionAttributeNames: { "#tipo": "tipo" },
-        ExpressionAttributeValues: { ":tipoBox": "Box" },
+        ExpressionAttributeValues: {
+          ":tipoBox": "Box",
+          ":orgId": organizacionId
+        },
       });
 
       const boxesResult = await this.dynamo.send(boxesCommand);
@@ -401,6 +407,7 @@ export class AgendamientoRepository {
   }
 
   async getCountAgendamientosPorEspecialidadRangoFechas(fechaInicio, fechaFin, organizacionId) {
+    console.log(`[getCountAgendamientosPorEspecialidadRangoFechas] orgId: ${organizacionId}`);
     try {
       console.log(`=== INICIO getCountAgendamientosPorEspecialidadRangoFechas ===`);
       console.log(`Rango de fechas: ${fechaInicio} a ${fechaFin}`);
@@ -411,9 +418,12 @@ export class AgendamientoRepository {
 
       const boxesCommand = new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#tipo = :tipoBox",
+        FilterExpression: "#tipo = :tipoBox AND organizacionId = :orgId",
         ExpressionAttributeNames: { "#tipo": "tipo" },
-        ExpressionAttributeValues: { ":tipoBox": "Box" },
+        ExpressionAttributeValues: {
+          ":tipoBox": "Box",
+          ":orgId": organizacionId
+        },
       });
 
       const boxesResult = await this.dynamo.send(boxesCommand);
@@ -468,6 +478,7 @@ export class AgendamientoRepository {
   }
 
   async getPorcentajeOcupacionPorEspecialidad(fechaInicio, fechaFin, organizacionId) {
+    console.log(`[getPorcentajeOcupacionPorEspecialidad] orgId: ${organizacionId}`);
     try {
       console.log(`Calculando porcentaje de ocupación por especialidad entre ${fechaInicio} y ${fechaFin}`);
 
@@ -476,9 +487,12 @@ export class AgendamientoRepository {
 
       const boxesCommand = new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#tipo = :tipoBox",
+        FilterExpression: "#tipo = :tipoBox AND organizacionId = :orgId",
         ExpressionAttributeNames: { "#tipo": "tipo" },
-        ExpressionAttributeValues: { ":tipoBox": "Box" },
+        ExpressionAttributeValues: {
+          ":tipoBox": "Box",
+          ":orgId": organizacionId
+        },
       });
 
       const boxesResult = await this.dynamo.send(boxesCommand);

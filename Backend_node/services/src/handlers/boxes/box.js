@@ -12,6 +12,7 @@ const router = AutoRouter();
 router
   .post("/box", createBox)
   .get("/box/inventario", getAllInventarios)
+  .get("/box/especialidades", getAllEspecialidades)
   .get("/box/agendamientos/:idBox", getBoxAgendamientos)
   .get("/box/disponibilidad/:idBox/:fecha", getDisponibilidadBox) // ejemploPro: /box/disponibilidad/1/2025-11-04
   .get("/box/porcentaje-uso/:fecha/:hora", getPorcentajeUsoBoxes) // ejemploPro: /box/porcentaje-uso/2025-11-07/14:30
@@ -324,6 +325,18 @@ async function deleteInventario(req) {
     return new Response(JSON.stringify(deleted), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("Error al eliminar inventario:", error);
+    const status = error.message.includes("autenticado") ? 401 : 500;
+    return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
+  }
+}
+
+async function getAllEspecialidades(req) {
+  try {
+    const organizacionId = extractCognitoUserId(req.event);
+    const especialidades = await boxService.getAllEspecialidades(organizacionId);
+    return new Response(JSON.stringify(especialidades), { status: 200, headers: { "Content-Type": "application/json" } });
+  } catch (error) {
+    console.error("Error al obtener especialidades:", error);
     const status = error.message.includes("autenticado") ? 401 : 500;
     return new Response(JSON.stringify({ message: error.message }), { status, headers: { "Content-Type": "application/json" } });
   }

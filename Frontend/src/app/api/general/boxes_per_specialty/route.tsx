@@ -11,37 +11,31 @@ export async function GET(req: NextRequest) {
 
   const apiUrl = process.env.BACKEND_ADDRESS;
 
-  const res = await fetch(`${apiUrl}/tomah/agendamientos-por-especialidad-rango-fechas/${firstDate}/${lastDate}`, {
+  const incomingToken = req.headers.get("authorization") ?? "";
+
+  const res = await fetch(`${apiUrl}/agendamiento/estadisticas/especialidad/ocupacion/${firstDate}/${lastDate}`, {
     headers: {
       'Content-Type': 'application/json',
+      "Authorization": incomingToken,
     },
   })
   const data = await res.json()
 
-  if(!data)
-  {
-    return NextResponse.json({});
+  if (!data || !data.ocupacion) {
+    return NextResponse.json([]);
   }
 
-  let total_scheduling = 0;
-  for(let i = 0; i < data.length; i++)
-  {
-    total_scheduling += parseInt(data[i]["count"]);
-  }
+  const ocupacionArray = Object.entries(data.ocupacion).map(([specialty, info]: [string, any]) => ({
+    specialty,
+    percentage: info.porcentajeOcupacion
+  }));
 
-  let total_info = data.length > 5 ? 5: data.length;
+  ocupacionArray.sort((a, b) => b.percentage - a.percentage);
 
-  const final_data:any[] = [];
+  const top5 = ocupacionArray.slice(0, 5).map(item => ({
+    specialty: item.specialty,
+    percentage: item.percentage.toFixed(1)
+  }));
 
-  for(let i = 0; i < total_info; i++)
-  {
-    final_data.push(
-      {
-        specialty: data[i]["especialidad"],
-        percentage: ((parseInt(data[i]["count"]) / total_scheduling) * 100).toFixed(1),
-      }
-    );
-  }
- 
-  return NextResponse.json(final_data);
+  return NextResponse.json(top5);
 }

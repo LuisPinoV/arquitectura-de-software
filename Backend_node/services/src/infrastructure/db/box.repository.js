@@ -262,6 +262,8 @@ export class BoxRepository {
     };
   }
 
+
+
   addMinutes(time, mins) {
     const [h, m] = time.split(":").map(Number);
     const date = new Date(2000, 0, 1, h, m);
@@ -269,6 +271,19 @@ export class BoxRepository {
     const hh = String(date.getHours()).padStart(2, "0");
     const mm = String(date.getMinutes()).padStart(2, "0");
     return `${hh}:${mm}`;
+  }
+
+  async getAllEspecialidades(organizacionId) {
+    const boxes = await this.getAllBoxes(organizacionId);
+
+    // Extraer especialidades únicas
+    const especialidades = new Set(
+      boxes
+        .map(b => b.especialidad)
+        .filter(e => e)
+    );
+
+    return Array.from(especialidades).sort();
   }
 
   async getPorcentajeUsoBoxes(fecha, hora) {
