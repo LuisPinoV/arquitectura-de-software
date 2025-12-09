@@ -28,20 +28,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { parseJwt } from "@/lib/utils";
 
 export default function NuevoEspacioPage() {
   const { t } = useLanguage();
-  const router = useRouter();
+
+  const [companyName, setCompanyName] = useState("");
+  const [spaceName, setSpaceName] = useState("");
+
+  useEffect(() => {
+    const idToken = localStorage.getItem("idToken");
+    const claims = parseJwt(idToken ?? "");
+
+    const companyClaim =
+      claims["custom:companyName"] ||
+      claims.companyName ||
+      claims.org ||
+      claims["cognito:groups"] ||
+      "";
+
+    const spaceClaim = claims["custom:spaceName"] || claims.spaceName || "";
+
+    setCompanyName(companyClaim);
+    setSpaceName(spaceClaim);
+  });
 
   const NuevoUsuarioSchema = z.object({
     name: z.string().min(3, t("newUsers.name")),
-    email: z.string().min(1, t("newUsers.email")),
-    password: z.string().min(1, t("newUsers.password")),
+    email: z.string().email("Email inválido"),
+    password: z
+      .string()
+      .min(8, "Debe tener al menos 8 caracteres")
+      .regex(/[A-Z]/, "Debe incluir al menos una mayúscula")
+      .regex(/[a-z]/, "Debe incluir al menos una minúscula")
+      .regex(/[0-9]/, "Debe incluir al menos un número")
+      .regex(/[^A-Za-z0-9]/, "Debe incluir al menos un carácter especial"),
+    companyName: z.string(),
+    spaceName: z.string(),
+    group: z.string(),
   });
 
-  const [openAler, setOpenAlert] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
 
   const [loadingRegistration, setLoadingRegistration] =
@@ -74,15 +103,22 @@ export default function NuevoEspacioPage() {
     defaultValues: {
       name: "",
       email: "",
-      password: ""
+      password: "",
+      group: "Usuario",
+      companyName: companyName,
+      spaceName: spaceName,
     },
   });
 
   async function onSubmit(data: z.infer<typeof NuevoUsuarioSchema>) {
     try {
+      data.companyName = companyName;
+      data.spaceName = spaceName;
+
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
       };
+
       setLoadingRegistration(true);
       const res = await apiFetch("/api/session/createUser", {
         method: "POST",
@@ -95,14 +131,11 @@ export default function NuevoEspacioPage() {
         status: res?.status,
         body: json,
       });
-
-      
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
-      setLoadingRegistration(false);
       showAlert(t("newUser.errorCreatingUser"));
     }
+
+    setLoadingRegistration(false);
   }
 
   return (
@@ -126,7 +159,10 @@ export default function NuevoEspacioPage() {
                       <FormItem>
                         <FormLabel>{t("newUser.name")}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t("newUser.namePlaceholder")} {...field} />
+                          <Input
+                            placeholder={t("newUser.namePlaceholder")}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -140,7 +176,10 @@ export default function NuevoEspacioPage() {
                       <FormItem>
                         <FormLabel>{t("newUser.email")}</FormLabel>
                         <FormControl>
-                          <Input placeholder={t("newUser.emailPlaceholder")} {...field} />
+                          <Input
+                            placeholder={t("newUser.emailPlaceholder")}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -154,9 +193,11 @@ export default function NuevoEspacioPage() {
                       <FormItem>
                         <FormLabel>{t("newUser.password")}</FormLabel>
                         <FormControl>
-                          <Input 
-                          type="password"
-                          placeholder="********" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="********"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -172,7 +213,7 @@ export default function NuevoEspacioPage() {
           </Card>
         </Col>
       </Row>
-      <AlertDialog open={openAler} onOpenChange={setOpenAlert}>
+      <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("newUser.userCreation")}</AlertDialogTitle>

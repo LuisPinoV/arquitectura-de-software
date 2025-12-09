@@ -6,6 +6,7 @@ import {
   GlobalSignOutCommand,
   GetUserCommand,
   CognitoIdentityProviderClient,
+  AdminAddUserToGroupCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 import jwt from "jsonwebtoken";
@@ -62,7 +63,14 @@ export class CognitoRepository {
     }
   }
 
-  async createUser(username, password, name = null, companyName = null, spaceName = null) {
+  async createUser(
+    username,
+    password,
+    name = null,
+    companyName = null,
+    spaceName = null,
+    group = "Administradores"
+  ) {
     try {
       const userAttributes = [
         { Name: "email", Value: username },
@@ -75,8 +83,10 @@ export class CognitoRepository {
         userAttributes.push({ Name: "preferred_username", Value: name });
         userAttributes.push({ Name: "nickname", Value: name });
       }
-      if (companyName) userAttributes.push({ Name: "custom:companyName", Value: companyName });
-      if (spaceName) userAttributes.push({ Name: "custom:spaceName", Value: spaceName });
+      if (companyName)
+        userAttributes.push({ Name: "custom:companyName", Value: companyName });
+      if (spaceName)
+        userAttributes.push({ Name: "custom:spaceName", Value: spaceName });
 
       const createCmd = new AdminCreateUserCommand({
         UserPoolId: this.userPool,
@@ -95,6 +105,14 @@ export class CognitoRepository {
           Username: username,
           Password: password,
           Permanent: true,
+        })
+      );
+
+      await this.cognitoClient.send(
+        new AdminAddUserToGroupCommand({
+          UserPoolId: process.env.USER_POOL_ID,
+          Username: username,
+          GroupName: group,
         })
       );
 
@@ -156,17 +174,27 @@ export class CognitoRepository {
       const userAttributes = [];
       if (attrs.name) {
         userAttributes.push({ Name: "name", Value: String(attrs.name) });
-        userAttributes.push({ Name: "preferred_username", Value: String(attrs.name) });
+        userAttributes.push({
+          Name: "preferred_username",
+          Value: String(attrs.name),
+        });
         userAttributes.push({ Name: "nickname", Value: String(attrs.name) });
       }
       if (attrs.companyName) {
-        userAttributes.push({ Name: "custom:companyName", Value: String(attrs.companyName) });
+        userAttributes.push({
+          Name: "custom:companyName",
+          Value: String(attrs.companyName),
+        });
       }
       if (attrs.spaceName) {
-        userAttributes.push({ Name: "custom:spaceName", Value: String(attrs.spaceName) });
+        userAttributes.push({
+          Name: "custom:spaceName",
+          Value: String(attrs.spaceName),
+        });
       }
 
-      if (userAttributes.length === 0) return { ok: false, message: 'No attributes to update' };
+      if (userAttributes.length === 0)
+        return { ok: false, message: "No attributes to update" };
 
       const cmd = new AdminUpdateUserAttributesCommand({
         UserPoolId: this.userPool,
@@ -178,13 +206,12 @@ export class CognitoRepository {
 
       return { ok: true, res };
     } catch (err) {
-      console.error('Error updating user attributes', err);
+      console.error("Error updating user attributes", err);
       return { ok: false, error: err };
     }
   }
 
   getUserFromIdToken(idToken) {
-
     console.log(idToken);
     const decoded = jwt.decode(idToken);
 
