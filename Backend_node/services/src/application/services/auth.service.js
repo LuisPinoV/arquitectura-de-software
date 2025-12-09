@@ -88,7 +88,8 @@ export class AuthService {
     password,
     name = null,
     companyName = null,
-    spaceName = null
+    spaceName = null,
+    group = "Administradores"
   ) {
     const createUser = new CreateUserUseCase(this.cognitoRepository);
 
@@ -97,7 +98,8 @@ export class AuthService {
       password,
       name,
       companyName,
-      spaceName
+      spaceName,
+      group
     );
 
     const publishCreateUser = new PublishCreateUserUseCase(

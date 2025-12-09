@@ -95,6 +95,7 @@ CognitoMinimumRole:
                 - cognito-idp:AdminInitiateAuth
                 - cognito-idp:GlobalSignOut
                 - cognito-idp:GetUser
+                - cognito-idp:AdminAddUserToGroup
               Resource:
                 - Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}
 

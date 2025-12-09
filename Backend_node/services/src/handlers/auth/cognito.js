@@ -213,6 +213,7 @@ export async function createUser(req) {
   const name = body.name ?? null;
   const companyName = body.companyName ?? null;
   const spaceName = body.spaceName ?? null;
+  const group = body.group ?? null;
 
   if (!username || !password) {
     return {
@@ -227,7 +228,8 @@ export async function createUser(req) {
       password,
       name,
       companyName,
-      spaceName
+      spaceName,
+      group
     );
     return new Response(JSON.stringify(res), {
       status: 200,

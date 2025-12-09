@@ -96,17 +96,10 @@ export default function NuevoFuncionario() {
         });
 
         const json = await res?.json().catch(() => ({}));
-        console.debug("Create funcionario response", {
-            status: res?.status,
-            body: json,
-        });
-
         } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
-        setLoadingRegistration(false);
         showAlert(t("newFuncionario.errorCreatingFuncionario"));
         }
+        setLoadingRegistration(false);
     }
 
     return (

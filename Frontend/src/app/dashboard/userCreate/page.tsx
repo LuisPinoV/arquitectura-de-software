@@ -127,10 +127,6 @@ export default function NuevoEspacioPage() {
       });
 
       const json = await res?.json().catch(() => ({}));
-      console.debug("Create usuario response", {
-        status: res?.status,
-        body: json,
-      });
     } catch (e) {
       showAlert(t("newUser.errorCreatingUser"));
     }
