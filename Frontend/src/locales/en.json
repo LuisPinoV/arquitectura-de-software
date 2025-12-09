@@ -10,7 +10,8 @@
     "calendar": "Calendar",
     "requests": "Requests",
     "importData": "Import Data",
-    "settings": "Settings"
+    "settings": "Settings",
+    "userCreate": "Create User"
   },
   "auth": {
     "login": "Login",
