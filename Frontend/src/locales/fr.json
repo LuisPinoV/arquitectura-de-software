@@ -15,6 +15,7 @@
   },
   "auth": {
     "login": "Connexion",
+    "loginTitle": "Connectez-vous à votre compte",
     "register": "S'inscrire",
     "email": "E-mail",
     "password": "Mot de passe",
@@ -22,15 +23,23 @@
     "name": "Nom",
     "companyName": "Nom de l'Entreprise",
     "spaceName": "Nom de l'Espace",
-    "loginButton": "Connexion",
+    "loginButton": "Se connecter",
     "registerButton": "Créer un Compte",
+    "createUser": "Créer un utilisateur",
     "alreadyHaveAccount": "Vous avez déjà un compte?",
     "noAccount": "Vous n'avez pas de compte?",
     "loginHere": "Connectez-vous ici",
     "registerHere": "Inscrivez-vous ici",
     "account": "Compte",
     "notifications": "Notifications",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "forgotPassword": "Vous avez oublié votre mot de passe?",
+    "language": "Langue",
+    "sessionTitle": "Connexion",
+    "understood": "Compris",
+    "connectionError": "Il y avait une erreur de connexion\nappuyez sur 'Compris' pour fermer cet onglet",
+    "invalidEmail": "Vous devez utiliser une adresse e-mail.",
+    "loading": "Chargement..."
   },
   "settings": {
     "title": "Paramètres du Compte",

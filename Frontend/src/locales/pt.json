@@ -15,6 +15,7 @@
   },
   "auth": {
     "login": "Entrar",
+    "loginTitle": "Conecte-se à sua conta",
     "register": "Registrar",
     "email": "E-mail",
     "password": "Senha",
@@ -24,13 +25,21 @@
     "spaceName": "Nome do Espaço",
     "loginButton": "Entrar",
     "registerButton": "Criar Conta",
+    "createUser": "Criar usuário",
     "alreadyHaveAccount": "Já tem uma conta?",
     "noAccount": "Não tem uma conta?",
     "loginHere": "Entre aqui",
     "registerHere": "Registre-se aqui",
     "account": "Conta",
     "notifications": "Notificações",
-    "logout": "Sair"
+    "logout": "Sair",
+    "forgotPassword": "Esqueceu sua senha?",
+    "language": "Idioma",
+    "sessionTitle": "Entrada",
+    "understood": "Entendido",
+    "connectionError": "Houve um erro de conexão\nclique em 'Entendido' para fechar esta aba",
+    "invalidEmail": "Você deve usar um endereço de e-mail.",
+    "loading": "Carregando..."
   },
   "settings": {
     "title": "Configurações da Conta",

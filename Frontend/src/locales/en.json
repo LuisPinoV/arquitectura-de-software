@@ -15,6 +15,7 @@
   },
   "auth": {
     "login": "Login",
+    "loginTitle": "Sign in to your account",
     "register": "Register",
     "email": "Email",
     "password": "Password",
@@ -22,15 +23,23 @@
     "name": "Name",
     "companyName": "Company Name",
     "spaceName": "Space Name",
-    "loginButton": "Login",
+    "loginButton": "Sign In",
     "registerButton": "Create Account",
+    "createUser": "Create user",
     "alreadyHaveAccount": "Already have an account?",
     "noAccount": "Don't have an account?",
     "loginHere": "Login here",
     "registerHere": "Register here",
     "account": "Account",
     "notifications": "Notifications",
-    "logout": "Logout"
+    "logout": "Logout",
+    "forgotPassword": "Forgot your password?",
+    "language": "Language",
+    "sessionTitle": "Login",
+    "understood": "Understood",
+    "connectionError": "There was a connection error\nclick 'Understood' to close this tab",
+    "invalidEmail": "You must use an email address.",
+    "loading": "Loading..."
   },
   "settings": {
     "title": "Account Settings",

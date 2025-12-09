@@ -34,13 +34,21 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Settings } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function LoginPage() {
+  const { t, language, setLanguage } = useLanguage();
   const [openAlert, setOpenAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string>("");
 
   const [loadingLogin, setLoadingLogin] = useState<boolean>(false);
-  
 
   const showAlert = (msg: string) => {
     setAlertMessage(msg);
@@ -51,10 +59,10 @@ export default function LoginPage() {
     setAlertMessage("");
     setOpenAlert(false);
   };
-  
+
   const FormSchema = z.object({
     username: z.string().email({
-      message: "Debes utilizar un correo electrónico.",
+      message: t("auth.invalidEmail"),
     }),
     password: z.string(),
   });
@@ -69,13 +77,13 @@ export default function LoginPage() {
 
   const loginButton = (
     <Button type="submit" className="w-full">
-                    Iniciar Sesión
+      {t("auth.loginButton")}
     </Button>
   );
 
   const loadingButton = (
     <Button type="submit" className="w-full">
-      <Spinner>Cargando...</Spinner>
+      <Spinner>{t("auth.loading")}</Spinner>
     </Button>
   );
 
@@ -149,7 +157,7 @@ export default function LoginPage() {
     } catch {
 
       setLoadingLogin(false);
-      showAlert("Hubo un error de conexión \n aprete 'Entiendo' para cerrar esta pestaña");
+      showAlert(t("auth.connectionError"));
     }
   }
 
@@ -157,9 +165,44 @@ export default function LoginPage() {
     <>
       <div className="login-card">
         <Card>
-          <CardHeader className="text-md">
-            <CardTitle>Ingresa a tu cuenta</CardTitle>
-          </CardHeader>
+          <div className="flex justify-between items-center px-6 pt-6">
+            <CardHeader className="text-md flex-1 p-0">
+              <CardTitle>{t("auth.loginTitle")}</CardTitle>
+            </CardHeader>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" title={t("auth.language")}>
+                  <Settings className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setLanguage("es")}
+                  className={language === "es" ? "bg-accent" : ""}
+                >
+                  Español
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLanguage("en")}
+                  className={language === "en" ? "bg-accent" : ""}
+                >
+                  English
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLanguage("fr")}
+                  className={language === "fr" ? "bg-accent" : ""}
+                >
+                  Français
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setLanguage("pt")}
+                  className={language === "pt" ? "bg-accent" : ""}
+                >
+                  Português
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <CardContent>
             <Form {...form}>
               <form
@@ -171,7 +214,7 @@ export default function LoginPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem className="grid gap-2">
-                      <FormLabel>Correo electrónico</FormLabel>
+                      <FormLabel>{t("auth.email")}</FormLabel>
                       <FormControl>
                         <Input
                           id="mail"
@@ -190,7 +233,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="grid gap-2">
-                      <FormLabel>Contraseña</FormLabel>
+                      <FormLabel>{t("auth.password")}</FormLabel>
                       <FormControl>
                         <Input
                           id="password"
@@ -209,7 +252,7 @@ export default function LoginPage() {
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                   >
-                    ¿Olvidaste tú constraseña?
+                    {t("auth.forgotPassword")}
                   </a>
                 </FormDescription>
                 <CardFooter className="flex-col gap-2">
@@ -220,7 +263,7 @@ export default function LoginPage() {
                     className="w-full"
                     onClick={() => router.push("/register")}
                   >
-                    Crear usuario
+                    {t("auth.createUser")}
                   </Button>
                 </CardFooter>
               </form>
@@ -232,7 +275,7 @@ export default function LoginPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Inicio de Sesión
+              {t("auth.sessionTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {alertMessage}
@@ -240,7 +283,7 @@ export default function LoginPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeAlert}>
-              Entendido
+              {t("auth.understood")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
