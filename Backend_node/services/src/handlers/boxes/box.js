@@ -144,7 +144,8 @@ async function getUsoBox(req) {
   }
 
   try {
-    const result = await boxService.getUsoBox(idBox, fecha, hora);
+    const organizacionId = extractCognitoUserId(req.event);
+    const result = await boxService.getUsoBox(idBox, fecha, hora, organizacionId);
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { "Content-Type": "application/json" },

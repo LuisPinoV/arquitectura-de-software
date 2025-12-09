@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const incomingToken = req.headers.get("authorization") ?? "";
 
   const res = await fetch(
-    `${apiUrl}/agendamiento/box/105/fecha/${todayISO}`,
+    `${apiUrl}/agendamiento/fecha/${todayISO}`,
     {
       headers: {
         "Content-Type": "application/json",

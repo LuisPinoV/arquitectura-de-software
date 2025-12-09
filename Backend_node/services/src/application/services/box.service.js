@@ -43,9 +43,9 @@ export class BoxService {
     return await getBoxesUsagePercentage.execute(fecha, hora);
   }
 
-  async getUsoBox(idBox, fecha, hora) {
+  async getUsoBox(idBox, fecha, hora, organizacionId) {
     const getUsageBox = new GetUsageBoxUseCase(this.boxRepository);
-    return await getUsageBox.execute(idBox, fecha, hora);
+    return await getUsageBox.execute(idBox, fecha, hora, organizacionId);
   }
 
   async getBox(idBox, organizacionId) {
