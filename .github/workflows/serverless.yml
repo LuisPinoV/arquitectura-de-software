@@ -1,15 +1,13 @@
-name: Serverless
+name: Serverless Deploy
 
 on:
   workflow_dispatch:
-
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   deploy-serverless:
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: ./Backend_node/services
