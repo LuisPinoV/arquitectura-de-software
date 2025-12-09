@@ -117,9 +117,9 @@ export class AgendamientoService {
     return await getAgendamientoCompleto.execute(idConsulta);
   }
 
-  async agendamientoTotalHoyBox(idBox, fecha) {
+  async agendamientoTotalHoyBox(idBox, fecha, organizacionId) {
     const useCase = new AgendamientoTotalHoyBoxUseCase(this.agendamientoRepository);
-    return await useCase.execute(idBox, fecha);
+    return await useCase.execute(idBox, fecha, organizacionId);
   }
 
   async cantidadAgendamientosEntreFechas(fechaInicio, fechaFin) {
@@ -132,8 +132,8 @@ export class AgendamientoService {
     return await useCase.execute(mes1, mes2);
   }
 
-  async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin) {
+  async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin, organizacionId) {
     const useCase = new OcupacionTotalSegunDiaEntreFechasUseCase(this.agendamientoRepository);
-    return await useCase.execute(fechaInicio, fechaFin);
+    return await useCase.execute(fechaInicio, fechaFin, organizacionId);
   }
 }

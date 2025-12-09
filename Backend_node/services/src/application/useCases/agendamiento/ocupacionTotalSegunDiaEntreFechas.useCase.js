@@ -3,9 +3,9 @@ export class OcupacionTotalSegunDiaEntreFechasUseCase {
     this.agendamientoRepository = agendamientoRepository;
   }
 
-  async execute(fechaInicio, fechaFin) {
+  async execute(fechaInicio, fechaFin, organizacionId) {
     try {
-      const resultado = await this.agendamientoRepository.ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin);
+      const resultado = await this.agendamientoRepository.ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin, organizacionId);
       return resultado;
     } catch (error) {
       throw new Error("Couldn't calculate daily occupancy between dates");
