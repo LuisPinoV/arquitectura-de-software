@@ -89,16 +89,14 @@ export function SiteHeader() {
 
   const [curSpaceName, setCurSpaceName] = useState<string>("");
 
-  if (pathname.startsWith("/dashboard/reportaje") && params?.box) {
-    //Get Space Name
-    useEffect(() => {
+  useEffect(() => {
+    if (pathname.startsWith("/dashboard/reportaje") && params?.box) {
       async function fetchSpaceName() {
         try {
           const res = await apiFetch(`/api/scheduling/get_boxes`);
           const data: any = await res?.json();
           if (Array.isArray(data)) {
             const curSpace = data.find((s) => s.idBox === params.box);
-
             setCurSpaceName(curSpace.nombre ? curSpace.nombre : "N/A");
           }
         } catch (error) {
@@ -106,8 +104,10 @@ export function SiteHeader() {
         }
       }
       fetchSpaceName();
-    }, []);
+    }
+  }, [pathname, params?.box]);
 
+  if (pathname.startsWith("/dashboard/reportaje") && params?.box) {
     items.push(
       { label: "Inicio", href: "#" },
       { label: "Dashboard", href: "/dashboard/general" },
