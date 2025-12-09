@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    needs: terraform_CI.yml
     defaults:
       run:
         working-directory: ./Backend_node/infra
@@ -22,17 +21,19 @@ jobs:
         with:
           terraform_version: 1.9.8
 
-      - name: Export secrets to environment
+      - name: Export Secrets
         run: |
           echo "TF_ORG=${{ secrets.TF_CLOUD_ORGANIZATION }}" >> $GITHUB_ENV
           echo "TF_WS=${{ secrets.TF_CLOUD_WORKSPACE }}" >> $GITHUB_ENV
 
       - name: Create backend.tf
         run: |
-          cat > backend.tf << EOF
+          cat > ./Backend_node/infra/backend.tf << EOF
           terraform {
             backend "remote" {
+              hostname     = "app.terraform.io"
               organization = "$TF_ORG"
+
               workspaces {
                 name = "$TF_WS"
               }
@@ -58,3 +59,6 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
+
+      - name: Cleanup backend.tf
+        run: rm -f ./Backend_node/infra/backend.tf

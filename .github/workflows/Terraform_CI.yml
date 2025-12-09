@@ -28,10 +28,12 @@ jobs:
 
       - name: Create backend.tf
         run: |
-          cat > backend.tf << EOF
+          cat > ./Backend_node/infra/backend.tf << EOF
           terraform {
             backend "remote" {
+              hostname     = "app.terraform.io"
               organization = "$TF_ORG"
+
               workspaces {
                 name = "$TF_WS"
               }
@@ -66,3 +68,6 @@ jobs:
         with:
           name: tfplan
           path: ./Backend_node/infra/tfplan
+
+      - name: Cleanup backend.tf
+        run: rm -f ./Backend_node/infra/backend.tf
