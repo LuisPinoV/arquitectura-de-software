@@ -40,7 +40,7 @@ export default function AutoFillPopupPage() {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
     if (!token) {
-      router.replace(`/login?redirect=/agendamiento_instantaneo`);
+      router.replace(`/agendamiento_instantaneo/login`);
     }else {
       setAuthChecked(true)
     }
@@ -52,17 +52,19 @@ export default function AutoFillPopupPage() {
       try {
         const resUsuarios = await apiFetch("/api/agendamiento_instantaneo/get_pacientes");
         const dataUsuarios = await resUsuarios?.json();
-        setListaUsuarios(dataUsuarios as Paciente[]);
+        setListaUsuarios(Array.isArray(dataUsuarios) ? dataUsuarios : []);
       } catch (err) {
         console.error("Error cargando a los usuarios", err);
+        setListaUsuarios([]);
       }
 
       try {
         const resFuncionarios = await apiFetch("/api/agendamiento_instantaneo/get_funcionarios");
         const dataFuncionarios = await resFuncionarios?.json();
-        setListaFuncionarios(dataFuncionarios as Funcionario[])
+        setListaFuncionarios(Array.isArray(dataFuncionarios) ? dataFuncionarios : []);
       } catch (error) {
-        console.error("Error cargando a los funcionarios", error)
+        console.error("Error cargando a los funcionarios", error);
+        setListaFuncionarios([]);
       }
     };
 
@@ -130,7 +132,7 @@ export default function AutoFillPopupPage() {
                     onChange={(e) => setIdUsuario(e.target.value)}
                   >
                     <option value="">Seleccione...</option>
-                    {listaUsuarios.map((u) => (
+                    {Array.isArray(listaUsuarios) && listaUsuarios.map((u) => (
                       <option key={u.idPaciente} value={u.idPaciente}>{u.nombre}</option>
                     ))}
                   </select>
@@ -144,7 +146,7 @@ export default function AutoFillPopupPage() {
                     onChange={(e) => setIdFuncionario(e.target.value)}
                   >
                     <option value="">Seleccione...</option>
-                    {listaFuncionarios.map((f) => (
+                    {Array.isArray(listaFuncionarios) && listaFuncionarios.map((f) => (
                       <option key={f.idFuncionario} value={f.idFuncionario}>{f.nombre}</option>
                     ))}
                   </select>

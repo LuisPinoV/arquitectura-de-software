@@ -1,81 +1,73 @@
-"use client"
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
+"use client";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
 import { apiFetch } from "@/lib/apiClient";
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 
-
 const inventario = [
-    {
-        item: "item A",
-        cantidad: 0
+  {
+    item: "item A",
+    cantidad: 0,
+  },
+];
+
+export function TablaInventario({ idBox }: { idBox: string }) {
+  const [tableData, setData] = useState<any[]>(inventario);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await apiFetch(`/api/reports/inventory?box=${idBox}`);
+        const data: any = await res?.json();
+
+        const parsed = Object.entries(data).map(([key, value]) => ({
+          key,
+          value,
+        }));
+
+        setData(parsed);
+      } catch (error) {
+        console.error("Error en la obtención de los datos:", error);
+      }
     }
-]
+    fetchData();
+  }, []);
 
-export function TablaInventario({idBox}:{idBox:string}) {
-    const [tableData, setData] = useState<any[]>(inventario);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const res = await apiFetch(
-                    `/api/reports/inventory?box=${idBox}`
-                );
-                const data: any = await res?.json();
-
-                const parsed = Object.entries(data).map(([key, value]) => ({
-                  key,
-                  value
-                }));
-
-                setData(parsed)
-            } catch (error) {
-                console.error("Error en la obtención de los datos:", error);
-            }
-        }
-        fetchData();
-    }, []);
-
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>
-                        Item
-                    </TableHead>
-                    <TableHead>
-                        Cantidad
-                    </TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {tableData.map((inventario) => (
-                    <TableRow key={inventario.item}>
-                        <TableCell className="font-semibold">
-                            {inventario.key}
-                        </TableCell>
-                        <TableCell>
-                            {inventario.value}
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    )
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Item</TableHead>
+          <TableHead>Cantidad</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {tableData.map((inventario, i) => (
+          <TableRow key={i}>
+            <TableCell className="font-semibold">{inventario.key}</TableCell>
+            <TableCell>{inventario.value}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
 }
 
-
-
 ///////////////////////////////////////////////////
-
-
 
 export function EditarInventario({
   idBox,
   onClose,
-  onSaved
+  onSaved,
 }: {
   idBox: string;
   onClose: () => void;
@@ -99,7 +91,7 @@ export function EditarInventario({
         // convertir objeto -> array [{key, value}]
         const parsed = Object.entries(safeData).map(([key, value]) => ({
           key,
-          value: Number(value) || 0
+          value: Number(value) || 0,
         }));
 
         setItems(parsed);
@@ -117,7 +109,10 @@ export function EditarInventario({
   const updateField = (index: number, field: "key" | "value", value: any) => {
     setItems((prev) => {
       const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: field === "value" ? Number(value) : value };
+      copy[index] = {
+        ...copy[index],
+        [field]: field === "value" ? Number(value) : value,
+      };
       return copy;
     });
   };
@@ -149,9 +144,12 @@ export function EditarInventario({
       }, {} as Record<string, number>);
 
       // DELETE anterior
-      const delRes = await apiFetch(`/api/reports/delete_inventory?box=${idBox}`, {
-        method: "DELETE",
-      });
+      const delRes = await apiFetch(
+        `/api/reports/delete_inventory?box=${idBox}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (delRes && "ok" in delRes && !delRes.ok) {
         // si tu apiFetch retorna Response, chequea res.ok; si retorna otra cosa, ajusta
@@ -160,10 +158,13 @@ export function EditarInventario({
       }
 
       // POST nuevo inventario (objeto)
-      const postRes = await apiFetch(`/api/reports/post_inventory?box=${idBox}`, {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
+      const postRes = await apiFetch(
+        `/api/reports/post_inventory?box=${idBox}`,
+        {
+          method: "POST",
+          body: JSON.stringify(body),
+        }
+      );
 
       // Manejo básico de errores
       if (postRes && "ok" in postRes && !postRes.ok) {
@@ -187,65 +188,75 @@ export function EditarInventario({
   if (loading) return <p>Cargando...</p>;
 
   return (
-    <div className="w-full">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-1/2">Item</TableHead>
-            <TableHead className="w-1/4">Cantidad</TableHead>
-            <TableHead className="w-1/4">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {items.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <Input
-                  value={row.key}
-                  onChange={(e) => updateField(index, "key", e.target.value)}
-                />
-              </TableCell>
-
-              <TableCell>
-                <Input
-                  type="number"
-                  min={0}
-                  value={row.value}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    updateField(index, "value", Number.isFinite(val) ? (val < 0 ? 0 : val) : 0);
-                  }}
-                />
-              </TableCell>
-
-              <TableCell>
-                <Button
-                  variant="destructive"
-                  onClick={() => deleteItem(index)}
-                >
-                  Eliminar
-                </Button>
-              </TableCell>
+    <>
+      <div
+        className="w-full"
+        style={{ maxHeight: "360px", overflowY: "scroll" }}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-1/2">Item</TableHead>
+              <TableHead className="w-1/4">Cantidad</TableHead>
+              <TableHead className="w-1/4">Acciones</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
 
-      {/* Botón agregar */}
-      <div className="mt-3 flex justify-start">
-        <Button onClick={addItem}>Agregar Item</Button>
-      </div>
+          <TableBody>
+            {items.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Input
+                    value={row.key}
+                    onChange={(e) => updateField(index, "key", e.target.value)}
+                  />
+                </TableCell>
 
-      {/* Botones inferiores */}
-      <div className="mt-6 flex justify-end gap-3">
-        <Button variant="secondary" onClick={onClose} disabled={saving}>
-          Cancelar
-        </Button>
-        <Button onClick={saveChanges} disabled={saving}>
-          {saving ? "Guardando..." : "Guardar"}
-        </Button>
+                <TableCell>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={row.value}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      updateField(
+                        index,
+                        "value",
+                        Number.isFinite(val) ? (val < 0 ? 0 : val) : 0
+                      );
+                    }}
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <Button
+                    variant="destructive"
+                    onClick={() => deleteItem(index)}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
-    </div>
+      <div className="w-full" style = {{display:"flex", justifyContent:"space-between"}}>
+        {/* Botón agregar */}
+        <div className="flex justify-start">
+          <Button onClick={addItem}>Agregar Item</Button>
+        </div>
+
+        {/* Botones inferiores */}
+        <div className="flex justify-end">
+          <Button className = "mx-2" variant="secondary" onClick={onClose} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={saveChanges} disabled={saving}>
+            {saving ? "Guardando..." : "Guardar"}
+          </Button>
+        </div>
+      </div>
+    </>
   );
 }

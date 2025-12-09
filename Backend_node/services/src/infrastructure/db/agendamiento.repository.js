@@ -618,7 +618,7 @@ export class AgendamientoRepository {
 
       const conflictos = [];
 
-      const agendamientosBox = await this.agendamientoTotalHoyBox(idBox, fecha);
+      const agendamientosBox = await this.agendamientoTotalHoyBox(idBox, fecha, organizacionId);
 
       const agendamientosFuncionario = await this.getAgendamientosByFuncionario(idFuncionario, organizacionId);
       const agendamientosFuncionarioFecha = agendamientosFuncionario.filter(ag => ag.fecha === fecha);
@@ -742,22 +742,23 @@ export class AgendamientoRepository {
     };
   }
 
-  async agendamientoTotalHoyBox(idBox, fecha) {
+  async agendamientoTotalHoyBox(idBox, fecha, organizacionId) {
     try {
-      console.log(`Buscando agendamientos para box ${idBox} en fecha ${fecha}`);
+      console.log(`Buscando agendamientos para box ${idBox} (tipo: ${typeof idBox}) en fecha ${fecha}, orgId: ${organizacionId}`);
 
       const command = new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#idBox = :idbox AND #fecha = :fecha AND #tipo = :tipo",
+        FilterExpression: "#idBox = :idbox AND #fecha = :fecha AND #tipo = :tipo AND organizacionId = :orgId",
         ExpressionAttributeNames: {
           "#idBox": "idBox",
           "#fecha": "fecha",
           "#tipo": "tipo"
         },
         ExpressionAttributeValues: {
-          ":idbox": Number(idBox),
+          ":idbox": String(idBox),
           ":fecha": fecha,
-          ":tipo": "Agendamiento"
+          ":tipo": "Agendamiento",
+          ":orgId": organizacionId
         }
       });
 
@@ -912,7 +913,7 @@ export class AgendamientoRepository {
    * @param {string} fechaFin
    * @returns {Promise<Object>}
    */
-  async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin) {
+  async ocupacionTotalSegunDiaEntreFechas(fechaInicio, fechaFin, organizacionId) {
     try {
       console.log(`Calculando ocupación por día entre ${fechaInicio} y ${fechaFin}`);
 
@@ -929,9 +930,12 @@ export class AgendamientoRepository {
 
       const boxesResult = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#tipo = :tipoBox",
+        FilterExpression: "#tipo = :tipoBox AND organizacionId = :orgId",
         ExpressionAttributeNames: { "#tipo": "tipo" },
-        ExpressionAttributeValues: { ":tipoBox": "Box" },
+        ExpressionAttributeValues: {
+          ":tipoBox": "Box",
+          ":orgId": organizacionId
+        },
       }));
       const totalBoxes = boxesResult.Items?.length || 0;
 
@@ -951,7 +955,7 @@ export class AgendamientoRepository {
 
       const agendamientosResult = await this.dynamo.send(new ScanCommand({
         TableName: this.tableName,
-        FilterExpression: "#fecha BETWEEN :f1 AND :f2 AND #tipo = :tipoAgendamiento",
+        FilterExpression: "#fecha BETWEEN :f1 AND :f2 AND #tipo = :tipoAgendamiento AND organizacionId = :orgId",
         ExpressionAttributeNames: {
           "#fecha": "fecha",
           "#tipo": "tipo"
@@ -959,7 +963,8 @@ export class AgendamientoRepository {
         ExpressionAttributeValues: {
           ":f1": fechaInicio,
           ":f2": fechaFin,
-          ":tipoAgendamiento": "Agendamiento"
+          ":tipoAgendamiento": "Agendamiento",
+          ":orgId": organizacionId
         },
         ProjectionExpression: "fecha, horaEntrada, horaSalida, idBox"
       }));
